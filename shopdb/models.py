@@ -70,8 +70,10 @@ class User(db.Model):
 
     @hybrid_property
     def rank_id(self):
-        # TODO: First or last?
-        return RankUpdates.query.filter_by(user_id=self.id).first()
+        return (RankUpdate.query
+                .filter_by(user_id=self.id)
+                .order_by(RankUpdate.id.desc())
+                .first())
 
     @rank_id.setter
     def rank_id(self, rank_id, admin_id):
