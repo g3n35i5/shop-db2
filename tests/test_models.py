@@ -3,6 +3,7 @@
 from shopdb.api import *
 import shopdb.models as models
 import shopdb.exceptions as exc
+from sqlalchemy.exc import *
 from base import BaseTestCase
 from copy import copy
 import pdb
@@ -96,13 +97,16 @@ class ModelsTestCase(BaseTestCase):
         user1 = User.query.filter_by(id=1).first()
         user2 = User.query.filter_by(id=2).first()
         user2.username = user1.username
-        db.session.commit()  # TODO: This should explode
+        with self.assertRaises(IntegrityError):
+            db.session.commit()
 
     def test_duplicate_email(self):
         '''It should be ensured that the users email is unique'''
         user1 = User.query.filter_by(id=1).first()
-        user2 = User.query.filter_by(id=2)
-        db.session.commit()  # TODO: This should explode
+        user2 = User.query.filter_by(id=2).first()
+        user2.email = user1.email
+        with self.assertRaises(IntegrityError):
+            db.session.commit()
 
     def test_insert_purchase_as_non_verified_user(self):
         '''It must be ensured that non-verified users cannot make purchases.'''
