@@ -34,9 +34,8 @@ class User(db.Model):
     #     fval.ValidateString(User.username)
     #     fval.ValidateEmail(User.username)
 
-    @hybrid_property
-    def name(self):
-        return f'<User {self.lastname}, {self.firstname} ({self.username})>'
+    def __repr__(self):
+        return f'<User {self.id}: {self.lastname}, {self.firstname}>'
 
     @hybrid_property
     def admin(self):
