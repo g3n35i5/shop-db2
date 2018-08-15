@@ -139,3 +139,16 @@ class ModelsTestCase(BaseTestCase):
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
+
+    def test_insert_purchase(self):
+        '''Testing a basic purchase'''
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 0)
+        self.assertEqual(user.credit, 0)
+        product = Product.query.first()
+        purchase = Purchase(user_id=user.id, product_id=product.id, amount=1)
+        db.session.add(purchase)
+        db.session.commit()
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 1)
+        self.assertEqual(user.credit, -product.price)

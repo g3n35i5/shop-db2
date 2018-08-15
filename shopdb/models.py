@@ -104,8 +104,8 @@ class User(db.Model):
     @hybrid_property
     def credit(self):
         credit = 0
-        credit -= sum(pur.price for pur in self.purchases if not pur.revoked)
-        credit += sum(dep.amount for dep in self.deposits if not dep.revoked)
+        credit -= sum(p.price for p in self.purchases.all() if not p.revoked)
+        credit += sum(d.amount for d in self.deposits.all() if not d.revoked)
         return credit
 
 
@@ -158,7 +158,8 @@ class Product(db.Model):
     def price(self):
         return (ProductPrice.query
                 .filter(ProductPrice.product_id == self.id)
-                .last())
+                .order_by(ProductPrice.id.desc())
+                .first().price)
 
     @hybrid_method
     def set_price(self, price, admin_id):
@@ -194,7 +195,10 @@ class Purchase(db.Model):
 
     @hybrid_property
     def revoked(self):
-        revoke = PurchaseRevokes.query.filter_by(purchase_id=self.id).last()
+        revoke = (PurchaseRevoke.query
+                  .filter_by(purchase_id=self.id)
+                  .order_by(PurchaseRevoke.id.desc())
+                  .first())
         if revoke is None:
             return False
         return revoke.revoked
@@ -208,10 +212,12 @@ class Purchase(db.Model):
 
     @hybrid_property
     def price(self):
-        prices = (ProductPrices.query
-                  .filter(ProductPrice.timestamp <= self.timestamp)
-                  .order_by(ProductPrice.id.desc())
-                  .first())
+        productprice = (ProductPrice.query
+                        .filter(ProductPrice.product_id == self.product_id)
+                        .filter(ProductPrice.timestamp <= self.timestamp)
+                        .order_by(ProductPrice.id.desc())
+                        .first())
+        return self.amount * productprice.price
 
 
 @event.listens_for(Purchase, 'before_insert')
@@ -224,11 +230,13 @@ def purchase_hook(mapper, connect, purchase):
         raise ProductIsInactive
 
 
-class PurchaseRevokes(db.Model):
+class PurchaseRevoke(db.Model):
     __tablename__ = 'purchaserevokes'
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
+    purchase_id = db.Column(db.Integer, db.ForeignKey('products.id'),
+                            nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 
