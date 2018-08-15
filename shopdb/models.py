@@ -189,9 +189,7 @@ class Purchase(db.Model):
     @revoked.setter
     def revoked(self, revoked, admin_id):
         if self.revoked == revoked:
-            # TODO: Raise "Nothing has changed"
-            print('Nothing has changed.')
-            return
+            raise NothingHasChanged
         pr = PurchaseRevoke(revoked=revoked, admin_id=admin_id)
         db.session.add(pr)
 
