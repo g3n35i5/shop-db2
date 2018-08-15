@@ -36,17 +36,19 @@ class ModelsTestCase(BaseTestCase):
         check = self.bcrypt.check_password_hash(user.password, 'test_password')
         self.assertTrue(check)
 
-    # def test_insert_invalid_email(self):
-    #     '''Test the regex match of the user email'''
-    #     user = User.query.filter_by(id=1).first()
-    #     backup_email = copy(user.email)
-    #     for mail in ['test', 'test@test', '@test', 't@test.c', 'test@test-com',
-    #                  't@test.com.']:
-    #         with self.assertRaises(exc.InvalidEmailAddress):
-    #             user.email = mail
-    #     db.session.commit()
-    #     user = User.query.filter_by(id=1).first()
-    #     self.assertEqual(user.email, backup_email)
+    def test_insert_invalid_email(self):
+        '''Test the regex match of the user email'''
+        user = User.query.filter_by(id=1).first()
+        backup_email = copy(user.email)
+        for mail in ['test', 'test@test', '@test', 't@test.c', 'test@test-com',
+                     't@test.com.']:
+            with self.assertRaises(exc.InvalidEmailAddress):
+                user.email = mail
+                db.session.commit()
+
+            db.session.rollback()
+        user = User.query.filter_by(id=1).first()
+        self.assertEqual(user.email, backup_email)
 
     def test_verify_user_twice(self):
         '''Users cant be verified twice'''

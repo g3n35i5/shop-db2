@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
 from sqlalchemy import event
-import flask_validator as fval
+import re
 
 db = SQLAlchemy()
 
@@ -26,13 +26,26 @@ class User(db.Model):
     deposits = db.relationship('Deposit', lazy='dynamic',
                                foreign_keys='Deposit.user_id')
 
-    # TODO: Wie funktioniert der flask valdator hier?
-    # @classmethod
-    # def __declare_last__(cls):
-    #     fval.ValidateString(User.firstname)
-    #     fval.ValidateString(User.lastname)
-    #     fval.ValidateString(User.username)
-    #     fval.ValidateEmail(User.username)
+    @validates('email')
+    def validate_email(self, key, email):
+        # Check email is None
+        if not email:
+            raise InvalidEmailAddress
+
+        # Check email has invalid type
+        if not isinstance(email, str):
+            raise InvalidEmailAddress
+
+        # Check email length
+        if len(email) not in range(6, 257):
+            raise InvalidEmailAddress
+
+        # Check email regex
+        if not re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+' \
+                        '(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email):
+            raise InvalidEmailAddress
+
+        return email
 
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
