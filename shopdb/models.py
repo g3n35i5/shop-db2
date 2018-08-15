@@ -197,7 +197,8 @@ class Purchase(db.Model):
     def price(self):
         prices = (ProductPrices.query
                   .filter(ProductPrice.timestamp <= self.timestamp)
-                  .first())  # TODO: first or last here?
+                  .order_by(ProductPrice.id.desc())
+                  .first())
 
 
 @event.listens_for(Purchase, 'before_insert')
