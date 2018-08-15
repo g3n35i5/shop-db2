@@ -68,6 +68,9 @@ def handle_error(error):
     except AttributeError:
         raise e
 
+    # If for some reason no exception has been raised yet, this is done now.
+    raise e
+
 
 # Login route ################################################################
 @app.route('/login', methods=['POST'])
