@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
 from sqlalchemy import event
-import flask_validator as fval
+import re
 
 db = SQLAlchemy()
 
@@ -26,35 +26,49 @@ class User(db.Model):
     deposits = db.relationship('Deposit', lazy='dynamic',
                                foreign_keys='Deposit.user_id')
 
-    # TODO: Wie funktioniert der flask valdator hier?
-    # @classmethod
-    # def __declare_last__(cls):
-    #     fval.ValidateString(User.firstname)
-    #     fval.ValidateString(User.lastname)
-    #     fval.ValidateString(User.username)
-    #     fval.ValidateEmail(User.username)
+    @validates('email')
+    def validate_email(self, key, email):
+        # Check email is None
+        if not email:
+            raise InvalidEmailAddress
+
+        # Check email has invalid type
+        if not isinstance(email, str):
+            raise InvalidEmailAddress
+
+        # Check email length
+        if len(email) not in range(6, 257):
+            raise InvalidEmailAddress
+
+        # Check email regex
+        if not re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+' \
+                        '(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email):
+            raise InvalidEmailAddress
+
+        return email
+
+    def __repr__(self):
+        return f'<User {self.id}: {self.lastname}, {self.firstname}>'
 
     @hybrid_property
-    def name(self):
-        return f'<User {self.lastname}, {self.firstname} ({self.username})>'
-
-    @hybrid_property
-    def admin(self):
-        # TODO: First or last?
-        au = AdminUpdate.query.filter_by(user_id=self.id).first()
+    def is_admin(self):
+        au = (AdminUpdate.query
+              .filter_by(user_id=self.id)
+              .order_by(AdminUpdate.id.desc())
+              .first())
         if au is None:
             return False
         return au.is_admin
 
-    @admin.setter
-    def admin(self, is_admin, admin_id):
-        if self.admin == is_admin:
+    @is_admin.setter
+    def is_admin(self, is_admin, admin_id):
+        if self.is_admin == is_admin:
             raise NothingHasChanged()
         au = AdminUpdate(is_admin=is_admin, admin_id=admin_id, user_id=self.id)
         db.session.add(au)
 
     @hybrid_property
-    def verified(self):
+    def is_verified(self):
         uv = UserVerification.query.filter_by(user_id=self.id).first()
         if uv is None or uv is False:
             return False
@@ -62,18 +76,20 @@ class User(db.Model):
 
     @hybrid_method
     def verify(self, admin_id):
-        if self.verified:
+        if self.is_verified:
             raise UserAlreadyVerified()
         uv = UserVerification(user_id=self.id, admin_id=admin_id)
         db.session.add(uv)
 
     @hybrid_property
     def rank_id(self):
-        # TODO: First or last?
-        return RankUpdates.query.filter_by(user_id=self.id).first()
+        return (RankUpdate.query
+                .filter_by(user_id=self.id)
+                .order_by(RankUpdate.id.desc())
+                .first())
 
-    @rank_id.setter
-    def rank_id(self, rank_id, admin_id):
+    @hybrid_method
+    def set_rank_id(self, rank_id, admin_id):
         if self.rank_id == rank_id:
             raise NothingHasChanged()
         ru = RankUpdate(rank_id=rank_id, admin_id=admin_id, user_id=self.id)
@@ -88,8 +104,8 @@ class User(db.Model):
     @hybrid_property
     def credit(self):
         credit = 0
-        credit -= sum(pur.price for pur in self.purchases if not pur.revoked)
-        credit += sum(dep.amount for dep in self.deposits if not dep.revoked)
+        credit -= sum(p.price for p in self.purchases.all() if not p.revoked)
+        credit += sum(d.amount for d in self.deposits.all() if not d.revoked)
         return credit
 
 
@@ -142,7 +158,8 @@ class Product(db.Model):
     def price(self):
         return (ProductPrice.query
                 .filter(ProductPrice.product_id == self.id)
-                .last())
+                .order_by(ProductPrice.id.desc())
+                .first().price)
 
     @hybrid_method
     def set_price(self, price, admin_id):
@@ -178,7 +195,10 @@ class Purchase(db.Model):
 
     @hybrid_property
     def revoked(self):
-        revoke = PurchaseRevokes.query.filter_by(purchase_id=self.id).last()
+        revoke = (PurchaseRevoke.query
+                  .filter_by(purchase_id=self.id)
+                  .order_by(PurchaseRevoke.id.desc())
+                  .first())
         if revoke is None:
             return False
         return revoke.revoked
@@ -186,34 +206,37 @@ class Purchase(db.Model):
     @revoked.setter
     def revoked(self, revoked, admin_id):
         if self.revoked == revoked:
-            # TODO: Raise "Nothing has changed"
-            print('Nothing has changed.')
-            return
+            raise NothingHasChanged
         pr = PurchaseRevoke(revoked=revoked, admin_id=admin_id)
         db.session.add(pr)
 
     @hybrid_property
     def price(self):
-        prices = (ProductPrices.query
-                  .filter(ProductPrice.timestamp <= self.timestamp)
-                  .first())  # TODO: first or last here?
+        productprice = (ProductPrice.query
+                        .filter(ProductPrice.product_id == self.product_id)
+                        .filter(ProductPrice.timestamp <= self.timestamp)
+                        .order_by(ProductPrice.id.desc())
+                        .first())
+        return self.amount * productprice.price
 
 
 @event.listens_for(Purchase, 'before_insert')
 def purchase_hook(mapper, connect, purchase):
     user = User.query.filter_by(id=purchase.user_id).first()
-    if not user.verified:
+    if not user.is_verified:
         raise UserIsNotVerified
     product = Product.query.filter_by(id=purchase.product_id).first()
     if not product.active:
         raise ProductIsInactive
 
 
-class PurchaseRevokes(db.Model):
+class PurchaseRevoke(db.Model):
     __tablename__ = 'purchaserevokes'
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
+    purchase_id = db.Column(db.Integer, db.ForeignKey('products.id'),
+                            nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 

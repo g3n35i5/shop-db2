@@ -3,6 +3,7 @@
 from shopdb.api import *
 import shopdb.models as models
 import shopdb.exceptions as exc
+from sqlalchemy.exc import *
 from base import BaseTestCase
 from copy import copy
 import pdb
@@ -35,38 +36,40 @@ class ModelsTestCase(BaseTestCase):
         check = self.bcrypt.check_password_hash(user.password, 'test_password')
         self.assertTrue(check)
 
-    # def test_insert_invalid_email(self):
-    #     '''Test the regex match of the user email'''
-    #     user = User.query.filter_by(id=1).first()
-    #     backup_email = copy(user.email)
-    #     for mail in ['test', 'test@test', '@test', 't@test.c', 'test@test-com',
-    #                  't@test.com.']:
-    #         with self.assertRaises(exc.InvalidEmailAddress):
-    #             user.email = mail
-    #     db.session.commit()
-    #     user = User.query.filter_by(id=1).first()
-    #     self.assertEqual(user.email, backup_email)
+    def test_insert_invalid_email(self):
+        '''Test the regex match of the user email'''
+        user = User.query.filter_by(id=1).first()
+        backup_email = copy(user.email)
+        for mail in ['test', 'test@test', '@test', 't@test.c', 'test@test-com',
+                     't@test.com.']:
+            with self.assertRaises(exc.InvalidEmailAddress):
+                user.email = mail
+                db.session.commit()
+
+            db.session.rollback()
+        user = User.query.filter_by(id=1).first()
+        self.assertEqual(user.email, backup_email)
 
     def test_verify_user_twice(self):
         '''Users cant be verified twice'''
         user = User.query.filter_by(id=1).first()
-        self.assertTrue(user.verified)
+        self.assertTrue(user.is_verified)
         with self.assertRaises(exc.UserAlreadyVerified):
             user.verify(admin_id=1)
             db.session.commit()
 
         user = User.query.filter_by(id=1).first()
-        self.assertTrue(user.verified)
+        self.assertTrue(user.is_verified)
 
     def test_verify_user(self):
         '''Verify a user. We take the last one in the list since all other
            usershave already been verified.'''
         user = User.query.order_by(User.id.desc()).first()
-        self.assertFalse(user.verified)
+        self.assertFalse(user.is_verified)
         user.verify(admin_id=1)
         db.session.commit()
         user = User.query.order_by(User.id.desc()).first()
-        self.assertTrue(user.verified)
+        self.assertTrue(user.is_verified)
         verification = (UserVerification.query
                         .order_by(UserVerification.id.desc())
                         .first())
@@ -96,22 +99,26 @@ class ModelsTestCase(BaseTestCase):
         user1 = User.query.filter_by(id=1).first()
         user2 = User.query.filter_by(id=2).first()
         user2.username = user1.username
-        db.session.commit()  # TODO: This should explode
+        with self.assertRaises(IntegrityError):
+            db.session.commit()
 
     def test_duplicate_email(self):
         '''It should be ensured that the users email is unique'''
         user1 = User.query.filter_by(id=1).first()
-        user2 = User.query.filter_by(id=2)
-        db.session.commit()  # TODO: This should explode
+        user2 = User.query.filter_by(id=2).first()
+        user2.email = user1.email
+        with self.assertRaises(IntegrityError):
+            db.session.commit()
 
     def test_insert_purchase_as_non_verified_user(self):
         '''It must be ensured that non-verified users cannot make purchases.'''
         user = User.query.filter_by(id=4).first()
-        self.assertFalse(user.verified)
+        self.assertFalse(user.is_verified)
         purchase = Purchase(user_id=4, product_id=1)
         with self.assertRaises(exc.UserIsNotVerified):
             db.session.add(purchase)
             db.session.commit()
+        db.session.rollback()
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
@@ -128,6 +135,43 @@ class ModelsTestCase(BaseTestCase):
         with self.assertRaises(exc.ProductIsInactive):
             db.session.add(purchase)
             db.session.commit()
+        db.session.rollback()
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
+
+    def test_insert_simple_purchase(self):
+        '''Testing a simple purchase'''
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 0)
+        self.assertEqual(user.credit, 0)
+        product = Product.query.first()
+        purchase = Purchase(user_id=user.id, product_id=product.id, amount=1)
+        db.session.add(purchase)
+        db.session.commit()
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 1)
+        self.assertEqual(user.credit, -product.price)
+
+    def test_insert_multiple_purchases(self):
+        '''Testing multiple purchases'''
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 0)
+        self.assertEqual(user.credit, 0)
+        ids = [1, 2, 4, 1, 3, 1]
+        amount = [1, 5, 5, 2, 4, 10]
+        for i in range(0, len(ids)):
+            purchase = Purchase(user_id=1, product_id=ids[i], amount=amount[i])
+            db.session.add(purchase)
+        db.session.commit()
+
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 6)
+        for i in range(0, len(ids)):
+            self.assertEqual(user.purchases.all()[i].amount, amount[i])
+
+        c = 0
+        for i in range(0, len(ids)):
+            c -= amount[i] * Product.query.filter_by(id=ids[i]).first().price
+
+        self.assertEqual(user.credit, c)

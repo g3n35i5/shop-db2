@@ -35,3 +35,10 @@ class ProductIsInactive(BaseException):
         self.type = 'error'
         self.message = 'This product is inactive and cannot be purchased.'
         self.code = 401
+
+
+class InvalidEmailAddress(BaseException):
+    def __init__(self):
+        self.type = 'error'
+        self.message = 'The email address entered is not valid.'
+        self.code = 401
