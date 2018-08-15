@@ -140,8 +140,8 @@ class ModelsTestCase(BaseTestCase):
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
 
-    def test_insert_purchase(self):
-        '''Testing a basic purchase'''
+    def test_insert_simple_purchase(self):
+        '''Testing a simple purchase'''
         user = User.query.first()
         self.assertEqual(len(user.purchases.all()), 0)
         self.assertEqual(user.credit, 0)
@@ -152,3 +152,26 @@ class ModelsTestCase(BaseTestCase):
         user = User.query.first()
         self.assertEqual(len(user.purchases.all()), 1)
         self.assertEqual(user.credit, -product.price)
+
+    def test_insert_multiple_purchases(self):
+        '''Testing multiple purchases'''
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 0)
+        self.assertEqual(user.credit, 0)
+        ids = [1, 2, 4, 1, 3, 1]
+        amount = [1, 5, 5, 2, 4, 10]
+        for i in range(0, len(ids)):
+            purchase = Purchase(user_id=1, product_id=ids[i], amount=amount[i])
+            db.session.add(purchase)
+        db.session.commit()
+
+        user = User.query.first()
+        self.assertEqual(len(user.purchases.all()), 6)
+        for i in range(0, len(ids)):
+            self.assertEqual(user.purchases.all()[i].amount, amount[i])
+
+        c = 0
+        for i in range(0, len(ids)):
+            c -= amount[i] * Product.query.filter_by(id=ids[i]).first().price
+
+        self.assertEqual(user.credit, c)
