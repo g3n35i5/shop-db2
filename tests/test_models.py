@@ -116,6 +116,7 @@ class ModelsTestCase(BaseTestCase):
         with self.assertRaises(exc.UserIsNotVerified):
             db.session.add(purchase)
             db.session.commit()
+        db.session.rollback()
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
@@ -132,6 +133,7 @@ class ModelsTestCase(BaseTestCase):
         with self.assertRaises(exc.ProductIsInactive):
             db.session.add(purchase)
             db.session.commit()
+        db.session.rollback()
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
