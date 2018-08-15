@@ -63,7 +63,7 @@ class User(db.Model):
 
     @hybrid_method
     def verify(self, admin_id):
-        if self.verified:
+        if self.is_verified:
             raise UserAlreadyVerified()
         uv = UserVerification(user_id=self.id, admin_id=admin_id)
         db.session.add(uv)
@@ -204,7 +204,7 @@ class Purchase(db.Model):
 @event.listens_for(Purchase, 'before_insert')
 def purchase_hook(mapper, connect, purchase):
     user = User.query.filter_by(id=purchase.user_id).first()
-    if not user.verified:
+    if not user.is_verified:
         raise UserIsNotVerified
     product = Product.query.filter_by(id=purchase.product_id).first()
     if not product.active:
