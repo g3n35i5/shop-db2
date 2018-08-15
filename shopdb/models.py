@@ -75,8 +75,8 @@ class User(db.Model):
                 .order_by(RankUpdate.id.desc())
                 .first())
 
-    @rank_id.setter
-    def rank_id(self, rank_id, admin_id):
+    @hybrid_method
+    def set_rank_id(self, rank_id, admin_id):
         if self.rank_id == rank_id:
             raise NothingHasChanged()
         ru = RankUpdate(rank_id=rank_id, admin_id=admin_id, user_id=self.id)
