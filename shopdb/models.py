@@ -38,16 +38,18 @@ class User(db.Model):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
 
     @hybrid_property
-    def admin(self):
-        # TODO: First or last?
-        au = AdminUpdate.query.filter_by(user_id=self.id).first()
+    def is_admin(self):
+        au = (AdminUpdate.query
+              .filter_by(user_id=self.id)
+              .order_by(AdminUpdate.id.desc())
+              .first())
         if au is None:
             return False
         return au.is_admin
 
-    @admin.setter
-    def admin(self, is_admin, admin_id):
-        if self.admin == is_admin:
+    @is_admin.setter
+    def is_admin(self, is_admin, admin_id):
+        if self.is_admin == is_admin:
             raise NothingHasChanged()
         au = AdminUpdate(is_admin=is_admin, admin_id=admin_id, user_id=self.id)
         db.session.add(au)

@@ -42,7 +42,7 @@ def adminRequired(f):
         try:
             admin_id = data['admin']['id']
             admin = User.query.filter(User.id == admin_id)
-            assert admin.admin is True
+            assert admin.is_admin is True
         except (KeyError, AssertionError):
             return make_response('Unauthorized access.', 400)
 
