@@ -55,7 +55,7 @@ class User(db.Model):
         db.session.add(au)
 
     @hybrid_property
-    def verified(self):
+    def is_verified(self):
         uv = UserVerification.query.filter_by(user_id=self.id).first()
         if uv is None or uv is False:
             return False

@@ -50,23 +50,23 @@ class ModelsTestCase(BaseTestCase):
     def test_verify_user_twice(self):
         '''Users cant be verified twice'''
         user = User.query.filter_by(id=1).first()
-        self.assertTrue(user.verified)
+        self.assertTrue(user.is_verified)
         with self.assertRaises(exc.UserAlreadyVerified):
             user.verify(admin_id=1)
             db.session.commit()
 
         user = User.query.filter_by(id=1).first()
-        self.assertTrue(user.verified)
+        self.assertTrue(user.is_verified)
 
     def test_verify_user(self):
         '''Verify a user. We take the last one in the list since all other
            usershave already been verified.'''
         user = User.query.order_by(User.id.desc()).first()
-        self.assertFalse(user.verified)
+        self.assertFalse(user.is_verified)
         user.verify(admin_id=1)
         db.session.commit()
         user = User.query.order_by(User.id.desc()).first()
-        self.assertTrue(user.verified)
+        self.assertTrue(user.is_verified)
         verification = (UserVerification.query
                         .order_by(UserVerification.id.desc())
                         .first())
@@ -107,7 +107,7 @@ class ModelsTestCase(BaseTestCase):
     def test_insert_purchase_as_non_verified_user(self):
         '''It must be ensured that non-verified users cannot make purchases.'''
         user = User.query.filter_by(id=4).first()
-        self.assertFalse(user.verified)
+        self.assertFalse(user.is_verified)
         purchase = Purchase(user_id=4, product_id=1)
         with self.assertRaises(exc.UserIsNotVerified):
             db.session.add(purchase)

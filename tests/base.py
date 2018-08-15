@@ -119,6 +119,6 @@ class BaseTestCase(TestCase):
         '''Check if all users except the last one have been verified'''
         users = User.query.all()
         for i in range(0, len(users) - 1):
-            self.assertTrue(users[i].verified)
+            self.assertTrue(users[i].is_verified)
 
-        self.assertFalse(users[-1].verified)
+        self.assertFalse(users[-1].is_verified)
