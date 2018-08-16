@@ -113,7 +113,7 @@ def login():
         raise exc.UserIsNotVerified()
 
     # Check if the password matches the user's password.
-    if not bcrypt.check_password_hash(str(data['password']), user.password):
+    if not bcrypt.check_password_hash(user.password, str(data['password'])):
         raise exc.InvalidCredentials()
 
     # Create a dictionary object of the user.
