@@ -58,7 +58,7 @@ class User(db.Model):
         user['firstname'] = self.firstname
         user['lastname'] = self.lastname
         user['username'] = self.username
-        user['email'] = self.username
+        user['email'] = self.email
 
         return user
 
