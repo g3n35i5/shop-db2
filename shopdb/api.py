@@ -72,9 +72,9 @@ def handle_error(error):
     try:
         error.create_response()
     except AttributeError:
-        raise e
+        raise error
     # If for some reason no exception has been raised yet, this is done now.
-    raise e
+    raise error
 
 
 def json_body():
