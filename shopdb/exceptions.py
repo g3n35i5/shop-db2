@@ -1,44 +1,69 @@
 #!/usr/bin/env python3
 
 from sqlalchemy.exc import DontWrapMixin
+from flask import jsonify
+import pdb
 
 
 class BaseException(Exception, DontWrapMixin):
-    @classmethod
-    def create_response(self):
-        return jsonify(result=self.type, message=self.code), self.code
+    pass
 
 
 class NothingHasChanged(BaseException):
-    def __init__(self):
-        self.type = 'info'
-        self.message = 'Nothing has changed.'
-        self.code = 200
+    type = 'info'
+    message = 'Nothing has changed.'
+    code = 200
 
 
 class UserAlreadyVerified(BaseException):
-    def __init__(self):
-        self.type = 'info'
-        self.message = 'This user has already been verified.'
-        self.code = 200
+    type = 'info'
+    message = 'This user has already been verified.'
+    code = 200
+
+
+class DataIsMissing(BaseException):
+    type = 'error'
+    message = 'Some or more details are missing.'
+    code = 401
+
+
+class WrongType(BaseException):
+    type = 'error'
+    message = 'The data entered is of the wrong type.'
+    code = 401
+
+
+class UsernameAlreadyTaken(BaseException):
+    type = 'error'
+    message = 'This username is already taken.'
+    code = 401
+
+
+class EmailAddressAlreadyTaken(BaseException):
+    type = 'error'
+    message = 'This email address is already taken.'
+    code = 401
 
 
 class UserIsNotVerified(BaseException):
-    def __init__(self):
-        self.type = 'error'
-        self.message = 'This user has not been verified yet.'
-        self.code = 401
+    type = 'error'
+    message = 'This user has not been verified yet.'
+    code = 401
 
 
 class ProductIsInactive(BaseException):
-    def __init__(self):
-        self.type = 'error'
-        self.message = 'This product is inactive and cannot be purchased.'
-        self.code = 401
+    type = 'error'
+    message = 'This product is inactive and cannot be purchased.'
+    code = 401
 
 
 class InvalidEmailAddress(BaseException):
-    def __init__(self):
-        self.type = 'error'
-        self.message = 'The email address entered is not valid.'
-        self.code = 401
+    type = 'error'
+    message = 'The email address entered is not valid.'
+    code = 401
+
+
+class PasswordsDoNotMatch(BaseException):
+    type = 'error'
+    message = 'Password does not match the confirm password.'
+    code = 401

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 from shopdb.models import *
-from flask import (Flask, request, g)
+import shopdb.exceptions as exc
+from flask import (Flask, request, g, make_response, jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import sqlite3
 import sqlalchemy
+from sqlalchemy.exc import *
 from functools import wraps
+import datetime
 import configuration as config
 app = Flask(__name__)
 
@@ -40,7 +43,7 @@ def adminRequired(f):
         # If there is no admin object in the token and does the user does have
         # admin rights?
         try:
-            admin_id = data['admin']['id']
+            admin_id = data['user']['id']
             admin = User.query.filter(User.id == admin_id)
             assert admin.is_admin is True
         except (KeyError, AssertionError):
@@ -58,48 +61,133 @@ def adminRequired(f):
 def handle_error(error):
     '''This wrapper catches all exceptions and, if possible, returns a user
        friendly response. Otherwise, it will raise the error'''
+    # Perform a rollback. All changes that have not yet been committed are
+    # thus reset.
+    db.session.rollback()
     # As long as the application is in debug mode, all exceptions
     # should be output immediately.
     if app.config['DEBUG']:
         raise error
     # Create, if possible, a user friendly response.
     try:
-        error.create_response()
+        return jsonify(result=error.type, message=error.message), error.code
     except AttributeError:
-        raise e
-
+        raise error
     # If for some reason no exception has been raised yet, this is done now.
-    raise e
+    raise error
+
+
+def json_body():
+    jb = request.get_json()
+    if jb is None:
+        raise exc.InvalidJSON()
+    return jb
 
 
 # Login route ################################################################
 @app.route('/login', methods=['POST'])
 def login():
     '''Authenticate a registered user'''
-    # TODO: User is verified? If not -> Exception "Wait for verification!"
-    # TODO: User exists?
-    # TODO: Email and password are matching?
-    # TODO: Generate token
-    return make_response('Not implemented yet.', 400)
+    data = json_body()
+    user = None
+    # Check if the username is included in the request.
+    if 'username' in data and data['username'] is not '':
+        user = User.query.filter_by(username=str(data['username'])).first()
+        if not user:
+            raise exc.UserNotFound()
+
+    # Check, if the username is not available, if an email address is
+    # available in the request.
+    elif 'email' in data and data['email'] is not '':
+        user = User.query.filter_by(email=str(data['email'])).first()
+        if not user:
+            raise exc.UserNotFound()
+
+    # If no user with this data exists or there is no password in the
+    # request, cancel the authentication.
+    if not user or 'password' not in data:
+        raise exc.DataIsMissing()
+
+    # Check if the user has already been verified.
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+
+    # Check if the password matches the user's password.
+    if not bcrypt.check_password_hash(str(data['password']), user.password):
+        raise exc.InvalidCredentials()
+
+    # Create a dictionary object of the user.
+    d_user = user.to_dict()
+
+    # Create a token.
+    exp = datetime.datetime.now() + datetime.timedelta(minutes=15)
+    token = jwt.encode({'user': d_user, 'exp': exp}, app.config['SECRET_KEY'])
+
+    # Return the result.
+    return jsonify({'result': True, 'token': token.decode('UTF-8')}), 200
 
 
 # Register route #############################################################
 @app.route('/register', methods=['POST'])
 def register():
     '''Register a new user'''
-    # TODO: User with given data exists? -> Exception
-    # TODO: Password matches retype-password?
-    # TODO: Insert user
-    # TODO: Set user rank to lowest rank
-    return make_response('Not implemented yet.', 400)
+    data = json_body()
+    required = ['firstname', 'lastname', 'username', 'email',
+                'password', 'repeat_password']
+
+    # Check whether all required values are available.
+    if any(item not in data for item in required):
+        raise exc.DataIsMissing()
+
+    # Check all values for their type.
+    try:
+        for item in required:
+            assert isinstance(data[item], str)
+    except AssertionError:
+        raise exc.WrongType()
+
+    # Check if the passwords match.
+    if data['password'] != data['repeat_password']:
+        raise exc.PasswordsDoNotMatch()
+
+    # Check if the username is already assigned.
+    if User.query.filter_by(username=data['username']).first():
+        raise UsernameAlreadyTaken()
+
+    # Check if the email address is already assigned.
+    if User.query.filter_by(email=data['email']).first():
+        raise EmailAddressAlreadyTaken()
+
+    # Try to create the user.
+    try:
+        user = User(
+            firstname=str(data['firstname']),
+            lastname=str(data['lastname']),
+            username=str(data['username']),
+            email=str(data['email']),
+            password=bcrypt.generate_password_hash(str(data['password'])))
+        db.session.add(user)
+        db.session.commit()
+    except IntegrityError:
+        raise CouldNotCreateEntry()
+
+    return make_response('Created user.', 200)
 
 
 # Verification routes #########################################################
 @app.route('/verifications', methods=['GET'])
 @adminRequired
 def list_pending_validations(admin):
-    # TODO: Query all non-verified users and return them
-    return make_response('Not implemented yet.', 400)
+    '''Returns a list of all non verified users'''
+    res = User.query.filter_by(is_verified is False).all()
+    pending = []
+    for user in res:
+        pending.append({
+            'id': user.id,
+            'firstname': user.firstname,
+            'lastname': user.lastname
+        })
+    return jsonify({'pending_validations': pending}), 200
 
 
 @app.route('/verify', methods=['POST'])

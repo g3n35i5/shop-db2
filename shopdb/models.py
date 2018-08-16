@@ -8,6 +8,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
 from sqlalchemy import event
 import re
+import pdb
 
 db = SQLAlchemy()
 
@@ -49,6 +50,17 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
+
+    def to_dict(self):
+        '''This function creates a dictionary object of a user'''
+        user = {}
+        user['id'] = self.id
+        user['firstname'] = self.firstname
+        user['lastname'] = self.lastname
+        user['username'] = self.username
+        user['email'] = self.username
+
+        return user
 
     @hybrid_property
     def is_admin(self):

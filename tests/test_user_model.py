@@ -9,8 +9,14 @@ from copy import copy
 import pdb
 
 
-class ModelsTestCase(BaseTestCase):
+class UserModelTestCase(BaseTestCase):
+    def test_user_representation(self):
+        '''Testing the user representation'''
+        user = User.query.filter_by(id=1).first()
+        self.assertEqual(repr(user), '<User 1: Jones, William>')
+
     def test_get_user_purchases(self):
+        '''Testing get user purchase list'''
         user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 0)
         amounts = [1, 5, 6, 8]
@@ -122,56 +128,3 @@ class ModelsTestCase(BaseTestCase):
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
-
-    def test_insert_purchase_with_inactive_product(self):
-        '''It must be ensured that non-active products cannot be bought.'''
-        product = Product.query.filter_by(id=1).first()
-        self.assertTrue(product.active)
-        product.active = False
-        db.session.commit()
-        product = Product.query.filter_by(id=1).first()
-        self.assertFalse(product.active)
-        purchase = Purchase(user_id=1, product_id=1, amount=1)
-        with self.assertRaises(exc.ProductIsInactive):
-            db.session.add(purchase)
-            db.session.commit()
-        db.session.rollback()
-        # No purchase may have been made at this point
-        purchases = Purchase.query.all()
-        self.assertEqual(len(purchases), 0)
-
-    def test_insert_simple_purchase(self):
-        '''Testing a simple purchase'''
-        user = User.query.first()
-        self.assertEqual(len(user.purchases.all()), 0)
-        self.assertEqual(user.credit, 0)
-        product = Product.query.first()
-        purchase = Purchase(user_id=user.id, product_id=product.id, amount=1)
-        db.session.add(purchase)
-        db.session.commit()
-        user = User.query.first()
-        self.assertEqual(len(user.purchases.all()), 1)
-        self.assertEqual(user.credit, -product.price)
-
-    def test_insert_multiple_purchases(self):
-        '''Testing multiple purchases'''
-        user = User.query.first()
-        self.assertEqual(len(user.purchases.all()), 0)
-        self.assertEqual(user.credit, 0)
-        ids = [1, 2, 4, 1, 3, 1]
-        amount = [1, 5, 5, 2, 4, 10]
-        for i in range(0, len(ids)):
-            purchase = Purchase(user_id=1, product_id=ids[i], amount=amount[i])
-            db.session.add(purchase)
-        db.session.commit()
-
-        user = User.query.first()
-        self.assertEqual(len(user.purchases.all()), 6)
-        for i in range(0, len(ids)):
-            self.assertEqual(user.purchases.all()[i].amount, amount[i])
-
-        c = 0
-        for i in range(0, len(ids)):
-            c -= amount[i] * Product.query.filter_by(id=ids[i]).first().price
-
-        self.assertEqual(user.credit, c)
