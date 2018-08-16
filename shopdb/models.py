@@ -242,6 +242,24 @@ class Purchase(db.Model):
                            nullable=False)
     amount = db.Column(db.Integer, nullable=False)
 
+    @validates('user_id')
+    def validate_user(self, key, user_id):
+        '''Make sure that the user is verified'''
+        user = User.query.filter(User.id == user_id).first()
+        if not user or not user.is_verified:
+            raise UserIsNotVerified()
+
+        return user_id
+
+    @validates('product_id')
+    def validate_product(self, key, product_id):
+        '''Make sure that the product is active'''
+        product = Product.query.filter(Product.id == product_id).first()
+        if not product or not product.active:
+            raise ProductIsInactive()
+
+        return product_id
+
     @hybrid_property
     def revoked(self):
         revoke = (PurchaseRevoke.query
@@ -267,16 +285,6 @@ class Purchase(db.Model):
                         .order_by(ProductPrice.id.desc())
                         .first())
         return self.amount * productprice.price
-
-
-@event.listens_for(Purchase, 'before_insert')
-def purchase_hook(mapper, connect, purchase):
-    user = User.query.filter_by(id=purchase.user_id).first()
-    if not user.is_verified:
-        raise UserIsNotVerified
-    product = Product.query.filter_by(id=purchase.product_id).first()
-    if not product.active:
-        raise ProductIsInactive
 
 
 class PurchaseRevoke(db.Model):
