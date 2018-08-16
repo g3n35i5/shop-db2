@@ -67,3 +67,9 @@ class PasswordsDoNotMatch(BaseException):
     type = 'error'
     message = 'Password does not match the confirm password.'
     code = 401
+
+
+class UnauthorizedAccess(BaseException):
+    type = 'error'
+    message = 'You do not have the authorization to perform this action.'
+    code = 401

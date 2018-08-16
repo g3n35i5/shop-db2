@@ -129,6 +129,14 @@ class UserVerification(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                         unique=True)
 
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
+
 
 class AdminUpdate(db.Model):
     __tablename__ = 'adminupdates'
@@ -137,6 +145,19 @@ class AdminUpdate(db.Model):
     is_admin = db.Column(db.Boolean, nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        # If there are no admins in the database, the first user can promote
+        # himself
+        if not User.query.filter(User.is_admin is True).all():
+            return admin_id
+
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
 
 
 class Rank(db.Model):
@@ -154,6 +175,14 @@ class RankUpdate(db.Model):
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     rank_id = db.Column(db.Integer, db.ForeignKey('ranks.id'), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
 
 
 class Product(db.Model):
@@ -194,6 +223,14 @@ class ProductPrice(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
                            nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
 
 
 class Purchase(db.Model):
@@ -251,6 +288,14 @@ class PurchaseRevoke(db.Model):
                             nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
+
 
 class Deposit(db.Model):
     __tablename__ = 'deposits'
@@ -284,3 +329,11 @@ class DepositRevoke(db.Model):
     deposit_id = db.Column(db.Integer, db.ForeignKey('deposits.id'),
                            nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
