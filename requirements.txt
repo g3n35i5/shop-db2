@@ -6,3 +6,4 @@ flask_bcrypt == 0.7.1
 flask_sqlalchemy == 2.3.2
 sqlalchemy == 1.2.10
 coverage >= 4.5.1
+jwt == 1.5.3

@@ -67,3 +67,21 @@ class PasswordsDoNotMatch(BaseException):
     type = 'error'
     message = 'Password does not match the confirm password.'
     code = 401
+
+
+class UnauthorizedAccess(BaseException):
+    type = 'error'
+    message = 'You do not have the authorization to perform this action.'
+    code = 401
+
+
+class TokenIsInvalid(BaseException):
+    type = 'error'
+    message = 'Your token is invalid.'
+    code = 401
+
+
+class TokenHasExpired(BaseException):
+    type = 'error'
+    message = 'Your Token has been expired.'
+    code = 401

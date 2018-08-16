@@ -38,12 +38,13 @@ class BaseTestCase(TestCase):
         db.session.commit()
         # Create test client
         self.client = app.test_client()
-        self.bcrypt = Bcrypt(app)
+        self.bcrypt = bcrypt
         # Insert default data
         self.insert_default_users()
+        self.insert_first_admin()
+        self.verify_all_users_except_last()
         self.insert_default_ranks()
         self.insert_default_products()
-        self.verify_all_users_except_last()
 
     def tearDown(self):
         db.session.remove()
@@ -70,6 +71,11 @@ class BaseTestCase(TestCase):
                 password=hashes[i])
             db.session.add(user)
 
+        db.session.commit()
+
+    def insert_first_admin(self):
+        au = AdminUpdate(user_id=1, admin_id=1, is_admin=True)
+        db.session.add(au)
         db.session.commit()
 
     def insert_default_products(self):

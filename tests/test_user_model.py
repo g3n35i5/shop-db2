@@ -120,8 +120,8 @@ class UserModelTestCase(BaseTestCase):
         '''It must be ensured that non-verified users cannot make purchases.'''
         user = User.query.filter_by(id=4).first()
         self.assertFalse(user.is_verified)
-        purchase = Purchase(user_id=4, product_id=1)
         with self.assertRaises(exc.UserIsNotVerified):
+            purchase = Purchase(user_id=4, product_id=1)
             db.session.add(purchase)
             db.session.commit()
         db.session.rollback()

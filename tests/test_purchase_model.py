@@ -19,8 +19,8 @@ class PurchaseModelTestCase(BaseTestCase):
         db.session.commit()
         product = Product.query.filter_by(id=1).first()
         self.assertFalse(product.active)
-        purchase = Purchase(user_id=1, product_id=1, amount=1)
         with self.assertRaises(exc.ProductIsInactive):
+            purchase = Purchase(user_id=1, product_id=1, amount=1)
             db.session.add(purchase)
             db.session.commit()
         db.session.rollback()
@@ -30,10 +30,10 @@ class PurchaseModelTestCase(BaseTestCase):
 
     def test_insert_simple_purchase(self):
         '''Testing a simple purchase'''
-        user = User.query.first()
+        user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 0)
         self.assertEqual(user.credit, 0)
-        product = Product.query.first()
+        product = Product.query.filter_by(id=1).first()
         purchase = Purchase(user_id=user.id, product_id=product.id, amount=1)
         db.session.add(purchase)
         db.session.commit()
@@ -43,7 +43,8 @@ class PurchaseModelTestCase(BaseTestCase):
 
     def test_insert_multiple_purchases(self):
         '''Testing multiple purchases'''
-        user = User.query.first()
+        product = Product.query.filter_by(id=1).first()
+        user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 0)
         self.assertEqual(user.credit, 0)
         ids = [1, 2, 4, 1, 3, 1]
@@ -53,7 +54,7 @@ class PurchaseModelTestCase(BaseTestCase):
             db.session.add(purchase)
         db.session.commit()
 
-        user = User.query.first()
+        user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 6)
         for i in range(0, len(ids)):
             self.assertEqual(user.purchases.all()[i].amount, amount[i])

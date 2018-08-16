@@ -5,7 +5,7 @@ import shopdb.models as models
 import shopdb.exceptions as exc
 from sqlalchemy.exc import *
 from time import sleep
-from base import BaseTestCase, u_emails, u_passwords
+from base import BaseTestCase, u_emails, u_passwords, u_usernames
 from flask import json
 import jwt
 import pdb
@@ -26,22 +26,20 @@ class BaseAPITestCase(BaseTestCase):
             sys.exit(f'Wrong role: {role}')
 
         if role == 'admin':
-            # Make user with the id 4 admin
-            adminupdate = AdminUpdate(user_id=4, admin_id=1, is_admin=True)
-            db.session.add(adminupdate)
-            db.session.commit()
-            email = u_emails[3]
-            password = u_passwords[3]
-        elif role == 'user':
             email = u_emails[0]
+            username = u_usernames[0]
             password = u_passwords[0]
+        elif role == 'user':
+            email = u_emails[1]
+            username = u_usernames[1]
+            password = u_passwords[1]
         else:
             email = None
             password = None
 
         headers = {'content-type': 'application/json'}
         if email and password:
-            res = self.login(email, password)
+            res = self.login(username, email, password)
             headers['token'] = json.loads(res.data)['token']
         if type == 'POST':
             res = self.client.post(url, data=json.dumps(data), headers=headers)
@@ -54,18 +52,20 @@ class BaseAPITestCase(BaseTestCase):
 
         return res
 
-    def post(self, url, data, role=None):
+    def post(self, url, data=None, role=None):
         '''Helper function to perform a POST request to the API'''
         return self._request(type='POST', url=url, data=data, role=role)
 
-    def get(self, url, data, role=None):
+    def get(self, url, data=None, role=None):
         '''Helper function to perform a GET request to the API'''
         return self._request(type='GET', url=url, data=data, role=role)
 
-    def put(self, url, data, role=None):
+    def put(self, url, data=None, role=None):
         '''Helper function to perform a GET request to the API'''
         return self._request(type='PUT', url=url, data=data, role=role)
 
     def login(self, username, email, password):
         '''Helper function to perform a login'''
-        pass
+        data = {'email': email, 'password': password, 'username': username}
+        return self.client.post('/login', data=json.dumps(data),
+                                headers={'content-type': 'application/json'})

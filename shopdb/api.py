@@ -5,8 +5,10 @@ import shopdb.exceptions as exc
 from flask import (Flask, request, g, make_response, jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+import jwt
 import sqlite3
 import sqlalchemy
+from sqlalchemy.sql import exists
 from sqlalchemy.exc import *
 from functools import wraps
 import datetime
@@ -29,25 +31,24 @@ def adminRequired(f):
         try:
             token = request.headers['token']
         except KeyError:
-            return make_response('Token is missing.', 400)
+            raise exc.UnauthorizedAccess()
 
         # Is the token valid?
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except jwt.exceptions.DecodeError:
-            return make_response('Token is invalid.', 400)
-
-        # TODO: Does the expiration date still have to be checked or is
-        #       jwt.decode(...) already doing so?
+            return exc.TokenIsInvalid()
+        except jwt.ExpiredSignatureError:
+            return exc.TokenHasExpired()
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
         try:
             admin_id = data['user']['id']
-            admin = User.query.filter(User.id == admin_id)
+            admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
         except (KeyError, AssertionError):
-            return make_response('Unauthorized access.', 400)
+            raise exc.UnauthorizedAccess()
 
         # At this point it was verified that the request comes from an
         # admin and the request is executed. In addition, the user is
@@ -69,9 +70,9 @@ def handle_error(error):
     if app.config['DEBUG']:
         raise error
     # Create, if possible, a user friendly response.
-    try:
+    if all(hasattr(error, item) for item in ['type', 'message', 'code']):
         return jsonify(result=error.type, message=error.message), error.code
-    except AttributeError:
+    else:
         raise error
     # If for some reason no exception has been raised yet, this is done now.
     raise error
@@ -113,7 +114,7 @@ def login():
         raise exc.UserIsNotVerified()
 
     # Check if the password matches the user's password.
-    if not bcrypt.check_password_hash(str(data['password']), user.password):
+    if not bcrypt.check_password_hash(user.password, str(data['password'])):
         raise exc.InvalidCredentials()
 
     # Create a dictionary object of the user.
@@ -179,7 +180,9 @@ def register():
 @adminRequired
 def list_pending_validations(admin):
     '''Returns a list of all non verified users'''
-    res = User.query.filter_by(is_verified is False).all()
+    res = (db.session.query(User)
+           .filter(~exists().where(UserVerification.user_id == User.id))
+           .all())
     pending = []
     for user in res:
         pending.append({
