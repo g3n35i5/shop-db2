@@ -1,0 +1,7 @@
+#usage: pip install -r requirements.txt
+
+flask		== 0.12.2 
+flask_testing	== 0.6.2
+flask_bcrypt	== 0.7.1
+flask_sqlalchemy == 2.3.2
+sqlalchemy == 1.2.10
