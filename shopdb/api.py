@@ -5,6 +5,7 @@ import shopdb.exceptions as exc
 from flask import (Flask, request, g, make_response, jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+import jwt
 import sqlite3
 import sqlalchemy
 from sqlalchemy.exc import *
