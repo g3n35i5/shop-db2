@@ -70,7 +70,7 @@ def handle_error(error):
         raise error
     # Create, if possible, a user friendly response.
     try:
-        error.create_response()
+        return jsonify(result=error.type, message=error.message), error.code
     except AttributeError:
         raise error
     # If for some reason no exception has been raised yet, this is done now.
