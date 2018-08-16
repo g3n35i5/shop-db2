@@ -91,3 +91,26 @@ class RegisterAPITestCase(BaseAPITestCase):
 
         users = User.query.all()
         self.assertEqual(len(users), 4)
+
+    def test_register_wrong_type(self):
+        '''This test should ensure that the correct exception gets returned
+           on creating a user with a wrong data type.'''
+
+        data = {
+            'firstname': 'John',
+            'lastname': 'Doe',
+            'username': 'johnny',
+            'email': 'john.doe@test.com',
+            'password': 'supersecret',
+            'repeat_password': 'supersecret'
+        }
+
+        for item in ['firstname', 'lastname', 'username', 'email',
+                     'password', 'repeat_password']:
+            data_copy = copy(data)
+            data_copy[item] = 1234
+            res = self.post(url='/register', data=data_copy)
+            self.assertException(res, WrongType)
+
+        users = User.query.all()
+        self.assertEqual(len(users), 4)
