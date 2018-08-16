@@ -114,3 +114,20 @@ class RegisterAPITestCase(BaseAPITestCase):
 
         users = User.query.all()
         self.assertEqual(len(users), 4)
+
+    def test_register_passwords_do_not_match(self):
+        '''This test should ensure that the correct exception gets returned
+           on creating a user when the passwords do not match.'''
+        data = {
+            'firstname': 'John',
+            'lastname': 'Doe',
+            'username': 'johnny',
+            'email': 'john.doe@test.com',
+            'password': 'supersecret',
+            'repeat_password': 'supersecret_ooops'
+        }
+        res = self.post(url='/register', data=data)
+        self.assertException(res, PasswordsDoNotMatch)
+
+        users = User.query.all()
+        self.assertEqual(len(users), 4)

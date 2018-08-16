@@ -61,3 +61,9 @@ class InvalidEmailAddress(BaseException):
     type = 'error'
     message = 'The email address entered is not valid.'
     code = 401
+
+
+class PasswordsDoNotMatch(BaseException):
+    type = 'error'
+    message = 'Password does not match the confirm password.'
+    code = 401
