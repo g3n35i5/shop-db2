@@ -13,7 +13,7 @@ from copy import copy
 import pdb
 
 
-class loginAPITestCase(BaseAPITestCase):
+class LoginAPITestCase(BaseAPITestCase):
     def test_login_user(self):
         '''This test is designed to test the login of an existing user'''
         data = {

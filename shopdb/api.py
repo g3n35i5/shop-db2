@@ -30,25 +30,24 @@ def adminRequired(f):
         try:
             token = request.headers['token']
         except KeyError:
-            return make_response('Token is missing.', 400)
+            raise exc.UnauthorizedAccess()
 
         # Is the token valid?
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except jwt.exceptions.DecodeError:
-            return make_response('Token is invalid.', 400)
-
-        # TODO: Does the expiration date still have to be checked or is
-        #       jwt.decode(...) already doing so?
+            return exc.TokenIsInvalid()
+        except jwt.ExpiredSignatureError:
+            return exc.TokenHasExpired()
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
         try:
             admin_id = data['user']['id']
-            admin = User.query.filter(User.id == admin_id)
+            admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
         except (KeyError, AssertionError):
-            return make_response('Unauthorized access.', 400)
+            raise exc.UnauthorizedAccess()
 
         # At this point it was verified that the request comes from an
         # admin and the request is executed. In addition, the user is
