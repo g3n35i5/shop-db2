@@ -50,8 +50,8 @@ class RegisterAPITestCase(BaseAPITestCase):
         res = self.post(url='/register', data=data)
         self.assertException(res, EmailAddressAlreadyTaken)
 
-        user = User.query.filter_by(id=5).first()
-        self.assertFalse(user)
+        users = User.query.all()
+        self.assertEqual(len(users), 4)
 
     def test_register_existing_username(self):
         '''This test should ensure that the correct exception gets returned
@@ -67,8 +67,8 @@ class RegisterAPITestCase(BaseAPITestCase):
         res = self.post(url='/register', data=data)
         self.assertException(res, UsernameAlreadyTaken)
 
-        user = User.query.filter_by(id=5).first()
-        self.assertFalse(user)
+        users = User.query.all()
+        self.assertEqual(len(users), 4)
 
     def test_register_missing_data(self):
         '''This test should ensure that the correct exception gets returned
