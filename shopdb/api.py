@@ -8,6 +8,7 @@ from flask_bcrypt import Bcrypt
 import jwt
 import sqlite3
 import sqlalchemy
+from sqlalchemy.sql import exists
 from sqlalchemy.exc import *
 from functools import wraps
 import datetime
@@ -179,7 +180,9 @@ def register():
 @adminRequired
 def list_pending_validations(admin):
     '''Returns a list of all non verified users'''
-    res = User.query.filter_by(is_verified is False).all()
+    res = (db.session.query(User)
+           .filter(~exists().where(UserVerification.user_id == User.id))
+           .all())
     pending = []
     for user in res:
         pending.append({
