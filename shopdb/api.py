@@ -178,8 +178,16 @@ def register():
 @app.route('/verifications', methods=['GET'])
 @adminRequired
 def list_pending_validations(admin):
-    # TODO: Query all non-verified users and return them
-    return make_response('Not implemented yet.', 400)
+    '''Returns a list of all non verified users'''
+    res = User.query.filter_by(is_verified is False).all()
+    pending = []
+    for user in res:
+        pending.append({
+            'id': user.id,
+            'firstname': user.firstname,
+            'lastname': user.lastname
+        })
+    return jsonify({'pending_validations': pending}), 200
 
 
 @app.route('/verify', methods=['POST'])
