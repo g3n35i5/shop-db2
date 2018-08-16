@@ -281,4 +281,6 @@ class DepositRevoke(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
+    deposit_id = db.Column(db.Integer, db.ForeignKey('deposits.id'),
+                           nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
