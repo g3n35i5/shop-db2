@@ -6,7 +6,7 @@ from sqlalchemy.exc import DontWrapMixin
 class BaseException(Exception, DontWrapMixin):
     @classmethod
     def create_response(self):
-        return jsonify(result=self.type, message=self.code), self.code
+        return jsonify(result=self.type, message=self.message), self.code
 
 
 class NothingHasChanged(BaseException):
