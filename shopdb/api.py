@@ -2,7 +2,7 @@
 
 from shopdb.models import *
 import shopdb.exceptions as exc
-from flask import (Flask, request, g)
+from flask import (Flask, request, g, make_response, jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import sqlite3
