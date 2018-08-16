@@ -69,9 +69,9 @@ def handle_error(error):
     if app.config['DEBUG']:
         raise error
     # Create, if possible, a user friendly response.
-    try:
+    if all(hasattr(error, item) for item in ['type', 'message', 'code']):
         return jsonify(result=error.type, message=error.message), error.code
-    except AttributeError:
+    else:
         raise error
     # If for some reason no exception has been raised yet, this is done now.
     raise error
