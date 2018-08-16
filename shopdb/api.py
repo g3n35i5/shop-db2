@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 from shopdb.models import *
+import shopdb.exceptions as exc
 from flask import (Flask, request, g)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import sqlite3
 import sqlalchemy
+from sqlalchemy.exc import *
 from functools import wraps
 import configuration as config
 app = Flask(__name__)
@@ -58,6 +60,9 @@ def adminRequired(f):
 def handle_error(error):
     '''This wrapper catches all exceptions and, if possible, returns a user
        friendly response. Otherwise, it will raise the error'''
+    # Perform a rollback. All changes that have not yet been committed are
+    # thus reset.
+    db.session.rollback()
     # As long as the application is in debug mode, all exceptions
     # should be output immediately.
     if app.config['DEBUG']:
@@ -70,6 +75,13 @@ def handle_error(error):
 
     # If for some reason no exception has been raised yet, this is done now.
     raise e
+
+
+def json_body():
+    jb = request.get_json()
+    if jb is None:
+        raise exc.InvalidJSON()
+    return jb
 
 
 # Login route ################################################################
@@ -87,11 +99,47 @@ def login():
 @app.route('/register', methods=['POST'])
 def register():
     '''Register a new user'''
-    # TODO: User with given data exists? -> Exception
-    # TODO: Password matches retype-password?
-    # TODO: Insert user
-    # TODO: Set user rank to lowest rank
-    return make_response('Not implemented yet.', 400)
+    data = json_body()
+    required = ['firstname', 'lastname', 'username', 'email',
+                'password', 'repeat_password']
+
+    # Check whether all required values are available.
+    if any(item not in data for item in required):
+        raise exc.DataIsMissing()
+
+    # Check all values for their type.
+    try:
+        for item in required:
+            assert isinstance(data[item], str)
+    except AssertionError:
+        raise exc.WrongType()
+
+    # Check if the passwords match.
+    if data['password'] != data['repeat_password']:
+        raise exc.PasswordsDoNotMatch()
+
+    # Check if the username is already assigned.
+    if User.query.filter_by(username=data['username']).first():
+        raise UsernameAlreadyTaken()
+
+    # Check if the email address is already assigned.
+    if User.query.filter_by(email=data['email']).first():
+        raise EmailAddressAlreadyTaken()
+
+    # Try to create the user.
+    try:
+        user = User(
+            firstname=str(data['firstname']),
+            lastname=str(data['lastname']),
+            username=str(data['username']),
+            email=str(data['email']),
+            password=bcrypt.generate_password_hash(str(data['password'])))
+        db.session.add(user)
+        db.session.commit()
+    except IntegrityError:
+        raise CouldNotCreateEntry()
+
+    return make_response('Created user.', 200)
 
 
 # Verification routes #########################################################

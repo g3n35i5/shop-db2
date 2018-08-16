@@ -23,6 +23,34 @@ class UserAlreadyVerified(BaseException):
         self.code = 200
 
 
+class DataIsMissing(BaseException):
+    def __init__(self):
+        self.type = 'error'
+        self.message = 'Some or more details are missing.'
+        self.code = 401
+
+
+class WrongType(BaseException):
+    def __init__(self):
+        self.type = 'error'
+        self.message = 'The data entered is of the wrong type.'
+        self.code = 401
+
+
+class UsernameAlreadyTaken(BaseException):
+    def __init__(self):
+        self.type = 'error'
+        self.message = 'This username is already taken.'
+        self.code = 401
+
+
+class EmailAddressAlreadyTaken(BaseException):
+    def __init__(self):
+        self.type = 'error'
+        self.message = 'This email address is already taken.'
+        self.code = 401
+
+
 class UserIsNotVerified(BaseException):
     def __init__(self):
         self.type = 'error'
