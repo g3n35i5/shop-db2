@@ -38,7 +38,7 @@ class BaseTestCase(TestCase):
         db.session.commit()
         # Create test client
         self.client = app.test_client()
-        self.bcrypt = Bcrypt(app)
+        self.bcrypt = bcrypt
         # Insert default data
         self.insert_default_users()
         self.insert_default_ranks()
