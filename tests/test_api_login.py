@@ -75,6 +75,30 @@ class LoginAPITestCase(BaseAPITestCase):
         self.assertEqual(decode['user']['username'], u_usernames[0])
         self.assertEqual(decode['user']['email'], u_emails[0])
 
+    def test_login_non_verified_user(self):
+        '''If an authentication attempt is made by a non verified user,
+           the correct error message must be returned.'''
+        # Create a new user.
+        data = {
+            'firstname': 'John',
+            'lastname': 'Doe',
+            'username': 'johnny',
+            'email': 'john.doe@test.com',
+            'password': 'supersecret',
+            'repeat_password': 'supersecret'
+        }
+        res = self.post(url='/register', data=data)
+
+        # Login.
+        data = {
+            'email': 'john.doe@test.com',
+            'username': 'johnny',
+            'password': 'supersecret'
+        }
+        res = self.post(url='/login', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsNotVerified)
+
     def test_login_missing_password(self):
         '''If an authentication attempt is made without a password,
            the correct error message must be returned.'''
