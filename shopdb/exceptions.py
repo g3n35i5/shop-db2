@@ -69,6 +69,12 @@ class PasswordsDoNotMatch(BaseException):
     code = 401
 
 
+class InvalidCredentials(BaseException):
+    type = 'error'
+    message = 'A user with this access data was not found.'
+    code = 401
+
+
 class UnauthorizedAccess(BaseException):
     type = 'error'
     message = 'You do not have the authorization to perform this action.'
