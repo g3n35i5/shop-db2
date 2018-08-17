@@ -95,14 +95,14 @@ def login():
     if 'username' in data and data['username'] is not '':
         user = User.query.filter_by(username=str(data['username'])).first()
         if not user:
-            raise exc.UserNotFound()
+            raise exc.InvalidCredentials()
 
     # Check, if the username is not available, if an email address is
     # available in the request.
     elif 'email' in data and data['email'] is not '':
         user = User.query.filter_by(email=str(data['email'])).first()
         if not user:
-            raise exc.UserNotFound()
+            raise exc.InvalidCredentials()
 
     # If no user with this data exists or there is no password in the
     # request, cancel the authentication.
