@@ -20,34 +20,32 @@ if __name__ == '__main__':
             list_tests.append(file)
 
 
-    print('Please select the tests you want to run [Default=0] \n'
-            '0: All tests')
-    for i in range(0, len(list_tests)):
-        print('{}: {}'.format(i+1, list_tests[i]))
+    print('Please select the tests you want to run [Default=a] \n'
+            'a: All tests')
+    for i, test in enumerate(list_tests) :
+        print('{}: {}'.format(i, test))
     answ = input("Testnumbers: ")
 
 
-    if answ == "" or answ == "0":
+    if answ in ['', 'a']:
         tests = unittest.TestLoader().discover('tests')
         unittest.TextTestRunner(verbosity=2).run(tests)
     else:
-        testnumbers = answ.split(" ")
-
-        for i in range(0, len(testnumbers)):
-            try:
-                testnumbers[i] = int(testnumbers[i])-1
-            except ValueError:
-                print("Invalid input")
-                sys.exit()
-        if  -1 in testnumbers:
-            print("Invalid input")
-            sys.exit()
-
+        list_testnumbers = answ.split(" ")
         test = []
-        for i in testnumbers:
-            if i > (len(list_tests)-1):
+
+        for i, testnumber in enumerate(list_testnumbers):
+            try:
+                testnumber = int(testnumber)
+            except ValueError as e:
                 print("Invalid input")
                 sys.exit()
-            test.append(unittest.TestLoader().discover("tests", pattern=list_tests[i]))
+
+            if testnumber not in range(0, len(list_tests)):
+                print("Invalid input")
+                sys.exit()
+
+            test.append(unittest.TestLoader().discover("tests", pattern=list_tests[testnumber]))
+
         testcombo = unittest.TestSuite(test)
         unittest.TextTestRunner(verbosity=2).run(testcombo)
