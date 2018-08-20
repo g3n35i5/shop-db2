@@ -269,10 +269,16 @@ def list_users(admin):
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
     '''Return the user with the given id'''
-    # TODO: Check which data may be returned. Admins can see everything,
-    #       all others only a minimal version (e.g. name and id)
-    #       We need the credit here, too (for the shop)
-    return make_response('Not implemented yet.', 400)
+    result = (User.query
+              .filter(User.id == id)
+              .filter(User.is_verified.is_(True))
+              .first()())
+    if not result:
+        raise UserNotFound()
+
+    user = convert_minimal(result, ['id', 'firstname', 'lastname', 'username',
+                           'email'])
+    return jsonify({'user': user}), 200
 
 
 @app.route('/users/<int:id>', methods=['PUT'])
