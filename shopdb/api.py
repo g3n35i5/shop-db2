@@ -289,22 +289,38 @@ def update_user(admin):
 @app.route('/products', methods=['GET'])
 def list_products():
     '''Return a list of all products'''
-    # TODO: Check which data may be returned. Admins can see everything,
-    #       all others only a minimal version (e.g. name, id and price)
-    return make_response('Not implemented yet.', 400)
+    result = Product.query.filter(Product.active.is_(True)).all()
+    products = convert_minimal(result, ['id', 'name', 'price', 'barcode',
+                                        'active', 'countable', 'revokable',
+                                        'imagename'])
+    return jsonify({'products': products}), 200
+
 
 
 @app.route('/products', methods=['POST'])
 @adminRequired
 def create_product(admin):
     '''Create a product'''
+    data = json_body()
+
+    required = ['price', 'name']
+    for i, item in required:
+        if not item in data and data['name'] is '':
+            raise exc.DataIsMissing()
+
+    product = Product(name)
     return make_response('Not implemented yet.', 400)
 
 
 @app.route('/products/<int:id>', methods=['GET'])
 def get_product(id):
     '''Return the product with the given id'''
-    return make_response('Not implemented yet.', 400)
+    result = Product.query.filter(Product.active.is_(True))
+             .filter(Product.id == id).all()
+    product = convert_minimal(result, ['id', 'name', 'price', 'barcode',
+                                       'active', 'countable', 'revokable',
+                                       'imagename'])
+    return jsonify({'product': product}), 200
 
 
 @app.route('/products/<int:id>', methods=['PUT'])
