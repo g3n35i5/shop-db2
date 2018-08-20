@@ -283,12 +283,53 @@ def get_user(id):
 
 @app.route('/users/<int:id>', methods=['PUT'])
 @adminRequired
-def update_user(admin):
+def update_user(admin, id):
     '''Update the user with the given id'''
-    # TODO: If necessary, remove all attributes that either must not be
-    #       set or do not differ from the version in the database.
-    #       This reduces the risk of an error occurring.
-    return make_response('Not implemented yet.', 400)
+    data = json_body()
+    # Delete all forbidden attributes from the list
+    forbidden = ['id', 'credit', 'creation_date', 'is_admin']
+    for f in forbidden:
+        if f in data:
+            del data[f]
+
+    # Query user
+    user = result = User.query.filter(User.id == id).first()
+    if not user:
+        raise UserNotFound()
+
+    updated_fields = []
+
+    # Check password
+    if 'password' in data:
+        if 'repeat' in data:
+            if data['password'] == data['repeat']:
+                password = str(data['password'])
+                user.password = generate_password_hash(password)
+                updated_fields.append('password')
+                del data['repeat']
+            else:
+                raise PasswordsDoNotMatch()
+        else:
+            PasswordsDoNotMatch()
+
+    # All other fields
+    updatable = ['firstname', 'lastname', 'username', 'email']
+    for item in data:
+        if item in updatable:
+            if not isinstance(data[item], str):
+                raise WrongType()
+            setattr(user, item, str(data[item]))
+            updated_fields.append(item)
+
+    if len(updated_fields) == 0:
+        raise NothingHasChanged()
+
+    # Apply changes
+    db.session.commit()
+    return jsonify({
+        'message': 'Updated user.',
+        'updated_fields': updated_fields
+    }), 201
 
 
 # Product routes #############################################################
