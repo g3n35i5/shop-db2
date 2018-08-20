@@ -37,6 +37,7 @@ if __name__ == '__main__':
         for i, testnumber in enumerate(list_testnumbers):
             try:
                 testnumber = int(testnumber)
+
             except ValueError:
                 print("Invalid input")
                 sys.exit()
