@@ -13,7 +13,7 @@ from copy import copy
 import pdb
 
 
-class LoginAPITestCase(BaseAPITestCase):
+class ListUsersAPITestCase(BaseAPITestCase):
     def test_list_users_without_token(self):
         '''Get a list of all users as user'''
         res = self.get(url='/users')
