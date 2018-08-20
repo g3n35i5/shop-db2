@@ -163,3 +163,30 @@ class PurchaseModelTestCase(BaseTestCase):
         self.assertEqual(purchases[0].price, 300)
         self.assertEqual(purchases[1].price, 100)
         self.assertEqual(purchases[2].price, 600)
+
+    def test_purchase_revokes(self):
+        '''This unittest is designed to ensure, that purchase revokes will be
+           applied to the user credit'''
+        # Insert some purchases
+        for i in range(1, 11):
+            purchase = Purchase(user_id=1, product_id=1, amount=1)
+            db.session.add(purchase)
+        db.session.commit()
+        user = User.query.filter(User.id == 1).first()
+        self.assertEqual(user.credit, -3000)
+        # Revoke some purchases
+        purchases = Purchase.query.all()
+        purchases[0].toggle_revoke(admin_id=1, revoked=True)
+        purchases[4].toggle_revoke(admin_id=1, revoked=True)
+        purchases[6].toggle_revoke(admin_id=1, revoked=True)
+        db.session.commit()
+        # Check user credit
+        user = User.query.filter(User.id == 1).first()
+        self.assertEqual(user.credit, -2100)
+        # Un-Revoke one purchase
+        purchases = Purchase.query.all()
+        purchases[4].toggle_revoke(admin_id=1, revoked=False)
+        db.session.commit()
+        # Check user credit
+        user = User.query.filter(User.id == 1).first()
+        self.assertEqual(user.credit, -2400)
