@@ -51,6 +51,12 @@ class UserIsNotVerified(BaseException):
     code = 401
 
 
+class UserNotFound(BaseException):
+    type = 'error'
+    message = 'There is no user with this id.'
+    code = 401
+
+
 class ProductIsInactive(BaseException):
     type = 'error'
     message = 'This product is inactive and cannot be purchased.'
@@ -90,4 +96,10 @@ class TokenIsInvalid(BaseException):
 class TokenHasExpired(BaseException):
     type = 'error'
     message = 'Your Token has been expired.'
+    code = 401
+
+
+class InvalidJSON(BaseException):
+    type = 'error'
+    message = 'The JSON data is corrupt.'
     code = 401
