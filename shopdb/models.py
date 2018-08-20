@@ -115,10 +115,16 @@ class User(db.Model):
 
     @hybrid_property
     def credit(self):
-        credit = 0
-        credit -= sum(p.price for p in self.purchases.all() if not p.revoked)
-        credit += sum(d.amount for d in self.deposits.all() if not d.revoked)
-        return credit
+        p_amount = (db.session.query(func.sum(Purchase.price))
+                    .filter(Purchase.user_id == self.id)
+                    .filter(Purchase.revoked.is_(False))
+                    .scalar()) or 0
+        d_amount = (db.session.query(func.sum(Deposit.amount))
+                    .filter(Deposit.user_id == self.id)
+                    .filter(Deposit.revoked.is_(False))
+                    .scalar()) or 0
+
+        return d_amount - p_amount
 
 
 class UserVerification(db.Model):
@@ -240,7 +246,17 @@ class Purchase(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
                            nullable=False)
+    productprice = db.Column(db.Integer, nullable=False)
     amount = db.Column(db.Integer, nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, **kwargs):
+        super(Purchase, self).__init__(**kwargs)
+        productprice = (ProductPrice.query
+                        .filter(ProductPrice.product_id == self.product_id)
+                        .order_by(ProductPrice.id.desc())
+                        .first())
+        self.productprice = productprice.price
 
     @validates('user_id')
     def validate_user(self, key, user_id):
@@ -260,31 +276,33 @@ class Purchase(db.Model):
 
         return product_id
 
-    @hybrid_property
-    def revoked(self):
-        revoke = (PurchaseRevoke.query
-                  .filter_by(purchase_id=self.id)
-                  .order_by(PurchaseRevoke.id.desc())
-                  .first())
-        if revoke is None:
-            return False
-        return revoke.revoked
-
-    @revoked.setter
-    def revoked(self, revoked, admin_id):
+    @hybrid_method
+    def toggle_revoke(self, revoked, admin_id):
         if self.revoked == revoked:
             raise NothingHasChanged
-        pr = PurchaseRevoke(revoked=revoked, admin_id=admin_id)
+        pr = PurchaseRevoke(purchase_id=self.id, revoked=revoked,
+                            admin_id=admin_id)
+        self.revoked = revoked
         db.session.add(pr)
 
     @hybrid_property
     def price(self):
-        productprice = (ProductPrice.query
-                        .filter(ProductPrice.product_id == self.product_id)
-                        .filter(ProductPrice.timestamp <= self.timestamp)
-                        .order_by(ProductPrice.id.desc())
-                        .first())
-        return self.amount * productprice.price
+        return self.amount * self.productprice
+
+    @hybrid_property
+    def revokehistory(self):
+        res = (PurchaseRevoke.query
+               .filter(PurchaseRevoke.purchase_id == self.id)
+               .all())
+        revokehistory = []
+        for revoke in res:
+            revokehistory.append({
+                'id': revoke.id,
+                'timestamp': revoke.timestamp,
+                'admin_id': revoke.admin_id,
+                'revoked': revoke.revoked
+            })
+        return revokehistory
 
 
 class PurchaseRevoke(db.Model):
@@ -313,19 +331,14 @@ class Deposit(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     amount = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.String(64), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
 
-    @hybrid_property
-    def revoked(self):
-        revoke = DepositRevoke.query.filter_by(deposit_id=self.id).last()
-        if revoke is None:
-            return False
-        return revoke.revoked
-
-    @revoked.setter
-    def revoked(self, revoked, admin_id):
+    @hybrid_method
+    def toggle_revoke(self, revoked, admin_id):
         if self.revoked == revoked:
             raise NothingHasChanged
         dr = DepositRevoke(revoked=revoked, admin_id=admin_id)
+        self.revoked = revoked
         db.session.add(dr)
 
 
