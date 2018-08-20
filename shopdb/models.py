@@ -22,6 +22,7 @@ class User(db.Model):
     username = db.Column(db.String(32), unique=True, nullable=False)
     email = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(256), unique=False, nullable=False)
+    is_verified = db.Column(db.Boolean, nullable=False, default=False)
     purchases = db.relationship('Purchase', lazy='dynamic',
                                 foreign_keys='Purchase.user_id')
     deposits = db.relationship('Deposit', lazy='dynamic',
@@ -59,6 +60,7 @@ class User(db.Model):
         user['lastname'] = self.lastname
         user['username'] = self.username
         user['email'] = self.email
+        user['credit'] = self.credit
 
         return user
 
@@ -79,17 +81,11 @@ class User(db.Model):
         au = AdminUpdate(is_admin=is_admin, admin_id=admin_id, user_id=self.id)
         db.session.add(au)
 
-    @hybrid_property
-    def is_verified(self):
-        uv = UserVerification.query.filter_by(user_id=self.id).first()
-        if uv is None or uv is False:
-            return False
-        return True
-
     @hybrid_method
     def verify(self, admin_id):
         if self.is_verified:
             raise UserAlreadyVerified()
+        self.is_verified = True
         uv = UserVerification(user_id=self.id, admin_id=admin_id)
         db.session.add(uv)
 

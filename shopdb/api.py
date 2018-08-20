@@ -21,6 +21,20 @@ db.init_app(app)
 bcrypt = Bcrypt(app)
 
 
+def convert_minimal(list, fields):
+    '''This function returns only the required attributes of all objects in
+       given list.'''
+    out = []
+    for item in list:
+        element = {}
+        for field in fields:
+            element[field] = getattr(item, field)
+
+        out.append(element)
+
+    return out
+
+
 def adminRequired(f):
     '''This function checks whether a valid token is contained in the request.
        If this is not the case, or the user has no admin rights, the request
@@ -49,6 +63,43 @@ def adminRequired(f):
             assert admin.is_admin is True
         except (KeyError, AssertionError):
             raise exc.UnauthorizedAccess()
+
+        # At this point it was verified that the request comes from an
+        # admin and the request is executed. In addition, the user is
+        # forwarded to the following function so that the administrator
+        # responsible for any changes in the database can be traced.
+        return f(admin, *args, **kwargs)
+    return decorated
+
+
+def adminOptional(f):
+    '''This function checks whether a valid token is contained in the request.
+       If this is not the case, or the user has no admin rights, the following
+       function returns only a part of the available data.'''
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # Does the request heder contain a token?
+        try:
+            token = request.headers['token']
+        except KeyError:
+            return f(None, *args, **kwargs)
+
+        # Is the token valid?
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+        except jwt.exceptions.DecodeError:
+            return exc.TokenIsInvalid()
+        except jwt.ExpiredSignatureError:
+            return exc.TokenHasExpired()
+
+        # If there is no admin object in the token and does the user does have
+        # admin rights?
+        try:
+            admin_id = data['user']['id']
+            admin = User.query.filter(User.id == admin_id).first()
+            assert admin.is_admin is True
+        except (KeyError, AssertionError):
+            return f(None, *args, **kwargs)
 
         # At this point it was verified that the request comes from an
         # admin and the request is executed. In addition, the user is
@@ -202,11 +253,17 @@ def verify_user(admin):
 
 # User routes ################################################################
 @app.route('/users', methods=['GET'])
-def list_users():
+@adminOptional
+def list_users(admin):
     '''Return a list of all users'''
-    # TODO: Check which data may be returned. Admins can see everything,
-    #       all others only a minimal version (e.g. name and id)
-    return make_response('Not implemented yet.', 400)
+    result = User.query.filter(User.is_verified.is_(True)).all()
+    if not admin:
+        users = convert_minimal(result,
+                                ['id', 'firstname', 'lastname', 'username'])
+        return jsonify({'users': users}), 200
+
+    users = [user.to_dict() for user in result]
+    return jsonify({'users': users}), 200
 
 
 @app.route('/users/<int:id>', methods=['GET'])
