@@ -16,7 +16,7 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    creation_date = db.Column(db.DateTime, nullable=True)
+    creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
     firstname = db.Column(db.String(32), unique=False, nullable=False)
     lastname = db.Column(db.String(32), unique=False, nullable=False)
     username = db.Column(db.String(32), unique=True, nullable=False)
