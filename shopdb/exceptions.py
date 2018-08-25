@@ -57,9 +57,21 @@ class UserNotFound(BaseException):
     code = 401
 
 
+class ProductNotFound(BaseException):
+    type = 'error'
+    message = 'There is no product with this id.'
+    code = 401
+
+
 class ProductIsInactive(BaseException):
     type = 'error'
     message = 'This product is inactive and cannot be purchased.'
+    code = 401
+
+
+class ProductAlreadyExists(BaseException):
+    type = 'error'
+    message = 'This product already exists.'
     code = 401
 
 
