@@ -317,7 +317,7 @@ def update_user(admin, id):
     for item in data:
         if item in updatable:
             if not isinstance(data[item], str):
-                raise WrongType()
+                raise exc.WrongType()
             setattr(user, item, str(data[item]))
             updated_fields.append(item)
 
@@ -334,9 +334,13 @@ def update_user(admin, id):
 
 # Product routes #############################################################
 @app.route('/products', methods=['GET'])
-def list_products():
+@adminOptional
+def list_products(admin):
     '''Return a list of all products'''
-    result = Product.query.filter(Product.active.is_(True)).all()
+    if not admin:
+        result = Product.query.filter(Product.active.is_(True)).all()
+    else:
+        result = Product.query.all()
     products = convert_minimal(result, ['id', 'name', 'price', 'barcode',
                                         'active', 'countable', 'revokable',
                                         'imagename'])
@@ -350,21 +354,55 @@ def create_product(admin):
     '''Create a product'''
     data = json_body()
 
-    required = ['price', 'name']
-    for i, item in required:
-        if not item in data and data['name'] is '':
+    product = Product()
+    created_fields = []
+    required = ['name', 'price']
+    createble = {'name':str, 'price':int, 'barcode':str, 'active':bool,
+             'countable':bool, 'revokable':bool, 'imagename':str}
+
+    for item in required:
+        if item in data:
+            if not data[item]:
+                 raise exc.DataIsMissing()
+            else:
+                continue
+        else:
             raise exc.DataIsMissing()
 
-    product = Product(name)
-    return make_response('Not implemented yet.', 400)
+    if Product.query.filter_by(name=data['name']).first():
+        raise exc.ProductAlreadyExists()
+    pdb.set_trace()
+    try:
+        for item in data:
+            if item in createble:
+                if not isinstance(data[item], createble[item]):
+                    raise exc.WrongType()
+                setattr(product, item, data[item])
+                created_fields.append(item)
+            else:
+                raise exc.WrongType()
+        db.session.add(product)
+        db.session.commit()
+    except IntegrityError:
+        raise CouldNotCreateEntry()
+
+    return jsonify({
+        'message': 'Created Product.',
+        'created_fields': created_fields
+    }), 201
 
 
 @app.route('/products/<int:id>', methods=['GET'])
-def get_product(id):
+@adminOptional
+def get_product(admin, id):
     '''Return the product with the given id'''
-    result = Product.query.filter(Product.active.is_(True))
-             .filter(Product.id == id).all()
-    product = convert_minimal(result, ['id', 'name', 'price', 'barcode',
+    result = (Product.query
+             .filter(Product.id == id).first())
+    if not result:
+        raise ProductNotFound()
+    if not (result.active or admin):
+        raise UnauthorizedAccess()
+    product = convert_minimal([result], ['id', 'name', 'price', 'barcode',
                                        'active', 'countable', 'revokable',
                                        'imagename'])
     return jsonify({'product': product}), 200
