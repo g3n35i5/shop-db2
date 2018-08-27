@@ -27,6 +27,12 @@ class DataIsMissing(BaseException):
     code = 401
 
 
+class ForbiddenField(BaseException):
+    type = 'error'
+    message = 'One or more fields are forbidden.'
+    code = 401
+
+
 class WrongType(BaseException):
     type = 'error'
     message = 'The data entered is of the wrong type.'

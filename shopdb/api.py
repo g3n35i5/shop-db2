@@ -295,7 +295,7 @@ def update_user(admin, id):
     forbidden = ['id', 'credit', 'creation_date']
     for f in forbidden:
         if f in data:
-            del data[f]
+            raise ForbiddenField()
 
     # Query user
     user = result = User.query.filter(User.id == id).first()
@@ -315,13 +315,15 @@ def update_user(admin, id):
         if 'repeat' in data:
             if data['password'] == data['repeat']:
                 password = str(data['password'])
-                user.password = generate_password_hash(password)
+                user.password = bcrypt.generate_password_hash(password)
                 updated_fields.append('password')
                 del data['repeat']
             else:
                 raise PasswordsDoNotMatch()
         else:
-            PasswordsDoNotMatch()
+            raise DataIsMissing()
+
+        del data['password']
 
     # All other fields
     updatable = ['firstname', 'lastname', 'username', 'email']
