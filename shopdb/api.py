@@ -287,7 +287,7 @@ def update_user(admin, id):
     '''Update the user with the given id'''
     data = json_body()
     # Delete all forbidden attributes from the list
-    forbidden = ['id', 'credit', 'creation_date', 'is_admin']
+    forbidden = ['id', 'credit', 'creation_date']
     for f in forbidden:
         if f in data:
             del data[f]
@@ -298,6 +298,12 @@ def update_user(admin, id):
         raise UserNotFound()
 
     updated_fields = []
+
+    # Update admin role
+    if 'is_admin' in data and isinstance(data['is_admin'], bool):
+        user.set_admin(is_admin=data['is_admin'], admin_id=admin.id)
+        updated_fields.append('is_admin')
+        del data['is_admin']
 
     # Check password
     if 'password' in data:
