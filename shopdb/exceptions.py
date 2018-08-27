@@ -33,6 +33,12 @@ class WrongType(BaseException):
     code = 401
 
 
+class UnknownField(BaseException):
+    type = 'error'
+    message = 'Unknown field.'
+    code = 401
+
+
 class UsernameAlreadyTaken(BaseException):
     type = 'error'
     message = 'This username is already taken.'

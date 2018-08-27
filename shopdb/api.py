@@ -21,18 +21,23 @@ db.init_app(app)
 bcrypt = Bcrypt(app)
 
 
-def convert_minimal(list, fields):
+def convert_minimal(data, fields):
     '''This function returns only the required attributes of all objects in
        given list.'''
     out = []
-    for item in list:
+    if not isinstance(data, list):
+        data = [data]
+
+    for item in data:
         element = {}
         for field in fields:
             element[field] = getattr(item, field)
 
         out.append(element)
 
-    return out
+    if len(out) > 1:
+        return out
+    return out[0]
 
 
 def adminRequired(f):
@@ -401,12 +406,14 @@ def create_product(admin):
 def get_product(admin, id):
     '''Return the product with the given id'''
     result = (Product.query
-             .filter(Product.id == id).first())
+              .filter(Product.id == id).first())
     if not result:
         raise ProductNotFound()
+
     if not (result.active or admin):
         raise UnauthorizedAccess()
-    product = convert_minimal([result], ['id', 'name', 'price', 'barcode',
+
+    product = convert_minimal(result, ['id', 'name', 'price', 'barcode',
                                        'active', 'countable', 'revokable',
                                        'imagename'])
     return jsonify({'product': product}), 200
