@@ -353,49 +353,47 @@ def list_products(admin):
     return jsonify({'products': products}), 200
 
 
-
 @app.route('/products', methods=['POST'])
 @adminRequired
 def create_product(admin):
     '''Create a product'''
     data = json_body()
-
-    product = Product()
     created_fields = []
     required = ['name', 'price']
-    createble = {'name':str, 'price':int, 'barcode':str, 'active':bool,
-             'countable':bool, 'revokable':bool, 'imagename':str}
+    createable = {
+        'name': str, 'price': int, 'barcode': str, 'active': bool,
+        'countable': bool, 'revokable': bool, 'imagename': str
+    }
 
-    for item in required:
-        if item in data:
-            if not data[item]:
-                 raise exc.DataIsMissing()
-            else:
-                continue
-        else:
-            raise exc.DataIsMissing()
+    # Check all required fields
+    if any(x not in data for x in required):
+        raise exc.DataIsMissing()
 
+    # Check if a product with this name already exists
     if Product.query.filter_by(name=data['name']).first():
         raise exc.ProductAlreadyExists()
-    pdb.set_trace()
-    try:
-        for item in data:
-            if item in createble:
-                if not isinstance(data[item], createble[item]):
-                    raise exc.WrongType()
-                setattr(product, item, data[item])
-                created_fields.append(item)
-            else:
+
+    # Check the given dataset
+    for item in createable:
+        if item in data:
+            if not isinstance(data[item], createable[item]):
                 raise exc.WrongType()
+        else:
+            raise exc.UnknownField(item)
+
+    # Save the price and delete it from the data dictionary
+    price = int(data['price'])
+    del data['price']
+
+    try:
+        product = Product(**data)
         db.session.add(product)
-        db.session.commit()
+        db.session.flush()
+        product.set_price(price=price, admin_id=admin.id)
     except IntegrityError:
         raise CouldNotCreateEntry()
 
-    return jsonify({
-        'message': 'Created Product.',
-        'created_fields': created_fields
-    }), 201
+    return jsonify({'message': 'Created Product.'}), 201
 
 
 @app.route('/products/<int:id>', methods=['GET'])
