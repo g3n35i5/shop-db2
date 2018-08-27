@@ -91,10 +91,13 @@ class User(db.Model):
 
     @hybrid_property
     def rank_id(self):
-        return (RankUpdate.query
-                .filter_by(user_id=self.id)
-                .order_by(RankUpdate.id.desc())
-                .first())
+        ru = (RankUpdate.query
+              .filter_by(user_id=self.id)
+              .order_by(RankUpdate.id.desc())
+              .first())
+        if ru:
+            return ru.rank_id
+        return None
 
     @hybrid_method
     def set_rank_id(self, rank_id, admin_id):
@@ -106,7 +109,9 @@ class User(db.Model):
     @hybrid_property
     def rank(self):
         if self.rank_id:
-            return Rank.get(self.rank_id)
+            rank = Rank.query.filter(Rank.id == self.rank_id).first()
+            if rank:
+                return rank.name
         return None
 
     @hybrid_property
@@ -175,6 +180,7 @@ class RankUpdate(db.Model):
     __tablename__ = 'rankupdates'
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     rank_id = db.Column(db.Integer, db.ForeignKey('ranks.id'), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 

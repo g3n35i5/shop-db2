@@ -47,7 +47,7 @@ class UserModelTestCase(BaseTestCase):
         user = User.query.filter_by(id=1).first()
         backup_email = copy(user.email)
         for mail in ['test', 'test@test', '@test', 't@test.c', 'test@test-com',
-                     't@test.com.']:
+                     't@test.com.', None, 2]:
             with self.assertRaises(exc.InvalidEmailAddress):
                 user.email = mail
                 db.session.commit()
@@ -81,6 +81,19 @@ class UserModelTestCase(BaseTestCase):
                         .first())
         self.assertEqual(verification.user_id, user.id)
         self.assertEqual(verification.admin_id, 1)
+
+    def test_set_user_rank_id(self):
+        '''Update the user rank id'''
+        user = User.query.filter_by(id=1).first()
+        self.assertEqual(user.rank_id, None)
+        self.assertEqual(user.rank, None)
+        user.set_rank_id(rank_id=2, admin_id=1)
+        db.session.commit()
+        user = User.query.filter_by(id=1).first()
+        self.assertEqual(user.rank_id, 2)
+        self.assertEqual(user.rank, 'Member')
+        with self.assertRaises(NothingHasChanged):
+            user.set_rank_id(rank_id=2, admin_id=1)
 
     def test_update_user_firstname(self):
         '''Update the firstname of a user'''
