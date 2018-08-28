@@ -200,7 +200,7 @@ class Product(db.Model):
     barcode = db.Column(db.String(32), unique=True, nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
     countable = db.Column(db.Boolean, nullable=False, default=True)
-    revokable = db.Column(db.Boolean, nullable=False, default=True)
+    revokeable = db.Column(db.Boolean, nullable=False, default=True)
     imagename = db.Column(db.String(64), nullable=True)
 
     @hybrid_property

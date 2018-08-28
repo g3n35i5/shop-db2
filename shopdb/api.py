@@ -365,7 +365,7 @@ def list_products(admin):
     else:
         result = Product.query.all()
     products = convert_minimal(result, ['id', 'name', 'price', 'barcode',
-                                        'active', 'countable', 'revokable',
+                                        'active', 'countable', 'revokeable',
                                         'imagename'])
     return jsonify({'products': products}), 200
 
@@ -379,7 +379,7 @@ def create_product(admin):
     required = ['name', 'price']
     createable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
-        'countable': bool, 'revokable': bool, 'imagename': str
+        'countable': bool, 'revokeable': bool, 'imagename': str
     }
 
     # Check all required fields
@@ -404,6 +404,7 @@ def create_product(admin):
 
     try:
         product = Product(**data)
+        product.created_by = admin.id
         db.session.add(product)
         db.session.flush()
         product.set_price(price=price, admin_id=admin.id)
@@ -426,7 +427,7 @@ def get_product(admin, id):
         raise UnauthorizedAccess()
 
     product = convert_minimal(result, ['id', 'name', 'price', 'barcode',
-                                       'active', 'countable', 'revokable',
+                                       'active', 'countable', 'revokeable',
                                        'imagename'])
     return jsonify({'product': product}), 200
 

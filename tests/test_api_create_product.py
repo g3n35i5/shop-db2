@@ -29,7 +29,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         p_data = {
             'name': 'Bread', 'price': 100,
             'barcode': '12345678', 'active': True,
-            'countable': True, 'revokable': True,
+            'countable': True, 'revokeable': True,
             'imagename': 'bread.png'}
 
         res = self.post(url='/products', role='admin', data=p_data)
@@ -45,7 +45,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         p_data = {
             'name': 'Bread', 'price': 100,
             'barcode': '12345678', 'active': True,
-            'countable': True, 'revokable': True,
+            'countable': True, 'revokeable': True,
             'imagename': 'bread.png'}
 
         for field in p_data:

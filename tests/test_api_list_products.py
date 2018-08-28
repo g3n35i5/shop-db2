@@ -27,7 +27,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
         for product in products:
             self.assertTrue(product['active'])
             for item in ['id', 'name', 'price', 'barcode', 'active',
-                         'countable', 'revokable', 'imagename']:
+                         'countable', 'revokeable', 'imagename']:
                 assert item in product
         self.assertEqual(len(Product.query.all()), 4)
 
@@ -45,7 +45,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
         self.assertEqual(len(products), 4)
         for product in products:
             for item in ['id', 'name', 'price', 'barcode', 'active',
-                         'countable', 'revokable', 'imagename']:
+                         'countable', 'revokeable', 'imagename']:
                 assert item in product
         self.assertFalse(products[3]['active'])
         self.assertEqual(len(Product.query.all()), 4)
@@ -58,7 +58,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
         assert 'product' in data
         product = data['product']
         required = ['id', 'name', 'price', 'barcode', 'active',
-                    'countable', 'revokable', 'imagename']
+                    'countable', 'revokeable', 'imagename']
         assert all(x in product for x in required)
 
     def test_list_nonactive_product_without_token(self):
@@ -84,7 +84,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
         assert 'product' in data
         product = data['product']
         required = ['id', 'name', 'price', 'barcode', 'active',
-                    'countable', 'revokable', 'imagename']
+                    'countable', 'revokeable', 'imagename']
         assert all(x in product for x in required)
 
     def test_list_nonexisting_product(self):
