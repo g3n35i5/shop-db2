@@ -494,9 +494,22 @@ def update_product(admin, id):
 
 # Purchase routes ############################################################
 @app.route('/purchases', methods=['GET'])
-def list_purchases():
+@adminOptional
+def list_purchases(admin):
     '''Return a list of all purchases'''
-    return make_response('Not implemented yet.', 400)
+    # Create a list for an admin
+    if admin:
+        res = Purchase.query.all()
+        fields = ['id', 'timestamp', 'user_id', 'product_id', 'productprice',
+                  'amount', 'revoked']
+        return jsonify({'purchases': convert_minimal(res, fields)}), 200
+
+    # Create a public list
+    res = (db.session.query(Purchase)
+           .filter(~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
+           .all())
+    fields = ['id', 'timestamp', 'user_id', 'product_id']
+    return jsonify({'purchases': convert_minimal(res, fields)}), 200
 
 
 @app.route('/purchases', methods=['POST'])
