@@ -48,8 +48,6 @@ class UserModelTestCase(BaseTestCase):
                      't@test.com.', None, 2]:
             with self.assertRaises(exc.InvalidEmailAddress):
                 user.email = mail
-                db.session.commit()
-
             db.session.rollback()
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.email, backup_email)
@@ -60,7 +58,6 @@ class UserModelTestCase(BaseTestCase):
         self.assertTrue(user.is_verified)
         with self.assertRaises(exc.UserAlreadyVerified):
             user.verify(admin_id=1)
-            db.session.commit()
 
         user = User.query.filter_by(id=1).first()
         self.assertTrue(user.is_verified)
@@ -133,8 +130,6 @@ class UserModelTestCase(BaseTestCase):
         self.assertFalse(user.is_verified)
         with self.assertRaises(exc.UserIsNotVerified):
             purchase = Purchase(user_id=4, product_id=1)
-            db.session.add(purchase)
-            db.session.commit()
         db.session.rollback()
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
