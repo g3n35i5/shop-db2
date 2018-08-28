@@ -80,7 +80,7 @@ class BaseTestCase(TestCase):
 
     def insert_default_products(self):
         for i in range(0, len(p_names)):
-            product = Product(name=p_names[i])
+            product = Product(name=p_names[i], created_by=1)
             db.session.add(product)
             db.session.flush()  # This is needed so that the product has its id
             product.set_price(price=p_prices[i], admin_id=1)

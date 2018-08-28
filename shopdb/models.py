@@ -196,12 +196,23 @@ class RankUpdate(db.Model):
 class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
+    creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'),
+                           nullable=False)
     name = db.Column(db.String(64), unique=True, nullable=False)
     barcode = db.Column(db.String(32), unique=True, nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
     countable = db.Column(db.Boolean, nullable=False, default=True)
     revokeable = db.Column(db.Boolean, nullable=False, default=True)
     imagename = db.Column(db.String(64), nullable=True)
+
+    @validates('created_by')
+    def validate_admin(self, key, created_by):
+        user = User.query.filter(User.id == created_by).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return created_by
 
     @hybrid_property
     def price(self):

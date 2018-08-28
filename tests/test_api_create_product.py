@@ -39,6 +39,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         product = Product.query.filter_by(name='Bread').first()
         for field in p_data:
             self.assertEqual(getattr(product, field), p_data[field])
+        self.assertEqual(product.created_by, 1)
 
     def test_create_product_wrong_type(self):
         '''Create a Product as admin with wrong type(s).'''
