@@ -336,9 +336,9 @@ def update_user(admin, id):
         del data['password']
 
     # All other fields
-    updatable = ['firstname', 'lastname', 'username', 'email']
+    updateable = ['firstname', 'lastname', 'username', 'email']
     for item in data:
-        if item in updatable:
+        if item in updateable:
             if not isinstance(data[item], str):
                 raise exc.WrongType()
             setattr(user, item, str(data[item]))
