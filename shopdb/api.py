@@ -213,11 +213,11 @@ def register():
 
     # Check if the username is already assigned.
     if User.query.filter_by(username=data['username']).first():
-        raise UsernameAlreadyTaken()
+        raise exc.UsernameAlreadyTaken()
 
     # Check if the email address is already assigned.
     if User.query.filter_by(email=data['email']).first():
-        raise EmailAddressAlreadyTaken()
+        raise exc.EmailAddressAlreadyTaken()
 
     # Try to create the user.
     try:
@@ -230,7 +230,7 @@ def register():
         db.session.add(user)
         db.session.commit()
     except IntegrityError:
-        raise CouldNotCreateEntry()
+        raise exc.CouldNotCreateEntry()
 
     return make_response('Created user.', 200)
 
@@ -258,9 +258,9 @@ def list_pending_validations(admin):
 def verify_user(admin, id):
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise UserNotFound()
+        raise exc.UserNotFound()
     if user.is_verified:
-        raise UserAlreadyVerified()
+        raise exc.UserAlreadyVerified()
 
     user.verify(admin_id=admin.id)
     db.session.commit()
@@ -287,9 +287,9 @@ def get_user(id):
     '''Return the user with the given id'''
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise UserNotFound()
+        raise exc.UserNotFound()
     if not user.is_verified:
-        raise UserIsNotVerified()
+        raise exc.UserIsNotVerified()
 
     fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
     user = convert_minimal(user, fields)
@@ -305,12 +305,12 @@ def update_user(admin, id):
     forbidden = ['id', 'credit', 'creation_date']
     for f in forbidden:
         if f in data:
-            raise ForbiddenField()
+            raise exc.ForbiddenField()
 
     # Query user
     user = result = User.query.filter(User.id == id).first()
     if not user:
-        raise UserNotFound()
+        raise exc.UserNotFound()
 
     updated_fields = []
 
@@ -329,9 +329,9 @@ def update_user(admin, id):
                 updated_fields.append('password')
                 del data['repeat']
             else:
-                raise PasswordsDoNotMatch()
+                raise exc.PasswordsDoNotMatch()
         else:
-            raise DataIsMissing()
+            raise exc.DataIsMissing()
 
         del data['password']
 
@@ -345,7 +345,7 @@ def update_user(admin, id):
             updated_fields.append(item)
 
     if len(updated_fields) == 0:
-        raise NothingHasChanged()
+        raise exc.NothingHasChanged()
 
     # Apply changes
     db.session.commit()
@@ -409,7 +409,7 @@ def create_product(admin):
         db.session.flush()
         product.set_price(price=price, admin_id=admin.id)
     except IntegrityError:
-        raise CouldNotCreateEntry()
+        raise exc.CouldNotCreateEntry()
 
     return jsonify({'message': 'Created Product.'}), 201
 
@@ -421,10 +421,10 @@ def get_product(admin, id):
     result = (Product.query
               .filter(Product.id == id).first())
     if not result:
-        raise ProductNotFound()
+        raise exc.ProductNotFound()
 
     if not (result.active or admin):
-        raise UnauthorizedAccess()
+        raise exc.UnauthorizedAccess()
 
     product = convert_minimal(result, ['id', 'name', 'price', 'barcode',
                                        'active', 'countable', 'revokeable',
