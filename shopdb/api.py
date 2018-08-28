@@ -436,7 +436,60 @@ def get_product(admin, id):
 @adminRequired
 def update_product(admin, id):
     '''Update the product with the given id'''
-    return make_response('Not implemented yet.', 400)
+    data = json_body()
+
+    # Check, if the product exists.
+    product = Product.query.filter_by(id=id).first()
+    if not product:
+        raise exc.ProductNotFound()
+
+    # Check forbidden fields
+    forbidden = ['creation_date', 'countable', 'revokeable']
+    if any(x in data for x in forbidden):
+        raise exc.ForbiddenField()
+
+    updated_fields = []
+
+    # Check types
+    updateable = {
+        'name': str, 'price': int, 'barcode': str, 'active': bool,
+        'imagename': str
+    }
+    for item in data:
+        if item in updateable:
+            if not isinstance(data[item], updateable[item]):
+                raise exc.WrongType(item)
+        else:
+            raise exc.UnknownField(item)
+
+    # Check for price change
+    if 'price' in data:
+        price = int(data['price'])
+        del data['price']
+        if price != product.price:
+            product.set_price(price=price, admin_id=admin.id)
+            updated_fields.append('price')
+
+    # Update all other fields
+    for item in data:
+        if not hasattr(product, item):
+            raise exc.UnknownField()
+        setattr(product, item, data[item])
+        updated_fields.append(item)
+
+    if len(updated_fields) == 0:
+        raise exc.NothingHasChanged()
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated product.',
+        'updated_fields': updated_fields
+    }), 201
 
 
 # Purchase routes ############################################################

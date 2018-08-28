@@ -45,6 +45,18 @@ class UnknownField(BaseException):
     code = 401
 
 
+class CouldNotCreateEntry(BaseException):
+    type = 'error'
+    message = 'Could not create entry.'
+    code = 401
+
+
+class CouldNotUpdateEntry(BaseException):
+    type = 'error'
+    message = 'Could not update entry.'
+    code = 401
+
+
 class UsernameAlreadyTaken(BaseException):
     type = 'error'
     message = 'This username is already taken.'
