@@ -56,9 +56,9 @@ def adminRequired(f):
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except jwt.exceptions.DecodeError:
-            return exc.TokenIsInvalid()
+            raise exc.TokenIsInvalid()
         except jwt.ExpiredSignatureError:
-            return exc.TokenHasExpired()
+            raise exc.TokenHasExpired()
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
@@ -66,7 +66,9 @@ def adminRequired(f):
             admin_id = data['user']['id']
             admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
-        except (KeyError, AssertionError):
+        except KeyError:
+            raise exc.TokenIsInvalid()
+        except AssertionError:
             raise exc.UnauthorizedAccess()
 
         # At this point it was verified that the request comes from an
@@ -93,9 +95,9 @@ def adminOptional(f):
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except jwt.exceptions.DecodeError:
-            return exc.TokenIsInvalid()
+            raise exc.TokenIsInvalid()
         except jwt.ExpiredSignatureError:
-            return exc.TokenHasExpired()
+            raise exc.TokenHasExpired()
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
@@ -103,7 +105,9 @@ def adminOptional(f):
             admin_id = data['user']['id']
             admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
-        except (KeyError, AssertionError):
+        except KeyError:
+            raise exc.TokenIsInvalid()
+        except AssertionError:
             return f(None, *args, **kwargs)
 
         # At this point it was verified that the request comes from an
