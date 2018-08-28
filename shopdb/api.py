@@ -563,10 +563,54 @@ def get_purchase(id):
 
 
 @app.route('/purchases/<int:id>', methods=['PUT'])
-@adminRequired
-def update_purchase(admin, id):
+def update_purchase(id):
     '''Update the purchase with the given id'''
-    return make_response('Not implemented yet.', 400)
+    # Check purchase
+    purchase = Purchase.query.filter_by(id=id).first()
+    if not purchase:
+        raise exc.PurchaseNotFound()
+
+    data = json_body()
+    updateable = {'revoked': bool, 'amount': int}
+    for item in data:
+        if item not in updateable:
+            if hasattr(purchase, item):
+                raise exc.ForbiddenField()
+            raise exc.UnknownField()
+        if not isinstance(data[item], updateable[item]):
+            raise exc.WrongType()
+
+    updated_fields = []
+
+    # Handle purchase revoke
+    if 'revoked' in data:
+        if purchase.revoked == data['revoked']:
+            raise exc.NothingHasChanged()
+        purchase.toggle_revoke(revoked=data['revoked'])
+        updated_fields.append('revoked')
+        del data['revoked']
+
+    # Handle all other fields
+    for item in data:
+        if not hasattr(purchase, item):
+            raise exc.UnknownField()
+        setattr(purchase, item, data[item])
+        updated_fields.append(item)
+
+    # Check the amount of updated fields
+    if len(updated_fields) == 0:
+        raise exc.NothingHasChanged()
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated purchase.',
+        'updated_fields': updated_fields
+    }), 201
 
 
 # Deposit routes #############################################################
