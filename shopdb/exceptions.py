@@ -16,9 +16,9 @@ class NothingHasChanged(BaseException):
 
 
 class UserAlreadyVerified(BaseException):
-    type = 'info'
+    type = 'error'
     message = 'This user has already been verified.'
-    code = 200
+    code = 401
 
 
 class DataIsMissing(BaseException):

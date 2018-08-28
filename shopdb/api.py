@@ -253,11 +253,18 @@ def list_pending_validations(admin):
     return jsonify({'pending_validations': pending}), 200
 
 
-@app.route('/verify', methods=['POST'])
+@app.route('/verify/<int:id>', methods=['POST'])
 @adminRequired
-def verify_user(admin):
-    # TODO: Verify the user with the given id
-    return make_response('Not implemented yet.', 400)
+def verify_user(admin, id):
+    user = User.query.filter_by(id=id).first()
+    if not user:
+        raise UserNotFound()
+    if user.is_verified:
+        raise UserAlreadyVerified()
+
+    user.verify(admin_id=admin.id)
+    db.session.commit()
+    return make_response('Verified user.', 201)
 
 
 # User routes ################################################################
