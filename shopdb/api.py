@@ -515,7 +515,40 @@ def list_purchases(admin):
 @app.route('/purchases', methods=['POST'])
 def create_purchase():
     '''Create a purchase'''
-    return make_response('Not implemented yet.', 400)
+    data = json_body()
+    required = {'user_id': int, 'product_id': int, 'amount': int}
+    for item in data:
+        if item not in required:
+            raise exc.UnknownField()
+        if not isinstance(data[item], required[item]):
+            raise exc.WrongType()
+
+    # Check user
+    user = User.query.filter_by(id=data['user_id']).first()
+    if not user:
+        raise exc.UserNotFound()
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+
+    # Check product
+    product = Product.query.filter_by(id=data['product_id']).first()
+    if not product:
+        raise exc.ProductNotFound()
+    if not product.active:
+        raise exc.ProductIsInactive()
+
+    # Check amount
+    if data['amount'] <= 0:
+        raise exc.InvalidAmount()
+
+    try:
+        purchase = Purchase(**data)
+        db.session.add(purchase)
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Purchase created.'}), 200
 
 
 @app.route('/purchases/<int:id>', methods=['GET'])

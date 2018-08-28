@@ -81,6 +81,12 @@ class UserNotFound(BaseException):
     code = 401
 
 
+class InvalidAmount(BaseException):
+    type = 'error'
+    message = 'The quantity to be purchased is not permitted.'
+    code = 401
+
+
 class ProductNotFound(BaseException):
     type = 'error'
     message = 'There is no product with this id.'
