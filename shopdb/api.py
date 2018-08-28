@@ -278,15 +278,14 @@ def list_users(admin):
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
     '''Return the user with the given id'''
-    result = (User.query
-              .filter(User.id == id)
-              .filter(User.is_verified.is_(True))
-              .first()())
-    if not result:
+    user = User.query.filter_by(id=id).first()
+    if not user:
         raise UserNotFound()
+    if not user.is_verified:
+        raise UserIsNotVerified()
 
-    user = convert_minimal(result, ['id', 'firstname', 'lastname', 'username',
-                           'email'])
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
+    user = convert_minimal(user, fields)
     return jsonify({'user': user}), 200
 
 
