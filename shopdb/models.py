@@ -290,11 +290,10 @@ class Purchase(db.Model):
         return product_id
 
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
+    def toggle_revoke(self, revoked):
         if self.revoked == revoked:
             raise NothingHasChanged
-        pr = PurchaseRevoke(purchase_id=self.id, revoked=revoked,
-                            admin_id=admin_id)
+        pr = PurchaseRevoke(purchase_id=self.id, revoked=revoked)
         self.revoked = revoked
         db.session.add(pr)
 
@@ -312,7 +311,6 @@ class Purchase(db.Model):
             revokehistory.append({
                 'id': revoke.id,
                 'timestamp': revoke.timestamp,
-                'admin_id': revoke.admin_id,
                 'revoked': revoke.revoked
             })
         return revokehistory
@@ -325,15 +323,6 @@ class PurchaseRevoke(db.Model):
     revoked = db.Column(db.Boolean, nullable=False)
     purchase_id = db.Column(db.Integer, db.ForeignKey('products.id'),
                             nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    @validates('admin_id')
-    def validate_admin(self, key, admin_id):
-        user = User.query.filter(User.id == admin_id).first()
-        if not user or not user.is_admin:
-            raise UnauthorizedAccess()
-
-        return admin_id
 
 
 class Deposit(db.Model):
