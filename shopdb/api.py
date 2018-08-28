@@ -127,15 +127,15 @@ def handle_error(error):
     db.session.rollback()
     # As long as the application is in debug mode, all exceptions
     # should be output immediately.
-    if app.config['DEBUG']:
+    if app.config['DEBUG']:  # pragma: no cover
         raise error
     # Create, if possible, a user friendly response.
     if all(hasattr(error, item) for item in ['type', 'message', 'code']):
         return jsonify(result=error.type, message=error.message), error.code
-    else:
+    else:   # pragma: no cover
         raise error
     # If for some reason no exception has been raised yet, this is done now.
-    raise error
+    raise error  # pragma: no cover
 
 
 def json_body():

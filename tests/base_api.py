@@ -22,7 +22,7 @@ class BaseAPITestCase(BaseTestCase):
 
     def _request(self, type, url, data, role):
         '''Helper function to perform a request to the API'''
-        if role not in ['admin', 'user', None]:
+        if role not in ['admin', 'user', None]:  # pragma: no cover
             sys.exit(f'Wrong role: {role}')
 
         if role == 'admin':
@@ -47,7 +47,7 @@ class BaseAPITestCase(BaseTestCase):
             res = self.client.put(url, data=json.dumps(data), headers=headers)
         elif type == 'GET':
             res = self.client.get(url, data=json.dumps(data), headers=headers)
-        else:
+        else:  # pragma: no cover
             sys.exit('Wrong request type: {}'.format(_type))
 
         return res

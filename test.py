@@ -28,7 +28,7 @@ if __name__ == '__main__':
     if answ in ['', 'all', 'a']:
         tests = unittest.TestLoader().discover('tests')
         unittest.TextTestRunner(verbosity=2).run(tests)
-    else:
+    else:  # pragma: no cover
         list_testnumbers = answ.split(' ')
         test = []
 
