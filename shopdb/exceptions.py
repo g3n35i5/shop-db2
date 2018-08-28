@@ -87,6 +87,12 @@ class InvalidAmount(BaseException):
     code = 401
 
 
+class PurchaseNotFound(BaseException):
+    type = 'error'
+    message = 'There is no purchase with this id.'
+    code = 401
+
+
 class ProductNotFound(BaseException):
     type = 'error'
     message = 'There is no product with this id.'

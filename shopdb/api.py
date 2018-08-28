@@ -554,7 +554,12 @@ def create_purchase():
 @app.route('/purchases/<int:id>', methods=['GET'])
 def get_purchase(id):
     '''Return the purchase with the given id'''
-    return make_response('Not implemented yet.', 400)
+    purchase = Purchase.query.filter_by(id=id).first()
+    if not purchase:
+        raise exc.PurchaseNotFound()
+    fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount', 'price',
+              'productprice', 'revoked']
+    return jsonify({'purchase': convert_minimal(purchase, fields)}), 200
 
 
 @app.route('/purchases/<int:id>', methods=['PUT'])
