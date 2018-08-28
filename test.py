@@ -19,10 +19,10 @@ if __name__ == '__main__':
         else:
             list_tests.append(file)
 
-    print('Please select the tests you want to run [Default=all] \n'
-          'all: All tests')
+    print('Please select the tests you want to run. [Default=all]')
+    print('all: All tests')
     for i, test in enumerate(list_tests):
-        print('{}: {}'.format(i, test))
+        print('{:3d}: {}'.format(i, test))
     answ = input('Testnumbers: ')
 
     if answ in ['', 'all', 'a']:
