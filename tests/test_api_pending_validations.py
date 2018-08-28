@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from shopdb.api import *
 import shopdb.models as models
 import shopdb.exceptions as exc
