@@ -355,6 +355,30 @@ def update_user(admin, id):
     }), 201
 
 
+@app.route('/users/<int:id>', methods=['DELETE'])
+@adminRequired
+def delete_user(admin, id):
+    '''Delete the user with the given id. This is only possible with
+       non-verified users'''
+    # Check if the user exists
+    user = User.query.filter_by(id=id).first()
+    if not user:
+        raise exc.UserNotFound()
+
+    # Check if the user has been verified
+    if user.is_verified:
+        raise exc.UserCanNotBeDeleted()
+
+    # Delete the user
+    try:
+        db.session.delete(user)
+        db.session.commit()
+    except IntegrityError:
+        raise UserCanNotBeDeleted()
+
+    return jsonify({'message': 'User deleted.'}), 200
+
+
 # Product routes #############################################################
 @app.route('/products', methods=['GET'])
 @adminOptional

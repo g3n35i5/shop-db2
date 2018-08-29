@@ -47,6 +47,9 @@ class BaseAPITestCase(BaseTestCase):
             res = self.client.put(url, data=json.dumps(data), headers=headers)
         elif type == 'GET':
             res = self.client.get(url, data=json.dumps(data), headers=headers)
+        elif type == 'DELETE':
+            res = self.client.delete(url, data=json.dumps(data),
+                                     headers=headers)
         else:  # pragma: no cover
             sys.exit('Wrong request type: {}'.format(_type))
 
@@ -63,6 +66,10 @@ class BaseAPITestCase(BaseTestCase):
     def put(self, url, data=None, role=None):
         '''Helper function to perform a GET request to the API'''
         return self._request(type='PUT', url=url, data=data, role=role)
+
+    def delete(self, url, data=None, role=None):
+        '''Helper function to perform a DELETE request to the API'''
+        return self._request(type='DELETE', url=url, data=data, role=role)
 
     def login(self, username, email, password):
         '''Helper function to perform a login'''

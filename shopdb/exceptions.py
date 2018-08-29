@@ -21,6 +21,12 @@ class UserAlreadyVerified(BaseException):
     code = 401
 
 
+class UserCanNotBeDeleted(BaseException):
+    type = 'error'
+    message = 'This user can not be deleted.'
+    code = 401
+
+
 class DataIsMissing(BaseException):
     type = 'error'
     message = 'Some or more details are missing.'
