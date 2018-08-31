@@ -200,8 +200,18 @@ def upload(admin):
         filename = '.'.join([unique, extension])
         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         can_be_used = not os.path.isfile(path)
+
     # Move the temporary image to its desination path.
     shutil.move(temp_filename, path)
+
+    # Create an upload
+    try:
+        upload = Upload(filename=filename, admin_id=admin.id)
+        db.session.add(upload)
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
     # Make response
     return jsonify({
         'message': 'Image uploaded successfully.',
@@ -478,8 +488,8 @@ def create_product(admin):
         raise exc.ProductAlreadyExists()
 
     # Check the given dataset
-    for item in createable:
-        if item in data:
+    for item in data:
+        if item in createable:
             if not isinstance(data[item], createable[item]):
                 raise exc.WrongType()
         else:
@@ -556,6 +566,18 @@ def update_product(admin, id):
         if price != product.price:
             product.set_price(price=price, admin_id=admin.id)
             updated_fields.append('price')
+
+    # Check for image change.
+    if 'imagename' in data:
+        imagename = data['imagename']
+        del data['imagename']
+        if imagename != product.imagename:
+            upload = Upload.query.filter_by(filename=imagename).first()
+            if not upload:
+                raise exc.ImageNotFound()
+
+            product.image_id = upload.id
+            updated_fields.append('imagename')
 
     # Update all other fields
     for item in data:

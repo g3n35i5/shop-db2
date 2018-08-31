@@ -117,6 +117,12 @@ class ProductAlreadyExists(BaseException):
     code = 401
 
 
+class ImageNotFound(BaseException):
+    type = 'error'
+    message = 'There is no image file with this name.'
+    code = 401
+
+
 class InvalidEmailAddress(BaseException):
     type = 'error'
     message = 'The email address entered is not valid.'

@@ -167,6 +167,14 @@ class AdminUpdate(db.Model):
         return admin_id
 
 
+class Upload(db.Model):
+    __tablename__ = 'uploads'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    filename = db.Column(db.String(64), unique=True, nullable=False)
+
+
 class Rank(db.Model):
     __tablename__ = 'ranks'
     id = db.Column(db.Integer, primary_key=True)
@@ -204,7 +212,8 @@ class Product(db.Model):
     active = db.Column(db.Boolean, nullable=False, default=True)
     countable = db.Column(db.Boolean, nullable=False, default=True)
     revokeable = db.Column(db.Boolean, nullable=False, default=True)
-    imagename = db.Column(db.String(64), nullable=True)
+    image_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
+                         nullable=True)
 
     @validates('created_by')
     def validate_admin(self, key, created_by):
@@ -213,6 +222,13 @@ class Product(db.Model):
             raise UnauthorizedAccess()
 
         return created_by
+
+    @hybrid_property
+    def imagename(self):
+        upload = Upload.query.filter_by(id=self.image_id).first()
+        if upload:
+            return upload.filename
+        return None
 
     @hybrid_property
     def price(self):

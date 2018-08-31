@@ -29,8 +29,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         p_data = {
             'name': 'Bread', 'price': 100,
             'barcode': '12345678', 'active': True,
-            'countable': True, 'revokeable': True,
-            'imagename': 'bread.png'}
+            'countable': True, 'revokeable': True}
 
         res = self.post(url='/products', role='admin', data=p_data)
         self.assertEqual(res.status_code, 201)
@@ -46,8 +45,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         p_data = {
             'name': 'Bread', 'price': 100,
             'barcode': '12345678', 'active': True,
-            'countable': True, 'revokeable': True,
-            'imagename': 'bread.png'}
+            'countable': True, 'revokeable': True}
 
         for field in p_data:
             copy_data = copy(p_data)
