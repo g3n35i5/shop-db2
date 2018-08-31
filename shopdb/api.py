@@ -190,6 +190,7 @@ def upload(admin):
 
     # An invalid file will lead to an exception.
     except IOError:
+        os.remove(temp_filename)
         raise exc.BrokenImage()
 
     # Create a unique filename.
