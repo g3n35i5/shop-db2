@@ -5,6 +5,7 @@ import shopdb.exceptions as exc
 from flask import (Flask, request, g, make_response, jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from werkzeug.exceptions import RequestEntityTooLarge
 import jwt
 import sqlite3
 import sqlalchemy
@@ -13,6 +14,10 @@ from sqlalchemy.exc import *
 from functools import wraps
 import datetime
 import configuration as config
+import random
+import os
+from PIL import Image
+import shutil
 app = Flask(__name__)
 
 # Default app settings (to suppress unittest warnings) will be overwritten.
@@ -143,6 +148,63 @@ def json_body():
     if jb is None:
         raise exc.InvalidJSON()
     return jb
+
+
+@app.route('/upload', methods=['POST'])
+@adminRequired
+def upload(admin):
+    # Get the file. Raise an error if its file exceedes the maximum file size
+    # defined in the app configuration file.
+    try:
+        if 'file' not in request.files:
+            raise exc.NoFileIncluded()
+        file = request.files['file']
+    except RequestEntityTooLarge:
+        raise exc.FileTooLarge()
+    # Check if the  file
+    if not file:
+        raise exc.NoFileIncluded()
+    # Check if the filename is empty. There is no way to create a file with
+    # empty filename in python so this can not be tested. Anyway, this is
+    # a possible error vector.
+    if file.filename == '':
+        raise exc.InvalidFilename()
+
+    # Check if the filename is valid
+    filename = file.filename.split('.')[0]
+    if filename is '' or not filename:
+        raise exc.InvalidFilename()
+
+    # Check the file extension
+    extension = file.filename.split('.')[1].lower()
+    valid_extension = extension in ['png', 'jpg', 'jpeg']
+    if not valid_extension:
+        raise exc.InvalidFileType()
+
+    # Check if the image is a valid image file.
+    try:
+        # Save the image to a temporary file.
+        temp_filename = '/tmp/' + file.filename
+        file.save(temp_filename)
+        image = Image.open(temp_filename)
+
+    # An invalid file will lead to an exception.
+    except IOError:
+        raise exc.BrokenImage()
+
+    # Create a unique filename.
+    can_be_used = False
+    while not can_be_used:
+        unique = ''.join(random.choice('0123456789abcdef') for i in range(32))
+        filename = '.'.join([unique, extension])
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        can_be_used = not os.path.isfile(path)
+    # Move the temporary image to its desination path.
+    shutil.move(temp_filename, path)
+    # Make response
+    return jsonify({
+        'message': 'Image uploaded successfully.',
+        'filename': filename}), 200
 
 
 # Login route ################################################################

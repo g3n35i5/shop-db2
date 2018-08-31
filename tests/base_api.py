@@ -20,7 +20,7 @@ class BaseAPITestCase(BaseTestCase):
         self.assertEqual(data['message'], exception.message)
         self.assertEqual(data['result'], exception.type)
 
-    def _request(self, type, url, data, role):
+    def _request(self, type, url, data, role, content_type):
         '''Helper function to perform a request to the API'''
         if role not in ['admin', 'user', None]:  # pragma: no cover
             sys.exit(f'Wrong role: {role}')
@@ -37,39 +37,50 @@ class BaseAPITestCase(BaseTestCase):
             email = None
             password = None
 
-        headers = {'content-type': 'application/json'}
+        # Only serialize the data to JSON if it is a json object.
+        if content_type == 'application/json':
+            data = json.dumps(data)
+
+        headers = {'content-type': content_type}
         if email and password:
             res = self.login(username, email, password)
             headers['token'] = json.loads(res.data)['token']
         if type == 'POST':
-            res = self.client.post(url, data=json.dumps(data), headers=headers)
+            res = self.client.post(url, data=data, headers=headers)
         elif type == 'PUT':
-            res = self.client.put(url, data=json.dumps(data), headers=headers)
+            res = self.client.put(url, data=data, headers=headers)
         elif type == 'GET':
-            res = self.client.get(url, data=json.dumps(data), headers=headers)
+            res = self.client.get(url, data=data, headers=headers)
         elif type == 'DELETE':
-            res = self.client.delete(url, data=json.dumps(data),
-                                     headers=headers)
+            res = self.client.delete(url, data=data, headers=headers)
         else:  # pragma: no cover
             sys.exit('Wrong request type: {}'.format(_type))
 
         return res
 
-    def post(self, url, data=None, role=None):
+    def post(self, url, data=None, role=None,
+             content_type='application/json'):
         '''Helper function to perform a POST request to the API'''
-        return self._request(type='POST', url=url, data=data, role=role)
+        return self._request(type='POST', url=url, data=data, role=role,
+                             content_type=content_type)
 
-    def get(self, url, data=None, role=None):
+    def get(self, url, data=None, role=None,
+            content_type='application/json'):
         '''Helper function to perform a GET request to the API'''
-        return self._request(type='GET', url=url, data=data, role=role)
+        return self._request(type='GET', url=url, data=data, role=role,
+                             content_type=content_type)
 
-    def put(self, url, data=None, role=None):
+    def put(self, url, data=None, role=None,
+            content_type='application/json'):
         '''Helper function to perform a GET request to the API'''
-        return self._request(type='PUT', url=url, data=data, role=role)
+        return self._request(type='PUT', url=url, data=data, role=role,
+                             content_type=content_type)
 
-    def delete(self, url, data=None, role=None):
+    def delete(self, url, data=None, role=None,
+               content_type='application/json'):
         '''Helper function to perform a DELETE request to the API'''
-        return self._request(type='DELETE', url=url, data=data, role=role)
+        return self._request(type='DELETE', url=url, data=data, role=role,
+                             content_type=content_type)
 
     def login(self, username, email, password):
         '''Helper function to perform a login'''

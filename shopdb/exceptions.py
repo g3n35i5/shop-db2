@@ -157,3 +157,33 @@ class InvalidJSON(BaseException):
     type = 'error'
     message = 'The JSON data is corrupt.'
     code = 401
+
+
+class NoFileIncluded(BaseException):
+    type = 'error'
+    message = 'No file could be found in the request.'
+    code = 401
+
+
+class InvalidFilename(BaseException):
+    type = 'error'
+    message = 'The file is invalid.'
+    code = 401
+
+
+class BrokenImage(BaseException):
+    type = 'error'
+    message = 'The image file is broken.'
+    code = 401
+
+
+class InvalidFileType(BaseException):
+    type = 'error'
+    message = 'The file is of the wrong type.'
+    code = 401
+
+
+class FileTooLarge(BaseException):
+    type = 'error'
+    message = 'The file is too large.'
+    code = 401

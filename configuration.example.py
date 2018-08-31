@@ -12,6 +12,7 @@ class BaseConfig(object):
     PORT = 5000
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = PATH + '/shopdb/uploads/'
+    MAX_CONTENT_LENGTH = 4 * 1024 * 1024
 
 
 class ProductiveConfig(BaseConfig):
