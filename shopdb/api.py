@@ -29,9 +29,13 @@ bcrypt = Bcrypt(app)
 def convert_minimal(data, fields):
     '''This function returns only the required attributes of all objects in
        given list.'''
-    out = []
+
     if not isinstance(data, list):
         data = [data]
+
+    if len(data) == 0:
+        return []
+    out = []
 
     for item in data:
         element = {}
