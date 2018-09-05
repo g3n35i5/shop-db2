@@ -5,7 +5,7 @@ import shopdb.exceptions as exc
 from flask import (Flask, request, g, make_response, jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.exceptions import RequestEntityTooLarge, NotFound
 import jwt
 import sqlite3
 import sqlalchemy
@@ -130,7 +130,10 @@ def handle_error(error):
     # Perform a rollback. All changes that have not yet been committed are
     # thus reset.
     db.session.rollback()
-    # As long as the application is in debug mode, all exceptions
+    # Catch the 404-error.
+    if isinstance(error, NotFound):
+        return jsonify(result='error', message='Page does not exist.'), 404
+    # As long as the application is in debug mode, all other exceptions
     # should be output immediately.
     if app.config['DEBUG']:  # pragma: no cover
         raise error
