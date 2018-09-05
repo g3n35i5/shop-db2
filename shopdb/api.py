@@ -26,6 +26,11 @@ db.init_app(app)
 bcrypt = Bcrypt(app)
 
 
+def set_app(configuration):
+    app.config.from_object(configuration)
+    return app
+
+
 def convert_minimal(data, fields):
     '''This function returns only the required attributes of all objects in
        given list.'''

@@ -1,0 +1,6 @@
+Water,100
+Pizza,300
+Coca Cola,150
+Cookies,50
+Tea,20
+Coffee,25
