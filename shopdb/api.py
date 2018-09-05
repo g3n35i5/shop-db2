@@ -224,16 +224,25 @@ def login():
     '''Authenticate a registered user'''
     data = json_body()
     user = None
+    # Check all items in the json body.
+    allowed = ['username', 'email', 'password']
+    for item in data:
+        if item not in allowed:
+            raise exc.ForbiddenField
+        if not isinstance(data[item], str):
+            raise exc.WrongType
+
     # Check if the username is included in the request.
     if 'username' in data and data['username'] is not '':
-        user = User.query.filter_by(username=str(data['username'])).first()
+        user = User.query.filter_by(username=data['username']).first()
         if not user:
             raise exc.InvalidCredentials()
 
     # Check, if the username is not available, if an email address is
     # available in the request.
     elif 'email' in data and data['email'] is not '':
-        user = User.query.filter_by(email=str(data['email'])).first()
+        email = data['email'].lower()
+        user = User.query.filter_by(email=email).first()
         if not user:
             raise exc.InvalidCredentials()
 
@@ -284,22 +293,25 @@ def register():
     if data['password'] != data['repeat_password']:
         raise exc.PasswordsDoNotMatch()
 
+    # Convert email address to lowercase.
+    email = data['email'].lower()
+
     # Check if the username is already assigned.
     if User.query.filter_by(username=data['username']).first():
         raise exc.UsernameAlreadyTaken()
 
     # Check if the email address is already assigned.
-    if User.query.filter_by(email=data['email']).first():
+    if User.query.filter_by(email=email).first():
         raise exc.EmailAddressAlreadyTaken()
 
     # Try to create the user.
     try:
         user = User(
-            firstname=str(data['firstname']),
-            lastname=str(data['lastname']),
-            username=str(data['username']),
-            email=str(data['email']),
-            password=bcrypt.generate_password_hash(str(data['password'])))
+            firstname=data['firstname'],
+            lastname=data['lastname'],
+            username=data['username'],
+            email=email,
+            password=bcrypt.generate_password_hash(data['password']))
         db.session.add(user)
         db.session.commit()
     except IntegrityError:

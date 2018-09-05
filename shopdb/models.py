@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
 from sqlalchemy import event
-import re
+from email_validator import validate_email, EmailNotValidError
 import pdb
 
 db = SQLAlchemy()
@@ -43,8 +43,10 @@ class User(db.Model):
             raise InvalidEmailAddress
 
         # Check email regex
-        if not re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+' \
-                        '(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email):
+        try:
+            validated = validate_email(email)
+            email = validated['email']
+        except EmailNotValidError:
             raise InvalidEmailAddress
 
         return email
