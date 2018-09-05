@@ -237,30 +237,29 @@ def login():
     data = json_body()
     user = None
     # Check all items in the json body.
-    allowed = ['username', 'email', 'password']
+    allowed = ['identifier', 'password']
     for item in data:
         if item not in allowed:
-            raise exc.ForbiddenField
+            raise exc.ForbiddenField()
         if not isinstance(data[item], str):
-            raise exc.WrongType
+            raise exc.WrongType()
 
-    # Check if the username is included in the request.
-    if 'username' in data and data['username'] is not '':
-        user = User.query.filter_by(username=data['username']).first()
-        if not user:
-            raise exc.InvalidCredentials()
+    if not all(x in data for x in allowed):
+        raise exc.DataIsMissing()
 
-    # Check, if the username is not available, if an email address is
-    # available in the request.
-    elif 'email' in data and data['email'] is not '':
-        email = data['email'].lower()
-        user = User.query.filter_by(email=email).first()
+    # Try to get the user with the identifier.
+    if 'identifier' in data and data['identifier'] is not '':
+        # Try the email address.
+        user = User.query.filter_by(email=data['identifier']).first()
+        # If there is no match, try the username.
         if not user:
-            raise exc.InvalidCredentials()
+            user = User.query.filter_by(username=data['identifier']).first()
 
     # If no user with this data exists or there is no password in the
     # request, cancel the authentication.
-    if not user or 'password' not in data:
+    if not user:
+        raise exc.InvalidCredentials()
+    if 'password' not in data:
         raise exc.DataIsMissing()
 
     # Check if the user has already been verified.

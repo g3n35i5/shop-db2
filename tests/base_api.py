@@ -27,11 +27,9 @@ class BaseAPITestCase(BaseTestCase):
 
         if role == 'admin':
             email = u_emails[0]
-            username = u_usernames[0]
             password = u_passwords[0]
         elif role == 'user':
             email = u_emails[1]
-            username = u_usernames[1]
             password = u_passwords[1]
         else:
             email = None
@@ -43,7 +41,7 @@ class BaseAPITestCase(BaseTestCase):
 
         headers = {'content-type': content_type}
         if email and password:
-            res = self.login(username, email, password)
+            res = self.login(email, password)
             headers['token'] = json.loads(res.data)['token']
         if type == 'POST':
             res = self.client.post(url, data=data, headers=headers)
@@ -82,8 +80,8 @@ class BaseAPITestCase(BaseTestCase):
         return self._request(type='DELETE', url=url, data=data, role=role,
                              content_type=content_type)
 
-    def login(self, username, email, password):
+    def login(self, identifier, password):
         '''Helper function to perform a login'''
-        data = {'email': email, 'password': password, 'username': username}
+        data = {'identifier': identifier, 'password': password}
         return self.client.post('/login', data=json.dumps(data),
                                 headers={'content-type': 'application/json'})

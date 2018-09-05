@@ -16,7 +16,7 @@ class LoginAPITestCase(BaseAPITestCase):
         '''This test is designed to test the login of an existing user with
            a username and password'''
         data = {
-            'username': u_usernames[0],
+            'identifier': u_usernames[0],
             'password': u_passwords[0]
         }
         res = self.post(url='/login', data=data)
@@ -36,28 +36,7 @@ class LoginAPITestCase(BaseAPITestCase):
         '''This test is designed to test the login of an existing user with
            an email address and password'''
         data = {
-            'email': u_emails[0],
-            'password': u_passwords[0]
-        }
-        res = self.post(url='/login', data=data)
-        self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert all(item in data for item in ['token', 'result'])
-        self.assertTrue(data['result'])
-        decode = jwt.decode(data['token'], self.app.config['SECRET_KEY'])
-        assert 'user' in decode
-        self.assertEqual(decode['user']['id'], 1)
-        self.assertEqual(decode['user']['firstname'], u_firstnames[0])
-        self.assertEqual(decode['user']['lastname'], u_lastnames[0])
-        self.assertEqual(decode['user']['username'], u_usernames[0])
-        self.assertEqual(decode['user']['email'], u_emails[0])
-
-    def test_login_user_username_and_email(self):
-        '''This test is designed to test the login of an existing user with
-           an email address, a username and a password'''
-        data = {
-            'email': u_emails[0],
-            'username': u_usernames[0],
+            'identifier': u_emails[0],
             'password': u_passwords[0]
         }
         res = self.post(url='/login', data=data)
@@ -89,8 +68,7 @@ class LoginAPITestCase(BaseAPITestCase):
 
         # Login.
         data = {
-            'email': 'john.doe@test.com',
-            'username': 'johnny',
+            'identifier': 'john.doe@test.com',
             'password': 'supersecret'
         }
         res = self.post(url='/login', data=data)
@@ -101,7 +79,7 @@ class LoginAPITestCase(BaseAPITestCase):
         '''If an authentication attempt is made without a password,
            the correct error message must be returned.'''
         data = {
-            'email': u_emails[0]
+            'identifier': u_emails[0]
         }
         res = self.post(url='/login', data=data)
         self.assertEqual(res.status_code, 401)
@@ -125,7 +103,7 @@ class LoginAPITestCase(BaseAPITestCase):
         '''If an authentication attempt is made with a wrong email address,
            the correct error message must be returned.'''
         data = {
-            'email': 'wrong.mail@test.com',
+            'identifier': 'wrong.mail@test.com',
             'password': u_passwords[0]
         }
         res = self.post(url='/login', data=data)
@@ -138,7 +116,7 @@ class LoginAPITestCase(BaseAPITestCase):
         '''If an authentication attempt is made with a wrong username,
            the correct error message must be returned.'''
         data = {
-            'username': 'my_cool_username',
+            'identifier': 'my_cool_username',
             'password': u_passwords[0]
         }
         res = self.post(url='/login', data=data)
@@ -151,7 +129,7 @@ class LoginAPITestCase(BaseAPITestCase):
         '''If an authentication attempt is made with a password,
            the correct error message must be returned.'''
         data = {
-            'username': u_usernames[0],
+            'identifier': u_usernames[0],
             'password': 'my_super_wrong_password'
         }
         res = self.post(url='/login', data=data)
