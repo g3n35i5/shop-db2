@@ -49,9 +49,7 @@ def convert_minimal(data, fields):
 
         out.append(element)
 
-    if len(out) > 1:
-        return out
-    return out[0]
+    return out
 
 
 def adminRequired(f):
@@ -370,12 +368,12 @@ def list_users(admin):
     '''Return a list of all users'''
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
-        users = convert_minimal(result,
-                                ['id', 'firstname', 'lastname', 'username'])
-        return jsonify({'users': users}), 200
+        fields = ['id', 'firstname', 'lastname', 'username']
+        return jsonify({'users': convert_minimal(result, fields)}), 200
 
-    users = [user.to_dict() for user in result]
-    return jsonify({'users': users}), 200
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
+              'is_admin', 'creation_date']
+    return jsonify({'users': convert_minimal(result, fields)}), 200
 
 
 @app.route('/users/<int:id>', methods=['GET'])
@@ -388,7 +386,7 @@ def get_user(id):
         raise exc.UserIsNotVerified()
 
     fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
-    user = convert_minimal(user, fields)
+    user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
 
 
@@ -538,18 +536,16 @@ def create_product(admin):
 @adminOptional
 def get_product(admin, id):
     '''Return the product with the given id'''
-    result = (Product.query
-              .filter(Product.id == id).first())
-    if not result:
+    product = Product.query.filter(Product.id == id).first()
+    if not product:
         raise exc.ProductNotFound()
 
-    if not (result.active or admin):
+    if not (product.active or admin):
         raise exc.UnauthorizedAccess()
 
-    product = convert_minimal(result, ['id', 'name', 'price', 'barcode',
-                                       'active', 'countable', 'revokeable',
-                                       'imagename'])
-    return jsonify({'product': product}), 200
+    fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
+              'revokeable', 'imagename']
+    return jsonify({'product': convert_minimal(product, fields)[0]}), 200
 
 
 @app.route('/products/<int:id>', methods=['PUT'])
@@ -691,7 +687,7 @@ def get_purchase(id):
         raise exc.PurchaseNotFound()
     fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount', 'price',
               'productprice', 'revoked']
-    return jsonify({'purchase': convert_minimal(purchase, fields)}), 200
+    return jsonify({'purchase': convert_minimal(purchase, fields)[0]}), 200
 
 
 @app.route('/purchases/<int:id>', methods=['PUT'])
