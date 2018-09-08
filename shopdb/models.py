@@ -76,6 +76,13 @@ class User(db.Model):
             return False
         return au.is_admin
 
+    @hybrid_property
+    def verification_date(self):
+        v = Verification.query.filter(Verification.user_id == self.id).first()
+        if v:
+            return v.timestamp
+        return None
+
     @hybrid_method
     def set_admin(self, is_admin, admin_id):
         if self.is_admin == is_admin:
