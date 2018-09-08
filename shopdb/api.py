@@ -680,7 +680,7 @@ def get_purchase(id):
     if not purchase:
         raise exc.PurchaseNotFound()
     fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount', 'price',
-              'productprice', 'revoked']
+              'productprice', 'revoked', 'revokehistory']
     return jsonify({'purchase': convert_minimal(purchase, fields)[0]}), 200
 
 
