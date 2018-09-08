@@ -337,14 +337,8 @@ def list_pending_validations(admin):
     res = (db.session.query(User)
            .filter(~exists().where(UserVerification.user_id == User.id))
            .all())
-    pending = []
-    for user in res:
-        pending.append({
-            'id': user.id,
-            'firstname': user.firstname,
-            'lastname': user.lastname
-        })
-    return jsonify({'pending_validations': pending}), 200
+    fields = ['id', 'firstname', 'lastname', 'email']
+    return jsonify({'pending_validations': convert_minimal(res, fields)}), 200
 
 
 @app.route('/verify/<int:id>', methods=['POST'])
