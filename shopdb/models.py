@@ -346,7 +346,7 @@ class PurchaseRevoke(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
-    purchase_id = db.Column(db.Integer, db.ForeignKey('products.id'),
+    purchase_id = db.Column(db.Integer, db.ForeignKey('purchases.id'),
                             nullable=False)
 
 
@@ -364,9 +364,24 @@ class Deposit(db.Model):
     def toggle_revoke(self, revoked, admin_id):
         if self.revoked == revoked:
             raise NothingHasChanged
-        dr = DepositRevoke(revoked=revoked, admin_id=admin_id)
+        dr = DepositRevoke(revoked=revoked, admin_id=admin_id,
+                           deposit_id=self.id)
         self.revoked = revoked
         db.session.add(dr)
+
+    @hybrid_property
+    def revokehistory(self):
+        res = (DepositRevoke.query
+               .filter(DepositRevoke.deposit_id == self.id)
+               .all())
+        revokehistory = []
+        for revoke in res:
+            revokehistory.append({
+                'id': revoke.id,
+                'timestamp': revoke.timestamp,
+                'revoked': revoke.revoked
+            })
+        return revokehistory
 
 
 class DepositRevoke(db.Model):

@@ -99,6 +99,12 @@ class PurchaseNotFound(BaseException):
     code = 401
 
 
+class DepositNotFound(BaseException):
+    type = 'error'
+    message = 'There is no deposit with this id.'
+    code = 401
+
+
 class ProductNotFound(BaseException):
     type = 'error'
     message = 'There is no product with this id.'

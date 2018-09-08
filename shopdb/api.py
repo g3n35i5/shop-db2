@@ -737,22 +737,110 @@ def update_purchase(id):
 
 # Deposit routes #############################################################
 @app.route('/deposits', methods=['GET'])
-def list_deposits():
-    return make_response('Not implemented yet.', 400)
+@adminRequired
+def list_deposits(admin):
+    '''List all deposits'''
+    deposits = Deposit.query.all()
+    fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
+              'admin_id']
+    return jsonify({'deposits': convert_minimal(deposits, fields)}), 200
 
 
 @app.route('/deposits', methods=['POST'])
 @adminRequired
 def create_deposit(admin):
-    return make_response('Not implemented yet.', 400)
+    '''Create a deposit'''
+    data = json_body()
+    required = {'user_id': int, 'amount': int, 'comment': str}
+    for item in data:
+        if item not in required:
+            raise exc.UnknownField()
+        if not isinstance(data[item], required[item]):
+            raise exc.WrongType()
+
+    # Check user
+    user = User.query.filter_by(id=data['user_id']).first()
+    if not user:
+        raise exc.UserNotFound()
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+
+    # Check amount
+    if data['amount'] <= 0:
+        raise exc.InvalidAmount()
+
+    # Create and insert deposit
+    try:
+        deposit = Deposit(**data)
+        deposit.admin_id = admin.id
+        db.session.add(deposit)
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created deposit.'}), 200
 
 
 @app.route('/deposits/<int:id>', methods=['GET'])
 def get_deposit(id):
-    return make_response('Not implemented yet.', 400)
+    # Query the deposit
+    res = Deposit.query.filter_by(id=id).first()
+    # If it not exists, return an error
+    if not res:
+        raise exc.DepositNotFound()
+    # Convert the deposit to a JSON friendly format
+    fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
+              'revokehistory']
+    return jsonify({'deposit': convert_minimal(res, fields)[0]}), 200
 
 
 @app.route('/deposits/<int:id>', methods=['PUT'])
 @adminRequired
 def update_deposit(admin, id):
-    return make_response('Not implemented yet.', 400)
+    '''Update the deposit with the given id'''
+    # Check deposit
+    deposit = Deposit.query.filter_by(id=id).first()
+    if not deposit:
+        raise exc.DepositNotFound()
+
+    data = json_body()
+    updateable = {'revoked': bool, 'amount': int}
+    for item in data:
+        if item not in updateable:
+            if hasattr(deposit, item):
+                raise exc.ForbiddenField()
+            raise exc.UnknownField()
+        if not isinstance(data[item], updateable[item]):
+            raise exc.WrongType()
+
+    updated_fields = []
+
+    # Handle deposit revoke
+    if 'revoked' in data:
+        if deposit.revoked == data['revoked']:
+            raise exc.NothingHasChanged()
+        deposit.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+        updated_fields.append('revoked')
+        del data['revoked']
+
+    # Handle all other fields
+    for item in data:
+        if not hasattr(deposit, item):
+            raise exc.UnknownField()
+        setattr(deposit, item, data[item])
+        updated_fields.append(item)
+
+    # Check the amount of updated fields
+    if len(updated_fields) == 0:
+        raise exc.NothingHasChanged()
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated deposit.',
+        'updated_fields': updated_fields
+    }), 201
