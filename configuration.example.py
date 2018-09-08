@@ -19,13 +19,16 @@ class ProductiveConfig(BaseConfig):
     SECRET_KEY = 'YourSuperSecretKey'
     DEBUG = False
     TEST = False
+    ENV = 'productive'
     DATABASE_PATH = PATH + '/shopdb/shop.db'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + DATABASE_PATH
 
 
 class DevelopmentConfig(BaseConfig):
-    DEBUG = True
+    DEBUG = False
     TEST = True
+    DEVELOPMENT = True
+    ENV = 'development'
 
 
 class UnittestConfig(BaseConfig):
