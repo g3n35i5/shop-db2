@@ -326,7 +326,7 @@ def register():
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return make_response('Created user.', 200)
+    return jsonify({'message': 'Created user.'}), 200
 
 
 # Verification routes #########################################################
@@ -352,7 +352,7 @@ def verify_user(admin, id):
 
     user.verify(admin_id=admin.id)
     db.session.commit()
-    return make_response('Verified user.', 201)
+    return jsonify({'message': 'Verified user.'}), 201
 
 
 # User routes ################################################################
