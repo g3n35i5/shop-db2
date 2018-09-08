@@ -22,7 +22,7 @@ def insert_dev_data(db):
         firstname = name.split(',')[1]
         lastname = name.split(',')[0]
         username = 'random_{0:02d}'.format(index + 2)
-        email = firstname + '.' + lastname + '@example.com'
+        email = firstname.lower() + '.' + lastname.lower() + '@example.com'
         password = b'1234'
         user = User(
             firstname=firstname,
