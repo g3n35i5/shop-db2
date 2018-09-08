@@ -623,7 +623,7 @@ def list_purchases(admin):
     if admin:
         res = Purchase.query.all()
         fields = ['id', 'timestamp', 'user_id', 'product_id', 'productprice',
-                  'amount', 'revoked']
+                  'amount', 'revoked', 'price']
         return jsonify({'purchases': convert_minimal(res, fields)}), 200
 
     # Create a public list
