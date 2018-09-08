@@ -1,5 +1,6 @@
 from shopdb.models import *
 from shopdb.api import bcrypt
+import random
 
 
 def insert_dev_data(db):
@@ -50,5 +51,15 @@ def insert_dev_data(db):
         db.session.add(product)
         db.session.flush()  # This is needed so that the product has its id
         product.set_price(price=int(item.split(',')[1]), admin_id=1)
+
+    db.session.commit()
+    # Insert default purchases
+    ids = open('./dev/purchases.txt', 'r').read().splitlines()
+    for user_id in ids:
+        purchase = Purchase(
+            user_id=int(user_id),
+            product_id=random.randint(1, 6),
+            amount=random.randint(1, 10))
+        db.session.add(purchase)
 
     db.session.commit()
