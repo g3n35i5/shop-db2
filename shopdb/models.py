@@ -341,6 +341,31 @@ class Purchase(db.Model):
         return revokehistory
 
 
+class ReplenishmentCollection(db.Model):
+    __tablename__ = 'replenishmentcollections'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    replenishments = db.relationship('Replenishment', lazy='dynamic',
+                                     foreign_keys='Replenishment.replcoll_id')
+
+    @hybrid_property
+    def price(self):
+        return sum(map(lambda x: x.total_price, self.replenishments.all()))
+
+
+class Replenishment(db.Model):
+    __tablename__ = 'replenishments'
+    id = db.Column(db.Integer, primary_key=True)
+    replcoll_id = db.Column(db.Integer,
+                            db.ForeignKey('replenishmentcollections.id'),
+                            nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
+                           nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    total_price = db.Column(db.Integer, nullable=False)
+
+
 class PurchaseRevoke(db.Model):
     __tablename__ = 'purchaserevokes'
     id = db.Column(db.Integer, primary_key=True)

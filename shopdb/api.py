@@ -844,3 +844,31 @@ def update_deposit(admin, id):
         'message': 'Updated deposit.',
         'updated_fields': updated_fields
     }), 201
+
+
+@app.route('/replenishments', methods=['GET'])
+@adminRequired
+def list_replenishments(admin):
+    '''List all replenishment collections.'''
+    pass
+
+
+@app.route('/replenishments', methods=['POST'])
+@adminRequired
+def create_replenishment(admin):
+    '''Create replenishment collection.'''
+    pass
+
+
+@app.route('/replenishments/<int:id>', methods=['PUT'])
+@adminRequired
+def update_replenishment(admin, id):
+    '''Update a replenishment collection.'''
+    pass
+
+
+@app.route('/replenishments/<int:id>', methods=['GET'])
+@adminRequired
+def get_replenishment(admin, id):
+    '''Get a single replenishment collection.'''
+    pass
