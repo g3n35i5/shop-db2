@@ -6,6 +6,6 @@ flask_bcrypt == 0.7.1
 flask_sqlalchemy == 2.3.2
 sqlalchemy == 1.2.10
 coverage >= 4.5.1
-jwt == 0.5.4
+PyJWT == 0.5.4
 Pillow == 5.2.0
 email_validator == 1.0.2
