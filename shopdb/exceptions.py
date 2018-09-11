@@ -105,6 +105,18 @@ class DepositNotFound(BaseException):
     code = 401
 
 
+class ReplenishmentNotFound(BaseException):
+    type = 'error'
+    message = 'There is no Replenishment with this id.'
+    code = 401
+
+
+class ReplenishmentCollectionNotFound(BaseException):
+    type = 'error'
+    message = 'There is no ReplenishmentCollection with this id.'
+    code = 401
+
+
 class ProductNotFound(BaseException):
     type = 'error'
     message = 'There is no product with this id.'
