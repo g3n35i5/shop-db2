@@ -29,37 +29,10 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
             db.session.add(r)
         db.session.commit()
 
-    def test_delete_replenishment_as_admin_I(self):
-        '''Deleting a single replenishment as admin'''
-        self._insert_testdata()
-        data = {'amount': 0, 'total_price': 0, 'delete': True}
-        res = self.put(url='/replenishments/1', data=data, role='admin')
-        self.assertEqual(res.status_code, 201)
-        data = json.loads(res.data)
-        assert 'message' in data
-        self.assertEqual(data['message'], 'Deleted Replenishment.')
-        repl = Replenishment.query.filter_by(id=1).first()
-        self.assertEqual(repl, None)
-
-    def test_delete_replenishment_as_admin_II(self):
-        '''Deleting a single replenishment leding to deletion of replcoll'''
-        self._insert_testdata()
-        data = {'amount': 0, 'total_price': 0, 'delete': True}
-        res = self.put(url='/replenishments/3', data=data, role='admin')
-        self.assertEqual(res.status_code, 201)
-        data = json.loads(res.data)
-        assert 'message' in data
-        self.assertEqual(data['message'], 'Deleted Replenishment. Deletetd'
-                                          + ' ReplenishmentCollection ID: 2')
-        repl = Replenishment.query.filter_by(id=3).first()
-        self.assertEqual(repl, None)
-        replcoll = ReplenishmentCollection.query.filter_by(id=2).first()
-        self.assertEqual(replcoll, None)
-
     def test_update_replenishment_as_admin(self):
         '''Updating amount and price of a single replenishment'''
         self._insert_testdata()
-        data = {'amount': 20, 'total_price': 400, 'delete': False}
+        data = {'amount': 20, 'total_price': 400}
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
@@ -73,14 +46,14 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
     def test_update_replenishment_no_changes(self):
         '''Updating a single replenishment with same amount and price'''
         self._insert_testdata()
-        data = {'amount': 10, 'total_price': 3000, 'delete': False}
+        data = {'amount': 10, 'total_price': 3000}
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
     def test_update_replenishment_as_user(self):
         '''Updating a single replenishment as user'''
-        data = {'amount': 0, 'total_price': 0, 'delete': True}
+        data = {'amount': 0, 'total_price': 0}
         res = self.put(url='/replenishments/1', data=data, role='user')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
@@ -88,7 +61,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
     def test_update_replenishment_with_invalid_id(self):
         '''Updating a single replenishment that does not exist'''
         self._insert_testdata()
-        data = {'amount': 0, 'total_price': 0, 'delete': True}
+        data = {'amount': 0, 'total_price': 0}
         res = self.put(url='/replenishments/4', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ReplenishmentNotFound)
@@ -96,7 +69,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
     def test_update_replenishment_with_forbidden_field(self):
         '''Updating a forbidden field of a single replenishment'''
         self._insert_testdata()
-        data = {'amount': 0, 'total_price': 0, 'delete': True, 'product_id': 1}
+        data = {'amount': 0, 'total_price': 0, 'product_id': 1}
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
@@ -104,7 +77,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
     def test_update_replenishment_with_unknown_field(self):
         '''Updating a unknown field of a single replenishment'''
         self._insert_testdata()
-        data = {'amount': 0, 'total_price': 0, 'delete': True, 'Nonse': '2'}
+        data = {'amount': 0, 'total_price': 0, 'Nonse': '2'}
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
@@ -112,7 +85,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
     def test_update_replenishment_with_wrong_type(self):
         '''Updating a field of a single replenishment with a wrong type'''
         self._insert_testdata()
-        data = {'amount': 0, 'total_price': 0, 'delete': 'yes'}
+        data = {'amount': 0, 'total_price': '1'}
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
@@ -120,7 +93,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
     def test_update_replenishment_with_data_missing(self):
         '''Updating a single replenishment with no amount given'''
         self._insert_testdata()
-        data = {'amount': 0, 'total_price': 0}
+        data = {'amount': 0}
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
