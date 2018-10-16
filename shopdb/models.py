@@ -357,7 +357,7 @@ class ReplenishmentCollection(db.Model):
     @hybrid_method
     def toggle_revoke(self, revoked, admin_id):
         if self.revoked == revoked:
-            raise NothingHasChanged
+            raise NothingHasChanged()
         dr = ReplenishmentCollectionRevoke(revoked=revoked, admin_id=admin_id,
                                            replcoll_id=self.id)
         self.revoked = revoked
