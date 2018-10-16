@@ -1,49 +1,66 @@
 #!/usr/bin/env python3
 
-import argparse
+from argparse import ArgumentParser
 import sys
 import os
 import unittest
 
 
+def do_all_tests():
+    tests = unittest.TestLoader().discover('tests')
+    unittest.TextTestRunner(verbosity=2).run(tests)
+
+
 if __name__ == '__main__':
 
-    list_files = os.listdir('tests')
-    list_tests = []
+    parser = ArgumentParser(description='Running unittests for shop.db.')
+    parser.add_argument('--mode', help='Select the operating mode.',
+                        default='interactive',
+                        choices=['interactive', 'auto'])
 
-    for file in list_files:
-        try:
-            file.index('test')
-        except ValueError:
-            continue
-        else:
-            list_tests.append(file)
+    args = parser.parse_args()
 
-    print('Please select the tests you want to run. [Default=all]')
-    print('all: All tests')
-    for i, test in enumerate(list_tests):
-        print('{:3d}: {}'.format(i, test))
-    answ = input('Testnumbers: ')
+    if args.mode == 'interactive':
+        list_files = os.listdir('tests')
+        list_tests = []
 
-    if answ in ['', 'all', 'a']:
-        tests = unittest.TestLoader().discover('tests')
-        unittest.TextTestRunner(verbosity=2).run(tests)
-    else:  # pragma: no cover
-        list_testnumbers = answ.split(' ')
-        test = []
-
-        for i, testnumber in enumerate(list_testnumbers):
+        for file in list_files:
             try:
-                testnumber = int(testnumber)
-
+                file.index('test')
             except ValueError:
-                sys.exit('Invalid input')
+                continue
+            else:
+                list_tests.append(file)
 
-            if testnumber not in range(0, len(list_tests)):
-                sys.exit('Invalid input')
+        print('Please select the tests you want to run. [Default=all]')
+        print('all: All tests')
+        for i, test in enumerate(list_tests):
+            print('{:3d}: {}'.format(i, test))
+        answ = input('Testnumbers: ')
 
-            test.append((unittest.TestLoader()
-                         .discover('tests', pattern=list_tests[testnumber])))
+        if answ in ['', 'all', 'a']:
+            do_all_tests()
+        else:  # pragma: no cover
+            list_testnumbers = answ.split(' ')
+            test = []
 
-        testcombo = unittest.TestSuite(test)
-        unittest.TextTestRunner(verbosity=2).run(testcombo)
+            for i, testnumber in enumerate(list_testnumbers):
+                try:
+                    testnumber = int(testnumber)
+
+                except ValueError:
+                    sys.exit('Invalid input')
+
+                if testnumber not in range(0, len(list_tests)):
+                    sys.exit('Invalid input')
+
+                test.append(unittest.TestLoader()
+                            .discover('tests', pattern=list_tests[testnumber]))
+
+            testcombo = unittest.TestSuite(test)
+            unittest.TextTestRunner(verbosity=2).run(testcombo)
+    elif args.mode == 'auto':
+        do_all_tests()
+
+    else:
+        sys.exit(f'Invalid operating mode: {args.mode}')
