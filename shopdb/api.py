@@ -978,13 +978,10 @@ def update_replenishment(admin, id):
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
         raise exc.ReplenishmentNotFound()
-    # Get the corresponding ReplenishmentCollection
-    replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
-                .first())
 
     # Data validation
     data = json_body()
-    updateable = {'amount': int, 'total_price': int, 'delete': bool}
+    updateable = {'amount': int, 'total_price': int}
     for item in data:
         if item not in updateable:
             if hasattr(repl, item):
@@ -997,28 +994,7 @@ def update_replenishment(admin, id):
     if any(x not in data for x in updateable):
         raise exc.DataIsMissing()
 
-    # Delete replenishment
-    if data['delete']:
-        db.session.delete(repl)
-        message = 'Deleted Replenishment.'
-
-        # Check if ReplenishmentCollection still has Replenishments
-        repls = replcoll.replenishments.all()
-        if not repls:
-            message = message + (' Deletetd ReplenishmentCollection ID: {}'
-                                 .format(replcoll.id))
-            db.session.delete(replcoll)
-
-        # Apply changes
-        try:
-            db.session.commit()
-        except IntegrityError:
-            raise exc.CouldNotUpdateEntry()
-
-        return jsonify({'message': message}), 201
-
     updated_fields = []
-    del data['delete']
 
     # Handle fields
     for item in data:
@@ -1040,3 +1016,34 @@ def update_replenishment(admin, id):
         'message': 'Updated replenishment.',
         'updated_fields': updated_fields
     }), 201
+
+@app.route('/replenishments/<int:id>', methods=['DELETE'])
+@adminRequired
+def delete_replenishment(admin, id):
+    '''Update a replenishment.'''
+    # Check Replenishment
+    repl = Replenishment.query.filter_by(id=id).first()
+    if not repl:
+        raise exc.ReplenishmentNotFound()
+    # Get the corresponding ReplenishmentCollection
+    replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
+                .first())
+
+    # Delete replenishment
+    db.session.delete(repl)
+    message = 'Deleted Replenishment.'
+
+    # Check if ReplenishmentCollection still has Replenishments
+    repls = replcoll.replenishments.all()
+    if not repls:
+        message = message + (' Deletetd ReplenishmentCollection ID: {}'
+                             .format(replcoll.id))
+        db.session.delete(replcoll)
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({'message': message}), 201
