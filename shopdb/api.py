@@ -223,6 +223,11 @@ def json_body():
     return jb
 
 
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({'message': 'Backend is online.'})
+
+
 @app.route('/upload', methods=['POST'])
 @adminRequired
 def upload(admin):
