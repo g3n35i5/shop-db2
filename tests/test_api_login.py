@@ -62,7 +62,7 @@ class LoginAPITestCase(BaseAPITestCase):
             'username': 'johnny',
             'email': 'john.doe@test.com',
             'password': 'supersecret',
-            'repeat_password': 'supersecret'
+            'password_repeat': 'supersecret'
         }
         res = self.post(url='/register', data=data)
 

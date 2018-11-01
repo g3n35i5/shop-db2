@@ -52,6 +52,69 @@ def convert_minimal(data, fields):
     return out
 
 
+def check_forbidden(data, forbidden_fields):
+    '''This function checks whether a forbidden field is in a Dictionary
+       and, if necessary, returns an error message and terminates the
+       higher-level function. '''
+    if any(x in data for x in forbidden_fields):
+        raise exc.ForbiddenField()
+
+
+def check_allowed_fields_and_types(data, allowed_fields):
+    '''This function checks whether the data contains an invalid field.
+       At the same time, all entries are checked for their type.'''
+    if not all(x in allowed_fields for x in data):
+        raise exc.UnknownField()
+
+    for key, value in data.items():
+        if not isinstance(value, allowed_fields[key]):
+            raise exc.WrongType()
+
+
+def insert_user(data):
+    '''Helper function to create a user.'''
+    required = ['firstname', 'lastname', 'username', 'email',
+                'password', 'password_repeat']
+
+    # Check whether all required values are available.
+    if any(item not in data for item in required):
+        raise exc.DataIsMissing()
+
+    # Check all values for their type.
+    try:
+        for item in required:
+            assert isinstance(data[item], str)
+    except AssertionError:
+        raise exc.WrongType()
+
+    # Check if the passwords match.
+    if data['password'] != data['password_repeat']:
+        raise exc.PasswordsDoNotMatch()
+
+    # Convert email address to lowercase.
+    email = data['email'].lower()
+
+    # Check if the username is already assigned.
+    if User.query.filter_by(username=data['username']).first():
+        raise exc.UsernameAlreadyTaken()
+
+    # Check if the email address is already assigned.
+    if User.query.filter_by(email=email).first():
+        raise exc.EmailAddressAlreadyTaken()
+
+    # Try to create the user.
+    try:
+        user = User(
+            firstname=data['firstname'],
+            lastname=data['lastname'],
+            username=data['username'],
+            email=email,
+            password=bcrypt.generate_password_hash(data['password']))
+        db.session.add(user)
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+
 def adminRequired(f):
     '''This function checks whether a valid token is contained in the request.
        If this is not the case, or the user has no admin rights, the request
@@ -269,7 +332,8 @@ def login():
         raise exc.InvalidCredentials()
 
     # Create a dictionary object of the user.
-    d_user = user.to_dict()
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
+    d_user = convert_minimal(user, fields)[0]
 
     # Create a token.
     exp = datetime.datetime.now() + datetime.timedelta(minutes=15)
@@ -283,45 +347,8 @@ def login():
 @app.route('/register', methods=['POST'])
 def register():
     '''Register a new user'''
-    data = json_body()
-    required = ['firstname', 'lastname', 'username', 'email',
-                'password', 'repeat_password']
-
-    # Check whether all required values are available.
-    if any(item not in data for item in required):
-        raise exc.DataIsMissing()
-
-    # Check all values for their type.
+    insert_user(json_body())
     try:
-        for item in required:
-            assert isinstance(data[item], str)
-    except AssertionError:
-        raise exc.WrongType()
-
-    # Check if the passwords match.
-    if data['password'] != data['repeat_password']:
-        raise exc.PasswordsDoNotMatch()
-
-    # Convert email address to lowercase.
-    email = data['email'].lower()
-
-    # Check if the username is already assigned.
-    if User.query.filter_by(username=data['username']).first():
-        raise exc.UsernameAlreadyTaken()
-
-    # Check if the email address is already assigned.
-    if User.query.filter_by(email=email).first():
-        raise exc.EmailAddressAlreadyTaken()
-
-    # Try to create the user.
-    try:
-        user = User(
-            firstname=data['firstname'],
-            lastname=data['lastname'],
-            username=data['username'],
-            email=email,
-            password=bcrypt.generate_password_hash(data['password']))
-        db.session.add(user)
         db.session.commit()
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
@@ -379,7 +406,8 @@ def get_user(id):
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
-    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
+              'is_admin']
     user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
 
@@ -389,33 +417,43 @@ def get_user(id):
 def update_user(admin, id):
     '''Update the user with the given id'''
     data = json_body()
-    # Delete all forbidden attributes from the list
-    forbidden = ['id', 'credit', 'creation_date']
-    for f in forbidden:
-        if f in data:
-            raise exc.ForbiddenField()
+
+    # Check the data for forbidden fields.
+    check_forbidden(data, ['id', 'credit', 'creation_date'])
+
+    # Check all allowed fields and for their types.
+    allowed = {
+        'firstname': str,
+        'lastname': str,
+        'username': str,
+        'email': str,
+        'password': str,
+        'password_repeat': str,
+        'is_admin': bool}
+
+    check_allowed_fields_and_types(data, allowed)
 
     # Query user
-    user = result = User.query.filter(User.id == id).first()
+    user = User.query.filter(User.id == id).first()
     if not user:
         raise exc.UserNotFound()
 
     updated_fields = []
 
     # Update admin role
-    if 'is_admin' in data and isinstance(data['is_admin'], bool):
+    if 'is_admin' in data:
         user.set_admin(is_admin=data['is_admin'], admin_id=admin.id)
         updated_fields.append('is_admin')
         del data['is_admin']
 
     # Check password
     if 'password' in data:
-        if 'repeat' in data:
-            if data['password'] == data['repeat']:
+        if 'password_repeat' in data:
+            if data['password'] == data['password_repeat']:
                 password = str(data['password'])
                 user.password = bcrypt.generate_password_hash(password)
                 updated_fields.append('password')
-                del data['repeat']
+                del data['password_repeat']
             else:
                 raise exc.PasswordsDoNotMatch()
         else:
@@ -844,3 +882,31 @@ def update_deposit(admin, id):
         'message': 'Updated deposit.',
         'updated_fields': updated_fields
     }), 201
+
+
+@app.route('/replenishments', methods=['GET'])
+@adminRequired
+def list_replenishments(admin):
+    '''List all replenishment collections.'''
+    pass
+
+
+@app.route('/replenishments', methods=['POST'])
+@adminRequired
+def create_replenishment(admin):
+    '''Create replenishment collection.'''
+    pass
+
+
+@app.route('/replenishments/<int:id>', methods=['PUT'])
+@adminRequired
+def update_replenishment(admin, id):
+    '''Update a replenishment collection.'''
+    pass
+
+
+@app.route('/replenishments/<int:id>', methods=['GET'])
+@adminRequired
+def get_replenishment(admin, id):
+    '''Get a single replenishment collection.'''
+    pass

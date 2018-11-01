@@ -73,7 +73,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.InvalidCredentials)
 
         # Update password
-        data = {'password': 'SuperSecret', 'repeat': 'SuperSecret'}
+        data = {'password': 'SuperSecret', 'password_repeat': 'SuperSecret'}
         res = self.put(url='/users/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
 
@@ -107,7 +107,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
 
     def test_update_password_wrong_repeat(self):
         '''Updating a password with a wrong repeat should raise an error'''
-        data = {'password': 'SuperSecret', 'repeat': 'Super...Ooops'}
+        data = {'password': 'SuperSecret', 'password_repeat': 'Super...Ooops'}
         res = self.put(url='/users/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.PasswordsDoNotMatch)

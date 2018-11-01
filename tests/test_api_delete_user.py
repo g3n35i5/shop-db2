@@ -21,7 +21,7 @@ class DeleteUserAPITestCase(BaseAPITestCase):
             'username': 'johnny',
             'email': 'john.doe@test.com',
             'password': 'supersecret',
-            'repeat_password': 'supersecret'
+            'password_repeat': 'supersecret'
         }
         res = self.post(url='/register', data=data)
         user = User.query.filter_by(id=5).first()

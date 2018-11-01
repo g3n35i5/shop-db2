@@ -20,7 +20,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             'username': 'johnny',
             'email': 'john.doe@test.com',
             'password': 'supersecret',
-            'repeat_password': 'supersecret'
+            'password_repeat': 'supersecret'
         }
         res = self.post(url='/register', data=data)
         self.assertEqual(res.status_code, 200)
@@ -43,7 +43,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             'username': 'johnny',
             'email': u_emails[0],
             'password': 'supersecret',
-            'repeat_password': 'supersecret'
+            'password_repeat': 'supersecret'
         }
         res = self.post(url='/register', data=data)
         self.assertException(res, EmailAddressAlreadyTaken)
@@ -60,7 +60,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             'username': u_usernames[0],
             'email': 'john.doe@test.com',
             'password': 'supersecret',
-            'repeat_password': 'supersecret'
+            'password_repeat': 'supersecret'
         }
         res = self.post(url='/register', data=data)
         self.assertException(res, UsernameAlreadyTaken)
@@ -77,11 +77,11 @@ class RegisterAPITestCase(BaseAPITestCase):
             'username': 'johnny',
             'email': 'john.doe@test.com',
             'password': 'supersecret',
-            'repeat_password': 'supersecret'
+            'password_repeat': 'supersecret'
         }
 
         for item in ['firstname', 'lastname', 'username', 'email',
-                     'password', 'repeat_password']:
+                     'password', 'password_repeat']:
             data_copy = copy(data)
             del data_copy[item]
             res = self.post(url='/register', data=data_copy)
@@ -100,11 +100,11 @@ class RegisterAPITestCase(BaseAPITestCase):
             'username': 'johnny',
             'email': 'john.doe@test.com',
             'password': 'supersecret',
-            'repeat_password': 'supersecret'
+            'password_repeat': 'supersecret'
         }
 
         for item in ['firstname', 'lastname', 'username', 'email',
-                     'password', 'repeat_password']:
+                     'password', 'password_repeat']:
             data_copy = copy(data)
             data_copy[item] = 1234
             res = self.post(url='/register', data=data_copy)
@@ -122,7 +122,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             'username': 'johnny',
             'email': 'john.doe@test.com',
             'password': 'supersecret',
-            'repeat_password': 'supersecret_ooops'
+            'password_repeat': 'supersecret_ooops'
         }
         res = self.post(url='/register', data=data)
         self.assertException(res, PasswordsDoNotMatch)
