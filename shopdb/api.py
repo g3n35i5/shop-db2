@@ -228,6 +228,20 @@ def index():
     return jsonify({'message': 'Backend is online.'})
 
 
+
+
+@app.route('/images/', methods=['GET'], defaults={'imagename': None})
+@app.route('/images/<imagename>', methods=['GET'])
+def get_image(imagename):
+    if not imagename:
+        return send_from_directory(app.config['UPLOAD_FOLDER'], 'default.png')
+    else:
+        if os.path.isfile(app.config['UPLOAD_FOLDER'] + imagename):
+            return send_from_directory(app.config['UPLOAD_FOLDER'], imagename)
+        else:
+            raise exc.ImageNotFound()
+
+
 @app.route('/upload', methods=['POST'])
 @adminRequired
 def upload(admin):
