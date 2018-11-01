@@ -1,11 +1,11 @@
 #usage: pip install -r requirements.txt
 
-flask == 1.0.2
-flask_testing == 0.6.2
-flask_bcrypt == 0.7.1
-flask_sqlalchemy == 2.3.2
-sqlalchemy == 1.2.10
+flask >= 1.0.2
+flask_testing >= 0.6.2
+flask_bcrypt >= 0.7.1
+flask_sqlalchemy >= 2.3.2
+sqlalchemy >= 1.2.12
 coverage >= 4.5.1
-jwt == 1.5.3
-Pillow == 5.2.0
-email_validator == 1.0.2
+PyJWT >= 1.6.4
+Pillow >= 5.2.0
+email_validator >= 1.0.2
