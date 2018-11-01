@@ -269,7 +269,8 @@ def login():
         raise exc.InvalidCredentials()
 
     # Create a dictionary object of the user.
-    d_user = user.to_dict()
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
+    d_user = convert_minimal(user, fields)[0]
 
     # Create a token.
     exp = datetime.datetime.now() + datetime.timedelta(minutes=15)

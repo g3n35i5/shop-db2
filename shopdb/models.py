@@ -54,18 +54,6 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
 
-    def to_dict(self):
-        '''This function creates a dictionary object of a user'''
-        user = {}
-        user['id'] = self.id
-        user['firstname'] = self.firstname
-        user['lastname'] = self.lastname
-        user['username'] = self.username
-        user['email'] = self.email
-        user['credit'] = self.credit
-
-        return user
-
     @hybrid_property
     def is_admin(self):
         au = (AdminUpdate.query
