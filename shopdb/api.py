@@ -410,12 +410,12 @@ def update_user(admin, id):
 
     # Check password
     if 'password' in data:
-        if 'repeat' in data:
-            if data['password'] == data['repeat']:
+        if 'password_repeat' in data:
+            if data['password'] == data['password_repeat']:
                 password = str(data['password'])
                 user.password = bcrypt.generate_password_hash(password)
                 updated_fields.append('password')
-                del data['repeat']
+                del data['password_repeat']
             else:
                 raise exc.PasswordsDoNotMatch()
         else:
