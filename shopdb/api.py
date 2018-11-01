@@ -406,7 +406,8 @@ def get_user(id):
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
-    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
+              'is_admin']
     user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
 
