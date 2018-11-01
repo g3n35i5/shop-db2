@@ -6,6 +6,7 @@ from time import sleep
 from base import BaseTestCase
 from copy import copy
 import pdb
+import datetime
 
 
 class PurchaseModelTestCase(BaseTestCase):
