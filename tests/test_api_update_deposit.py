@@ -18,7 +18,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
         d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
         d4 = Deposit(user_id=3, amount=300, admin_id=1, comment='Test deposit')
-        d5 = Deposit(user_id=1, amount=600, admin_id=1, comment='Test deposit')
+        d5 = Deposit(user_id=2, amount=2700, admin_id=1, comment='Test deposit')
         for d in [d1, d2, d3, d4, d5]:
             db.session.add(d)
         db.session.commit()
@@ -46,7 +46,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
     def test_update_non_existing_deposit(self):
         '''Updating a non existing deposit should raise an error.'''
         self.insert_test_deposits()
-        data = {'amount': 5}
+        data = {'revoked': True}
         res = self.put(url='/deposits/6', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DepositNotFound)
@@ -67,7 +67,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         '''A wrong field type should raise an error.'''
         self.insert_test_deposits()
         deposit1 = Deposit.query.filter_by(id=1).first()
-        data = {'amount': '2'}
+        data = {'revoked': "True"}
         res = self.put(url='/deposits/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
@@ -82,6 +82,18 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
+    def test_update_insufficiant_credit(self):
+        '''Having more than 20 euros dept after deposit should raise an error'''
+        self.insert_test_deposits()
+        deposit1 = Deposit.query.filter_by(id=5).first()
+        data = {'revoked': True}
+        res = self.put(url='/deposits/5', data=data, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.InsufficientCredit)
+        deposit2 = Deposit.query.filter_by(id=5).first()
+        self.assertEqual(deposit1, deposit2)
+
+
     def test_update_deposit_revoked(self):
         '''Update deposit revoked field.'''
         self.insert_test_deposits()
@@ -91,21 +103,4 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         self.assertEqual(data['message'], 'Updated deposit.')
-        self.assertEqual(len(data['updated_fields']), 1)
-        self.assertEqual(data['updated_fields'][0], 'revoked')
         self.assertTrue(Deposit.query.filter_by(id=1).first().revoked)
-
-    def test_update_deposit_amount(self):
-        '''Update product price'''
-        self.insert_test_deposits()
-        deposit = Deposit.query.filter_by(id=1).first()
-        self.assertEqual(deposit.amount, 100)
-        data = {'amount': 10}
-        res = self.put(url='/deposits/1', data=data, role='admin')
-        self.assertEqual(res.status_code, 201)
-        data = json.loads(res.data)
-        self.assertEqual(data['message'], 'Updated deposit.')
-        self.assertEqual(len(data['updated_fields']), 1)
-        self.assertEqual(data['updated_fields'][0], 'amount')
-        deposit = Deposit.query.filter_by(id=1).first()
-        self.assertEqual(deposit.amount, 10)
