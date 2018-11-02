@@ -530,9 +530,12 @@ def delete_user(admin, id):
 def list_products(admin):
     '''Return a list of all products'''
     if not admin:
-        result = Product.query.filter(Product.active.is_(True)).all()
+        result = (Product.query
+                  .filter(Product.active.is_(True))
+                  .order_by(Product.name)
+                  .all())
     else:
-        result = Product.query.all()
+        result = Product.query.order_by(Product.name).all()
     products = convert_minimal(result, ['id', 'name', 'price', 'barcode',
                                         'active', 'countable', 'revokeable',
                                         'imagename'])
