@@ -701,6 +701,13 @@ def create_purchase():
     if data['amount'] <= 0:
         raise exc.InvalidAmount()
 
+    # Check credit
+    current_credit = user.credit
+    future_credit = current_credit - (product.price*data['amount'])
+    if future_credit <= -2000:
+        raise exc.InsufficientCredit()
+
+
     try:
         purchase = Purchase(**data)
         db.session.add(purchase)
@@ -842,7 +849,7 @@ def update_deposit(admin, id):
         raise exc.DepositNotFound()
 
     data = json_body()
-    updateable = {'revoked': bool, 'amount': int}
+    updateable = {'revoked': bool}
     for item in data:
         if item not in updateable:
             if hasattr(deposit, item):
@@ -850,27 +857,22 @@ def update_deposit(admin, id):
             raise exc.UnknownField()
         if not isinstance(data[item], updateable[item]):
             raise exc.WrongType()
-
-    updated_fields = []
+    if any(x not in data for x in updateable):
+        raise exc.NothingHasChanged() 
 
     # Handle deposit revoke
     if 'revoked' in data:
         if deposit.revoked == data['revoked']:
             raise exc.NothingHasChanged()
         deposit.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
-        updated_fields.append('revoked')
-        del data['revoked']
 
-    # Handle all other fields
-    for item in data:
-        if not hasattr(deposit, item):
-            raise exc.UnknownField()
-        setattr(deposit, item, data[item])
-        updated_fields.append(item)
-
-    # Check the amount of updated fields
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    # Check credit
+    #pdb.set_trace()
+    user = User.query.filter_by(id=deposit.user_id).first()
+    current_credit = user.credit
+    future_credit = current_credit - deposit.amount
+    if future_credit <= -2000:
+        raise exc.InsufficientCredit()
 
     # Apply changes
     try:
@@ -880,7 +882,6 @@ def update_deposit(admin, id):
 
     return jsonify({
         'message': 'Updated deposit.',
-        'updated_fields': updated_fields
     }), 201
 
 

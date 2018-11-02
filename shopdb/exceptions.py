@@ -211,3 +211,8 @@ class FileTooLarge(BaseException):
     type = 'error'
     message = 'The file is too large.'
     code = 401
+
+class InsufficientCredit(BaseException):
+    type = 'error'
+    message = 'You do not have enough credit for this purchase'
+    code = 401
