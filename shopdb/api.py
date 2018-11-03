@@ -420,7 +420,8 @@ def list_users(admin):
               'is_admin', 'creation_date']
     return jsonify({'users': convert_minimal(result, fields)}), 200
 
-@app.route('/users/favorites/<int:id>', methods=['GET'])
+
+@app.route('/users/<int:id>/favorites', methods=['GET'])
 def get_user_favorites(id):
     '''Return the user with the given id'''
     user = User.query.filter_by(id=id).first()
@@ -431,6 +432,39 @@ def get_user_favorites(id):
     favorites = user.favorites
 
     return jsonify({'favorites': favorites}), 200
+
+
+@app.route('/users/<int:id>/deposits', methods=['GET'])
+def get_user_deposits(id):
+    '''Return the user with the given id'''
+    user = User.query.filter_by(id=id).first()
+    if not user:
+        raise exc.UserNotFound()
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+    deposits = user.deposits.all()
+
+    fields = ['id', 'timestamp', 'admin_id', 'amount', 'revoked', 'comment']
+    new_deposits = convert_minimal(deposits, fields)
+
+    return jsonify({'deposits': new_deposits}), 200
+
+
+@app.route('/users/<int:id>/purchases', methods=['GET'])
+def get_user_purchases(id):
+    '''Return the user with the given id'''
+    user = User.query.filter_by(id=id).first()
+    if not user:
+        raise exc.UserNotFound()
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+    purchases = user.purchases.all()
+
+    fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount',
+              'revoked', 'price']
+    new_purchases = convert_minimal(purchases, fields)
+
+    return jsonify({'purchases': new_purchases}), 200
 
 
 @app.route('/users/<int:id>', methods=['GET'])
