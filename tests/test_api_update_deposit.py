@@ -18,7 +18,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
         d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
         d4 = Deposit(user_id=3, amount=300, admin_id=1, comment='Test deposit')
-        d5 = Deposit(user_id=2, amount=2700, admin_id=1, comment='Test deposit')
+        d5 = Deposit(user_id=2, amount=2701, admin_id=1, comment='Test deposit')
         for d in [d1, d2, d3, d4, d5]:
             db.session.add(d)
         db.session.commit()
