@@ -51,13 +51,17 @@ def convert_minimal(data, fields):
 
     return out
 
+def check_forbidden(data, allowed_fields, row):
+    for item in data:
+        if (item not in allowed_fields) and (hasattr(row, item)):
+            raise exc.ForbiddenField()
 
-def check_forbidden(data, forbidden_fields):
-    '''This function checks whether a forbidden field is in a Dictionary
-       and, if necessary, returns an error message and terminates the
-       higher-level function. '''
-    if any(x in data for x in forbidden_fields):
-        raise exc.ForbiddenField()
+
+def check_required(data, required_fields):
+    '''This function checks wether all required fields are in a Dictionary
+       and, if necessary, returns an error message.'''
+    if any(item not in data for item in required_fields):
+        raise exc.DataIsMissing()
 
 
 def check_allowed_fields_and_types(data, allowed_fields):
@@ -322,18 +326,12 @@ def login():
     data = json_body()
     user = None
     # Check all items in the json body.
-    allowed = ['identifier', 'password']
-    for item in data:
-        if item not in allowed:
-            raise exc.ForbiddenField()
-        if not isinstance(data[item], str):
-            raise exc.WrongType()
-
-    if not all(x in data for x in allowed):
-        raise exc.DataIsMissing()
+    allowed = {'identifier': str, 'password': str}
+    check_required(data, allowed)
+    check_allowed_fields_and_types(data, allowed)
 
     # Try to get the user with the identifier.
-    if 'identifier' in data and data['identifier'] is not '':
+    if data['identifier'] is not '':
         # Try the email address.
         user = User.query.filter_by(email=data['identifier']).first()
         # If there is no match, try the username.
@@ -344,8 +342,6 @@ def login():
     # request, cancel the authentication.
     if not user:
         raise exc.InvalidCredentials()
-    if 'password' not in data:
-        raise exc.DataIsMissing()
 
     # Check if the user has already been verified.
     if not user.is_verified:
@@ -488,10 +484,11 @@ def update_user(admin, id):
     '''Update the user with the given id'''
     data = json_body()
 
-    # Check the data for forbidden fields.
-    check_forbidden(data, ['id', 'credit', 'creation_date'])
+    # Query user
+    user = User.query.filter(User.id == id).first()
+    if not user:
+        raise exc.UserNotFound()
 
-    # Check all allowed fields and for their types.
     allowed = {
         'firstname': str,
         'lastname': str,
@@ -501,12 +498,10 @@ def update_user(admin, id):
         'password_repeat': str,
         'is_admin': bool}
 
+    # Check the data for forbidden fields.
+    check_forbidden(data, allowed, user)
+    # Check all allowed fields and for their types.
     check_allowed_fields_and_types(data, allowed)
-
-    # Query user
-    user = User.query.filter(User.id == id).first()
-    if not user:
-        raise exc.UserNotFound()
 
     updated_fields = []
 
@@ -544,7 +539,11 @@ def update_user(admin, id):
         raise exc.NothingHasChanged()
 
     # Apply changes
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise UserCanNotBeDeleted()
+
     return jsonify({
         'message': 'Updated user.',
         'updated_fields': updated_fields
@@ -606,20 +605,14 @@ def create_product(admin):
     }
 
     # Check all required fields
-    if any(x not in data for x in required):
-        raise exc.DataIsMissing()
+    check_required(data, required)
 
     # Check if a product with this name already exists
     if Product.query.filter_by(name=data['name']).first():
         raise exc.ProductAlreadyExists()
 
     # Check the given dataset
-    for item in data:
-        if item in createable:
-            if not isinstance(data[item], createable[item]):
-                raise exc.WrongType()
-        else:
-            raise exc.UnknownField(item)
+    check_allowed_fields_and_types(data, createable)
 
     # Save the price and delete it from the data dictionary
     price = int(data['price'])
@@ -664,24 +657,17 @@ def update_product(admin, id):
     if not product:
         raise exc.ProductNotFound()
 
-    # Check forbidden fields
-    forbidden = ['creation_date', 'countable', 'revokeable']
-    if any(x in data for x in forbidden):
-        raise exc.ForbiddenField()
-
-    updated_fields = []
-
-    # Check types
     updateable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
         'imagename': str
     }
-    for item in data:
-        if item in updateable:
-            if not isinstance(data[item], updateable[item]):
-                raise exc.WrongType(item)
-        else:
-            raise exc.UnknownField(item)
+
+    # Check forbidden fields
+    check_forbidden(data, updateable, product)
+    # Check types
+    check_allowed_fields_and_types(data, updateable)
+
+    updated_fields = []
 
     # Check for price change
     if 'price' in data:
@@ -750,11 +736,9 @@ def create_purchase():
     '''Create a purchase'''
     data = json_body()
     required = {'user_id': int, 'product_id': int, 'amount': int}
-    for item in data:
-        if item not in required:
-            raise exc.UnknownField()
-        if not isinstance(data[item], required[item]):
-            raise exc.WrongType()
+
+    check_allowed_fields_and_types(data, required)
+    check_required(data, required)
 
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
@@ -777,7 +761,7 @@ def create_purchase():
     # Check credit
     current_credit = user.credit
     future_credit = current_credit - (product.price*data['amount'])
-    if future_credit <= app.config['DEBT_LIMIT']:
+    if future_credit < app.config['DEBT_LIMIT']:
         raise exc.InsufficientCredit()
 
     try:
@@ -811,13 +795,8 @@ def update_purchase(id):
 
     data = json_body()
     updateable = {'revoked': bool, 'amount': int}
-    for item in data:
-        if item not in updateable:
-            if hasattr(purchase, item):
-                raise exc.ForbiddenField()
-            raise exc.UnknownField()
-        if not isinstance(data[item], updateable[item]):
-            raise exc.WrongType()
+    check_forbidden(data, updateable, purchase)
+    check_allowed_fields_and_types(data, updateable)
 
     updated_fields = []
 
@@ -869,11 +848,8 @@ def create_deposit(admin):
     '''Create a deposit'''
     data = json_body()
     required = {'user_id': int, 'amount': int, 'comment': str}
-    for item in data:
-        if item not in required:
-            raise exc.UnknownField()
-        if not isinstance(data[item], required[item]):
-            raise exc.WrongType()
+    check_required(data, required)
+    check_allowed_fields_and_types(data, required)
 
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
@@ -921,16 +897,13 @@ def update_deposit(admin, id):
         raise exc.DepositNotFound()
 
     data = json_body()
-    updateable = {'revoked': bool}
-    for item in data:
-        if item not in updateable:
-            if hasattr(deposit, item):
-                raise exc.ForbiddenField()
-            raise exc.UnknownField()
-        if not isinstance(data[item], updateable[item]):
-            raise exc.WrongType()
-    if any(x not in data for x in updateable):
+
+    if not data:
         raise exc.NothingHasChanged()
+
+    updateable = {'revoked': bool}
+    check_forbidden(data, updateable, deposit)
+    check_allowed_fields_and_types(data, updateable)
 
     # Handle deposit revoke
     if 'revoked' in data:
@@ -942,7 +915,7 @@ def update_deposit(admin, id):
     user = User.query.filter_by(id=deposit.user_id).first()
     current_credit = user.credit
     future_credit = current_credit - deposit.amount
-    if future_credit <= app.config['DEBT_LIMIT']:
+    if future_credit < app.config['DEBT_LIMIT']:
         raise exc.InsufficientCredit()
 
     # Apply changes
@@ -996,27 +969,16 @@ def create_replenishmentcollection(admin):
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
 
     # Check all required fields
-    if any(x not in data for x in required_data):
-        raise exc.DataIsMissing()
-
-    for item in data:
-        if item not in required_data:
-            raise exc.UnknownField()
-        if not isinstance(data[item], required_data[item]):
-            raise exc.WrongType()
+    check_required(data, required_data)
+    check_allowed_fields_and_types(data, required_data)
 
     repls = data['replenishments']
 
     for repl in repls:
 
         # Check all required fields
-        if any(x not in repl for x in required_repl):
-            raise exc.DataIsMissing()
-        for item in repl:
-            if item not in required_repl:
-                raise exc.UnknownField()
-            if not isinstance(repl[item], required_repl[item]):
-                raise exc.WrongType()
+        check_required(repl, required_repl)
+        check_allowed_fields_and_types(repl, required_repl)
 
         # Check amount
         if repl['amount'] <= 0:
@@ -1054,17 +1016,14 @@ def update_replenishmentcollection(admin, id):
         raise exc.ReplenishmentCollectionNotFound()
 
     data = json_body()
-    updateable = {'revoked': bool}
-    for item in data:
-        if item not in updateable:
-            if hasattr(replcoll, item):
-                raise exc.ForbiddenField()
-            raise exc.UnknownField()
-        if not isinstance(data[item], updateable[item]):
-            raise exc.WrongType()
-    if data == {}:
-        raise exc.DataIsMissing()
 
+    if data == {}:
+        raise exc.NothingHasChanged()
+
+    updateable = {'revoked': bool}
+    check_forbidden(data, updateable, replcoll)
+    check_allowed_fields_and_types(data, updateable)
+    
     # Handle deposit revoke
     if replcoll.revoked == data['revoked']:
         raise exc.NothingHasChanged()
@@ -1092,18 +1051,10 @@ def update_replenishment(admin, id):
     # Data validation
     data = json_body()
     updateable = {'amount': int, 'total_price': int}
-    for item in data:
-        if item not in updateable:
-            if hasattr(repl, item):
-                raise exc.ForbiddenField()
-            raise exc.UnknownField()
-        if not isinstance(data[item], updateable[item]):
-            raise exc.WrongType()
-
-    # Check all required fields
-    if any(x not in data for x in updateable):
-        raise exc.DataIsMissing()
-
+    check_forbidden(data, updateable, repl)
+    check_allowed_fields_and_types(data, updateable)
+    check_required(data, updateable)
+    
     updated_fields = []
 
     # Handle fields
