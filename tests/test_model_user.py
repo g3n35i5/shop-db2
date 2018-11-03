@@ -134,3 +134,37 @@ class UserModelTestCase(BaseTestCase):
         # No purchase may have been made at this point
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 0)
+
+    def test_get_favorite_product_ids(self):
+        '''
+        This test ensures that the ids of purchased products are returned in
+        descending order with respect to the frequency with which they were
+        purchased by the user.
+        '''
+        # Insert user 1 purchases.
+        p1 = Purchase(user_id=1, product_id=1, amount=4)
+        p2 = Purchase(user_id=1, product_id=2, amount=4)
+        p3 = Purchase(user_id=1, product_id=3, amount=5)
+        p4 = Purchase(user_id=1, product_id=4, amount=1)
+        p5 = Purchase(user_id=1, product_id=3, amount=5)
+        p6 = Purchase(user_id=1, product_id=2, amount=4)
+
+        # Insert other users purchases.
+        p7 = Purchase(user_id=2, product_id=4, amount=30)
+        p8 = Purchase(user_id=3, product_id=3, amount=4)
+        p9 = Purchase(user_id=3, product_id=1, amount=12)
+        p10 = Purchase(user_id=2, product_id=2, amount=8)
+        for p in [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]:
+            db.session.add(p)
+        db.session.commit()
+
+        favorites = User.query.filter_by(id=1).first().favorites
+        self.assertEqual([3, 2, 1, 4], favorites)
+
+    def test_get_favorite_product_ids_without_purchases(self):
+        '''
+        This test ensures that an empty list for the favorite products is
+        returned if no purchases have been made by the user yet.
+        '''
+        favorites = User.query.filter_by(id=1).first().favorites
+        self.assertEqual([], favorites)
