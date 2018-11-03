@@ -743,9 +743,8 @@ def create_purchase():
     # Check credit
     current_credit = user.credit
     future_credit = current_credit - (product.price*data['amount'])
-    if future_credit <= app.config['DEPT_LIMIT']:
+    if future_credit <= app.config['DEBT_LIMIT']:
         raise exc.InsufficientCredit()
-
 
     try:
         purchase = Purchase(**data)
@@ -909,7 +908,7 @@ def update_deposit(admin, id):
     user = User.query.filter_by(id=deposit.user_id).first()
     current_credit = user.credit
     future_credit = current_credit - deposit.amount
-    if future_credit <= app.config['DEPT_LIMIT']:
+    if future_credit <= app.config['DEBT_LIMIT']:
         raise exc.InsufficientCredit()
 
     # Apply changes
