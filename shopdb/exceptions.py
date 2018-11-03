@@ -105,6 +105,18 @@ class DepositNotFound(BaseException):
     code = 401
 
 
+class ReplenishmentNotFound(BaseException):
+    type = 'error'
+    message = 'There is no Replenishment with this id.'
+    code = 401
+
+
+class ReplenishmentCollectionNotFound(BaseException):
+    type = 'error'
+    message = 'There is no ReplenishmentCollection with this id.'
+    code = 401
+
+
 class ProductNotFound(BaseException):
     type = 'error'
     message = 'There is no product with this id.'
@@ -198,4 +210,9 @@ class InvalidFileType(BaseException):
 class FileTooLarge(BaseException):
     type = 'error'
     message = 'The file is too large.'
+    code = 401
+
+class InsufficientCredit(BaseException):
+    type = 'error'
+    message = 'You do not have enough credit for this purchase'
     code = 401

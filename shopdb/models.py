@@ -354,12 +354,55 @@ class ReplenishmentCollection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
     replenishments = db.relationship('Replenishment', lazy='dynamic',
                                      foreign_keys='Replenishment.replcoll_id')
 
     @hybrid_property
     def price(self):
         return sum(map(lambda x: x.total_price, self.replenishments.all()))
+
+    @hybrid_method
+    def toggle_revoke(self, revoked, admin_id):
+        if self.revoked == revoked:
+            raise NothingHasChanged()
+        dr = ReplenishmentCollectionRevoke(revoked=revoked, admin_id=admin_id,
+                                           replcoll_id=self.id)
+        self.revoked = revoked
+        db.session.add(dr)
+
+    @hybrid_property
+    def revokehistory(self):
+        res = (ReplenishmentCollectionRevoke.query
+               .filter(ReplenishmentCollectionRevoke.replcoll_id == self.id)
+               .all())
+        revokehistory = []
+        for revoke in res:
+            revokehistory.append({
+                'id': revoke.id,
+                'timestamp': revoke.timestamp,
+                'revoked': revoke.revoked
+            })
+        return revokehistory
+
+
+class ReplenishmentCollectionRevoke(db.Model):
+    __tablename__ = 'replenishmentcollectionrevoke'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False)
+    replcoll_id = db.Column(db.Integer,
+                            db.ForeignKey('replenishmentcollections.id'),
+                            nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
 
 
 class Replenishment(db.Model):

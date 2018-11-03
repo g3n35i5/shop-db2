@@ -415,6 +415,21 @@ def list_users(admin):
               'is_admin', 'creation_date']
     return jsonify({'users': convert_minimal(result, fields)}), 200
 
+@app.route('/users/favorites/<int:id>', methods=['GET'])
+def get_user_favorites(id):
+    '''Return the user with the given id'''
+    user = User.query.filter_by(id=id).first()
+    products = Purchase
+    if not user:
+        raise exc.UserNotFound()
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
+              'is_admin']
+    user = convert_minimal(user, fields)[0]
+    return jsonify({'user': user}), 200
+
 
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
@@ -723,6 +738,13 @@ def create_purchase():
     if data['amount'] <= 0:
         raise exc.InvalidAmount()
 
+    # Check credit
+    current_credit = user.credit
+    future_credit = current_credit - (product.price*data['amount'])
+    if future_credit <= app.config['CREDIT_LIMIT']:
+        raise exc.InsufficientCredit()
+
+
     try:
         purchase = Purchase(**data)
         db.session.add(purchase)
@@ -864,7 +886,7 @@ def update_deposit(admin, id):
         raise exc.DepositNotFound()
 
     data = json_body()
-    updateable = {'revoked': bool, 'amount': int}
+    updateable = {'revoked': bool}
     for item in data:
         if item not in updateable:
             if hasattr(deposit, item):
@@ -872,23 +894,188 @@ def update_deposit(admin, id):
             raise exc.UnknownField()
         if not isinstance(data[item], updateable[item]):
             raise exc.WrongType()
-
-    updated_fields = []
+    if any(x not in data for x in updateable):
+        raise exc.NothingHasChanged() 
 
     # Handle deposit revoke
     if 'revoked' in data:
         if deposit.revoked == data['revoked']:
             raise exc.NothingHasChanged()
         deposit.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
-        updated_fields.append('revoked')
-        del data['revoked']
 
-    # Handle all other fields
+    # Check credit
+    user = User.query.filter_by(id=deposit.user_id).first()
+    current_credit = user.credit
+    future_credit = current_credit - deposit.amount
+    if future_credit <= app.config['CREDIT_LIMIT']:
+        raise exc.InsufficientCredit()
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated deposit.',
+    }), 201
+
+
+# ReplenishmentCollection routes ##############################################
+@app.route('/replenishmentcollections', methods=['GET'])
+@adminRequired
+def list_replenishmentcollections(admin):
+    '''List all replenishmentcollections.'''
+    data = ReplenishmentCollection.query.all()
+    fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked']
+    response = convert_minimal(data, fields)
+    return jsonify({'replenishmentcollections': response}), 200
+
+
+@app.route('/replenishmentcollections/<int:id>', methods=['GET'])
+@adminRequired
+def get_replenishmentcollection(admin, id):
+    '''Get a single replenishmentcollection.'''
+    replcoll = ReplenishmentCollection.query.filter_by(id=id).first()
+    fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
+                       'revokehistory']
+    fields_repl = ['id', 'replcoll_id', 'product_id', 'amount', 'total_price']
+    repls = replcoll.replenishments.all()
+
+    response = []
+    new_replcoll = {}
+    for field in fields_replcoll:
+        new_replcoll[field] = getattr(replcoll, field)
+    new_replcoll['replenishments'] = convert_minimal(repls, fields_repl)
+    response.append(new_replcoll)
+
+    return jsonify({'replenishmentcollection': response}), 200
+
+
+@app.route('/replenishmentcollections', methods=['POST'])
+@adminRequired
+def create_replenishmentcollection(admin):
+    '''Create replenishmentcollection.'''
+    data = json_body()
+    required_data = {'admin_id': int, 'replenishments': list}
+    required_repl = {'product_id': int, 'amount': int, 'total_price': int}
+
+    # Check all required fields
+    if any(x not in data for x in required_data):
+        raise exc.DataIsMissing()
+
     for item in data:
-        if not hasattr(deposit, item):
+        if item not in required_data:
             raise exc.UnknownField()
-        setattr(deposit, item, data[item])
-        updated_fields.append(item)
+        if not isinstance(data[item], required_data[item]):
+            raise exc.WrongType()
+
+    repls = data['replenishments']
+
+    for repl in repls:
+
+        # Check all required fields
+        if any(x not in repl for x in required_repl):
+            raise exc.DataIsMissing()
+        for item in repl:
+            if item not in required_repl:
+                raise exc.UnknownField()
+            if not isinstance(repl[item], required_repl[item]):
+                raise exc.WrongType()
+
+        # Check amount
+        if repl['amount'] <= 0:
+            raise exc.InvalidAmount()
+        # Check product
+        product = Product.query.filter_by(id=repl['product_id']).first()
+        if not product:
+            raise exc.ProductNotFound()
+
+    # Create and insert replenishmentcollection
+    try:
+        replcoll = ReplenishmentCollection(admin_id=data['admin_id'],
+                                           revoked=False)
+        db.session.add(replcoll)
+        db.session.flush()
+
+        for repl in repls:
+            rep = Replenishment(replcoll_id = replcoll.id, **repl)
+            db.session.add(rep)
+        db.session.commit()
+
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created deposit.'}), 201
+
+
+@app.route('/replenishmentcollections/<int:id>', methods=['PUT'])
+@adminRequired
+def update_replenishmentcollection(admin, id):
+    '''Update a replenishmentcollection.'''
+    # Check ReplenishmentCollection
+    replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
+    if not replcoll:
+        raise exc.ReplenishmentCollectionNotFound()
+
+    data = json_body()
+    updateable = {'revoked': bool}
+    for item in data:
+        if item not in updateable:
+            if hasattr(replcoll, item):
+                raise exc.ForbiddenField()
+            raise exc.UnknownField()
+        if not isinstance(data[item], updateable[item]):
+            raise exc.WrongType()
+    if data == {}:
+        raise exc.DataIsMissing()
+
+    # Handle deposit revoke
+    if replcoll.revoked == data['revoked']:
+        raise exc.NothingHasChanged()
+    replcoll.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Revoked ReplenishmentCollection.'}), 201
+
+
+@app.route('/replenishments/<int:id>', methods=['PUT'])
+@adminRequired
+def update_replenishment(admin, id):
+    '''Update a replenishment.'''
+    # Check Replenishment
+    repl = Replenishment.query.filter_by(id=id).first()
+    if not repl:
+        raise exc.ReplenishmentNotFound()
+
+    # Data validation
+    data = json_body()
+    updateable = {'amount': int, 'total_price': int}
+    for item in data:
+        if item not in updateable:
+            if hasattr(repl, item):
+                raise exc.ForbiddenField()
+            raise exc.UnknownField()
+        if not isinstance(data[item], updateable[item]):
+            raise exc.WrongType()
+
+    # Check all required fields
+    if any(x not in data for x in updateable):
+        raise exc.DataIsMissing()
+
+    updated_fields = []
+
+    # Handle fields
+    for item in data:
+        if not getattr(repl, item) == data[item]:
+            setattr(repl, item, data[item])
+            updated_fields.append(item)
 
     # Check the amount of updated fields
     if len(updated_fields) == 0:
@@ -901,34 +1088,37 @@ def update_deposit(admin, id):
         raise exc.CouldNotUpdateEntry()
 
     return jsonify({
-        'message': 'Updated deposit.',
+        'message': 'Updated replenishment.',
         'updated_fields': updated_fields
     }), 201
 
-
-@app.route('/replenishments', methods=['GET'])
+@app.route('/replenishments/<int:id>', methods=['DELETE'])
 @adminRequired
-def list_replenishments(admin):
-    '''List all replenishment collections.'''
-    pass
+def delete_replenishment(admin, id):
+    '''Update a replenishment.'''
+    # Check Replenishment
+    repl = Replenishment.query.filter_by(id=id).first()
+    if not repl:
+        raise exc.ReplenishmentNotFound()
+    # Get the corresponding ReplenishmentCollection
+    replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
+                .first())
 
+    # Delete replenishment
+    db.session.delete(repl)
+    message = 'Deleted Replenishment.'
 
-@app.route('/replenishments', methods=['POST'])
-@adminRequired
-def create_replenishment(admin):
-    '''Create replenishment collection.'''
-    pass
+    # Check if ReplenishmentCollection still has Replenishments
+    repls = replcoll.replenishments.all()
+    if not repls:
+        message = message + (' Deletetd ReplenishmentCollection ID: {}'
+                             .format(replcoll.id))
+        db.session.delete(replcoll)
 
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
 
-@app.route('/replenishments/<int:id>', methods=['PUT'])
-@adminRequired
-def update_replenishment(admin, id):
-    '''Update a replenishment collection.'''
-    pass
-
-
-@app.route('/replenishments/<int:id>', methods=['GET'])
-@adminRequired
-def get_replenishment(admin, id):
-    '''Get a single replenishment collection.'''
-    pass
+    return jsonify({'message': message}), 201
