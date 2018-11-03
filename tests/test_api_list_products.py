@@ -46,7 +46,8 @@ class ListProductsAPITestCase(BaseAPITestCase):
             for item in ['id', 'name', 'price', 'barcode', 'active',
                          'countable', 'revokeable', 'imagename']:
                 assert item in product
-        self.assertFalse(products[3]['active'])
+        #pdb.set_trace()
+        self.assertFalse(products[1]['active'])
         self.assertEqual(len(Product.query.all()), 4)
 
     def test_list_active_product_without_token(self):

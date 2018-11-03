@@ -74,6 +74,20 @@ def check_allowed_fields_and_types(data, allowed_fields):
         if not isinstance(value, allowed_fields[key]):
             raise exc.WrongType()
 
+def update_fields(data, row, updated=None):
+    #pdb.set_trace()
+    for item in data:
+        if not getattr(row, item) == data[item]:
+            setattr(row, item, data[item])
+            if not updated == None:
+                updated.append(item)
+                if len(updated) == 0:
+                    raise exc.NothingHasChanged()
+    if not updated == None:
+        if len(updated) == 0:
+                    raise exc.NothingHasChanged()
+
+
 
 def insert_user(data):
     '''Helper function to create a user.'''
@@ -528,15 +542,8 @@ def update_user(admin, id):
 
     # All other fields
     updateable = ['firstname', 'lastname', 'username', 'email']
-    for item in data:
-        if item in updateable:
-            if not isinstance(data[item], str):
-                raise exc.WrongType()
-            setattr(user, item, str(data[item]))
-            updated_fields.append(item)
-
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    check_forbidden(data, updateable, user)
+    update_fields(data, user, updated=updated_fields)
 
     # Apply changes
     try:
@@ -690,14 +697,7 @@ def update_product(admin, id):
             updated_fields.append('imagename')
 
     # Update all other fields
-    for item in data:
-        if not hasattr(product, item):
-            raise exc.UnknownField()
-        setattr(product, item, data[item])
-        updated_fields.append(item)
-
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    update_fields(data, product, updated=updated_fields)
 
     # Apply changes
     try:
@@ -809,15 +809,7 @@ def update_purchase(id):
         del data['revoked']
 
     # Handle all other fields
-    for item in data:
-        if not hasattr(purchase, item):
-            raise exc.UnknownField()
-        setattr(purchase, item, data[item])
-        updated_fields.append(item)
-
-    # Check the amount of updated fields
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    update_fields(data, purchase, updated=updated_fields)
 
     # Apply changes
     try:
@@ -1057,15 +1049,7 @@ def update_replenishment(admin, id):
     
     updated_fields = []
 
-    # Handle fields
-    for item in data:
-        if not getattr(repl, item) == data[item]:
-            setattr(repl, item, data[item])
-            updated_fields.append(item)
-
-    # Check the amount of updated fields
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    update_fields(data, repl, updated=updated_fields)
 
     # Apply changes
     try:
