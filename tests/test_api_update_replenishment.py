@@ -42,7 +42,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         repl = Replenishment.query.filter_by(id=1).first()
         self.assertEqual(repl.amount, 20)
         self.assertEqual(repl.total_price, 400)
-    """
+
     def test_update_replenishment_no_changes(self):
         '''Updating a single replenishment with same amount and price'''
         self._insert_testdata()
@@ -98,4 +98,4 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
-    """
+
