@@ -31,7 +31,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
 
     def test_create_purchase_insufficient_credit(self):
         '''Create a purchase with not enough credit.'''
-        data = {'user_id': 2, 'product_id': 3, 'amount': 20}
+        data = {'user_id': 2, 'product_id': 3, 'amount': 21}
 
         res = self.post(url='/purchases', data=data)
         self.assertEqual(res.status_code, 401)
@@ -56,6 +56,14 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         res = self.post(url='/purchases', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
+        self.assertEqual(len(Purchase.query.all()), 0)
+
+    def test_create_purchase_not_all_required_fields(self):
+        '''Create a purchase missing a required field'''
+        data = {'user_id': 4, 'product_id': 3}
+        res = self.post(url='/purchases', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.DataIsMissing)
         self.assertEqual(len(Purchase.query.all()), 0)
 
     def test_create_purchase_non_verified_user(self):

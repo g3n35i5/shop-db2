@@ -49,6 +49,14 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
         self.assertEqual(len(Deposit.query.all()), 0)
 
+    def test_create_deposit_not_all_required_fields(self):
+        '''Create a deposit with a missing field should raise an error'''
+        data = {'user_id': 2, 'amount': 1000}
+        res = self.post(url='/deposits', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.DataIsMissing)
+        self.assertEqual(len(Deposit.query.all()), 0)
+
     def test_create_deposit_non_verified_user(self):
         '''Create a deposit as non verified user.'''
         data = {'user_id': 4, 'amount': 1000, 'comment': 'Test deposit'}

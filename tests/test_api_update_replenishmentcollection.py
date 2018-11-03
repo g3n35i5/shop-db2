@@ -112,10 +112,10 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_update_replenishment_collection_with_data_missing(self):
+    def test_update_replenishment_collection_with_no_data(self):
         '''Revoking a replenishmentcollection with no data'''
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={}, role='admin')
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.DataIsMissing)
+        self.assertEqual(res.status_code, 200)
+        self.assertException(res, exc.NothingHasChanged)
