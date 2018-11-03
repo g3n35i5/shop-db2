@@ -223,11 +223,16 @@ def json_body():
     return jb
 
 
+@app.route('/configuration', methods=['GET'])
+def config():
+    config = {'DEPT_LIMIT':app.config['DEPT_LIMIT']}
+
+    return jsonify({'configuration': config}), 200
+
+
 @app.route('/', methods=['GET'])
 def index():
     return jsonify({'message': 'Backend is online.'})
-
-
 
 
 @app.route('/images/', methods=['GET'], defaults={'imagename': None})
@@ -419,16 +424,13 @@ def list_users(admin):
 def get_user_favorites(id):
     '''Return the user with the given id'''
     user = User.query.filter_by(id=id).first()
-    products = Purchase
     if not user:
         raise exc.UserNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+    favorites = user.favorites
 
-    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
-              'is_admin']
-    user = convert_minimal(user, fields)[0]
-    return jsonify({'user': user}), 200
+    return jsonify({'favorites': favorites}), 200
 
 
 @app.route('/users/<int:id>', methods=['GET'])
@@ -741,7 +743,7 @@ def create_purchase():
     # Check credit
     current_credit = user.credit
     future_credit = current_credit - (product.price*data['amount'])
-    if future_credit <= app.config['CREDIT_LIMIT']:
+    if future_credit <= app.config['DEPT_LIMIT']:
         raise exc.InsufficientCredit()
 
 
@@ -907,7 +909,7 @@ def update_deposit(admin, id):
     user = User.query.filter_by(id=deposit.user_id).first()
     current_credit = user.credit
     future_credit = current_credit - deposit.amount
-    if future_credit <= app.config['CREDIT_LIMIT']:
+    if future_credit <= app.config['DEPT_LIMIT']:
         raise exc.InsufficientCredit()
 
     # Apply changes
