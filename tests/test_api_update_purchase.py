@@ -43,6 +43,16 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ForbiddenField)
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
 
+    def test_update_unknown_field(self):
+        '''Updating a unknwon field should raise an error.'''
+        self.insert_test_purchases()
+        self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
+        data = {'foo': 'bar'}
+        res = self.put(url='/purchases/1', data=data, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.ForbiddenField)
+        self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
+
     def test_update_non_existing_purchase(self):
         '''Updating a non existing purchase should raise an error.'''
         self.insert_test_purchases()
