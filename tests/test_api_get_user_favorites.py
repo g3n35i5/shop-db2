@@ -31,15 +31,17 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
             db.session.add(p)
         db.session.commit()
         
-    def get_user_favorites(self):
+    def test_get_user_favorites(self):
         """TODO"""
         self._insert_purchases()
-        res = self.get(url='/users/favorites/1')
+        res = self.get(url='/users/1/favorites')
+        data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res, [3, 2, 1, 4])
+        self.assertEqual(data['favorites'], [3, 2, 1, 4])
 
-    def get_user_favorites_no_purchase(self):
+    def test_get_user_favorites_no_purchase(self):
         """TODO"""
-        res = self.get(url='/users/favorites/1')
+        res = self.get(url='/users/1/favorites')
+        data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res, [])
+        self.assertEqual(data['favorites'], [])
