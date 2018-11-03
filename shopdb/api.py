@@ -224,8 +224,8 @@ def json_body():
 
 
 @app.route('/configuration', methods=['GET'])
-def config():
-    config = {'DEPT_LIMIT':app.config['DEPT_LIMIT']}
+def get_config():
+    config = {'DEBT_LIMIT':app.config['DEBT_LIMIT']}
 
     return jsonify({'configuration': config}), 200
 
