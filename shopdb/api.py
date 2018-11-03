@@ -224,8 +224,8 @@ def json_body():
 
 
 @app.route('/configuration', methods=['GET'])
-def config():
-    config = {'DEPT_LIMIT':app.config['DEPT_LIMIT']}
+def get_config():
+    config = {'DEBT_LIMIT':app.config['DEBT_LIMIT']}
 
     return jsonify({'configuration': config}), 200
 
@@ -897,7 +897,7 @@ def update_deposit(admin, id):
         if not isinstance(data[item], updateable[item]):
             raise exc.WrongType()
     if any(x not in data for x in updateable):
-        raise exc.NothingHasChanged() 
+        raise exc.NothingHasChanged()
 
     # Handle deposit revoke
     if 'revoked' in data:
