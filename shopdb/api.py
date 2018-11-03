@@ -396,6 +396,21 @@ def list_users(admin):
               'is_admin', 'creation_date']
     return jsonify({'users': convert_minimal(result, fields)}), 200
 
+@app.route('/users/favorites/<int:id>', methods=['GET'])
+def get_user_favorites(id):
+    '''Return the user with the given id'''
+    user = User.query.filter_by(id=id).first()
+    products = Purchase
+    if not user:
+        raise exc.UserNotFound()
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+
+    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
+              'is_admin']
+    user = convert_minimal(user, fields)[0]
+    return jsonify({'user': user}), 200
+
 
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
@@ -704,7 +719,7 @@ def create_purchase():
     # Check credit
     current_credit = user.credit
     future_credit = current_credit - (product.price*data['amount'])
-    if future_credit <= -2000:
+    if future_credit <= app.config['CREDIT_LIMIT']:
         raise exc.InsufficientCredit()
 
 
@@ -867,11 +882,10 @@ def update_deposit(admin, id):
         deposit.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
 
     # Check credit
-    #pdb.set_trace()
     user = User.query.filter_by(id=deposit.user_id).first()
     current_credit = user.credit
     future_credit = current_credit - deposit.amount
-    if future_credit <= -2000:
+    if future_credit <= app.config['CREDIT_LIMIT']:
         raise exc.InsufficientCredit()
 
     # Apply changes
