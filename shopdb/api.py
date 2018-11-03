@@ -897,7 +897,7 @@ def update_deposit(admin, id):
         if not isinstance(data[item], updateable[item]):
             raise exc.WrongType()
     if any(x not in data for x in updateable):
-        raise exc.NothingHasChanged() 
+        raise exc.NothingHasChanged()
 
     # Handle deposit revoke
     if 'revoked' in data:
