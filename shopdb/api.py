@@ -766,9 +766,10 @@ def create_purchase():
         raise exc.InvalidAmount()
 
     # Check credit
+    limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
     current_credit = user.credit
     future_credit = current_credit - (product.price*data['amount'])
-    if future_credit < app.config['DEBT_LIMIT']:
+    if future_credit < limit:
         raise exc.InsufficientCredit()
 
     try:
