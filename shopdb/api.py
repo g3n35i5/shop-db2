@@ -903,13 +903,6 @@ def update_deposit(admin, id):
             raise exc.NothingHasChanged()
         deposit.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
 
-    # Check credit
-    user = User.query.filter_by(id=deposit.user_id).first()
-    current_credit = user.credit
-    future_credit = current_credit - deposit.amount
-    if future_credit < app.config['DEBT_LIMIT']:
-        raise exc.InsufficientCredit()
-
     # Apply changes
     try:
         db.session.commit()
