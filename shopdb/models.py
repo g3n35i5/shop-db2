@@ -79,11 +79,12 @@ class User(db.Model):
         db.session.add(au)
 
     @hybrid_method
-    def verify(self, admin_id):
+    def verify(self, admin_id, rank_id):
         if self.is_verified:
             raise UserAlreadyVerified()
         self.is_verified = True
         uv = UserVerification(user_id=self.id, admin_id=admin_id)
+        self.set_rank_id(rank_id, admin_id)
         db.session.add(uv)
 
     @hybrid_property
@@ -196,6 +197,7 @@ class Rank(db.Model):
     __tablename__ = 'ranks'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=True, nullable=False)
+    debt_limit = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return f'<Rank {self.name}>'
