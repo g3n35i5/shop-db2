@@ -91,12 +91,19 @@ def insert_user(data):
     except AssertionError:
         raise exc.WrongType()
 
+    password = data['password'].strip()
+    repeat_password = data['password_repeat'].strip()
+
     # Check if the passwords match.
-    if data['password'] != data['password_repeat']:
+    if password != repeat_password:
         raise exc.PasswordsDoNotMatch()
 
+    # Check the password length
+    if len(password) < app.config['MINIMUM_PASSWORD_LENGTH']:
+        raise exc.PasswordTooShort()
+
     # Convert email address to lowercase.
-    email = data['email'].lower()
+    email = data['email'].strip().lower()
 
     # Check if the username is already assigned.
     if User.query.filter_by(username=data['username']).first():
@@ -514,13 +521,17 @@ def update_user(admin, id):
     # Check password
     if 'password' in data:
         if 'password_repeat' in data:
-            if data['password'] == data['password_repeat']:
-                password = str(data['password'])
-                user.password = bcrypt.generate_password_hash(password)
-                updated_fields.append('password')
-                del data['password_repeat']
-            else:
+            password = data['password'].strip()
+            password_repeat = data['password_repeat'].strip()
+
+            if password != password_repeat:
                 raise exc.PasswordsDoNotMatch()
+
+            if len(password) < app.config['MINIMUM_PASSWORD_LENGTH']:
+                raise exc.PasswordTooShort()
+            user.password = bcrypt.generate_password_hash(password)
+            updated_fields.append('password')
+            del data['password_repeat']
         else:
             raise exc.DataIsMissing()
 

@@ -153,6 +153,12 @@ class PasswordsDoNotMatch(BaseException):
     code = 401
 
 
+class PasswordTooShort(BaseException):
+    type = 'error'
+    message = 'The password is too short.'
+    code = 401
+
+
 class InvalidCredentials(BaseException):
     type = 'error'
     message = 'A user with this access data was not found.'
