@@ -25,7 +25,7 @@ p_prices = [300, 50, 100, 200]
 
 # Default data for ranks
 r_names = ['Contender', 'Member', 'Alumni']
-r_limits = [0, -20, -20]
+r_limits = [0, -2000, -2000]
 
 
 class BaseTestCase(TestCase):
