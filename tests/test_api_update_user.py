@@ -45,6 +45,27 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
         self.assertTrue(User.query.filter_by(id=1).first().is_admin)
 
+    def test_make_contender_member(self):
+        '''Update a contender to a member'''
+        self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
+        data = {'rank_id': 2}
+        res = self.put(url='/users/3', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        self.assertEqual(data['message'], 'Updated user.')
+        self.assertEqual(data['updated_fields'], ['rank_id'])
+        self.assertEqual(User.query.filter_by(id=3).first().rank_id, 2)
+
+    def test_make_contender_member_twice(self):
+        '''Update a contender to a member twice should raise 
+           NothingHasChanged'''
+        self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
+        data = {'rank_id': 1}
+        res = self.put(url='/users/3', data=data, role='admin')
+        self.assertEqual(res.status_code, 200)
+        self.assertException(res, exc.NothingHasChanged)
+        self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
+
     def test_update_forbidden_field(self):
         '''Updating a forbidden field should raise an error.'''
         self.assertEqual(User.query.filter_by(id=1).first().credit, 0)
