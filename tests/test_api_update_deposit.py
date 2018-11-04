@@ -82,18 +82,6 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_insufficiant_credit(self):
-        '''Having more than 20 euros dept after deposit should raise an error'''
-        self.insert_test_deposits()
-        deposit1 = Deposit.query.filter_by(id=5).first()
-        data = {'revoked': True}
-        res = self.put(url='/deposits/5', data=data, role='admin')
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.InsufficientCredit)
-        deposit2 = Deposit.query.filter_by(id=5).first()
-        self.assertEqual(deposit1, deposit2)
-
-
     def test_update_deposit_revoked(self):
         '''Update deposit revoked field.'''
         self.insert_test_deposits()
