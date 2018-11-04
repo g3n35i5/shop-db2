@@ -510,7 +510,8 @@ def update_user(admin, id):
         'email': str,
         'password': str,
         'password_repeat': str,
-        'is_admin': bool}
+        'is_admin': bool,
+        'rank_id': int}
 
     # Check the data for forbidden fields.
     check_forbidden(data, allowed, user)
@@ -524,6 +525,12 @@ def update_user(admin, id):
         user.set_admin(is_admin=data['is_admin'], admin_id=admin.id)
         updated_fields.append('is_admin')
         del data['is_admin']
+
+    #Update rank
+    if 'rank_id' in data:
+        user.set_rank_id(rank_id = data['rank_id'], admin_id=admin.id)
+        updated_fields.append('rank_id')
+        del data['rank_id']
 
     # Check password
     if 'password' in data:
@@ -759,9 +766,10 @@ def create_purchase():
         raise exc.InvalidAmount()
 
     # Check credit
+    limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
     current_credit = user.credit
     future_credit = current_credit - (product.price*data['amount'])
-    if future_credit < app.config['DEBT_LIMIT']:
+    if future_credit < limit:
         raise exc.InsufficientCredit()
 
     try:

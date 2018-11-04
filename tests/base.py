@@ -24,7 +24,8 @@ p_names = ['Pizza', 'Coffee', 'Cookie', 'Coke']
 p_prices = [300, 50, 100, 200]
 
 # Default data for ranks
-r_names = ['Contender', 'Member', 'Alumn']
+r_names = ['Contender', 'Member', 'Alumni']
+r_limits = [0, -2000, -2000]
 
 
 class BaseTestCase(TestCase):
@@ -89,14 +90,15 @@ class BaseTestCase(TestCase):
 
     def insert_default_ranks(self):
         for i in range(0, len(r_names)):
-            rank = Rank(name=r_names[i])
+            rank = Rank(name=r_names[i], debt_limit=r_limits[i])
             db.session.add(rank)
         db.session.commit()
 
     def verify_all_users_except_last(self):
         users = User.query.all()
-        for i in range(0, len(users) - 1):
-            users[i].verify(admin_id=1)
+        users[0].verify(admin_id=1, rank_id=2)
+        users[1].verify(admin_id=1, rank_id=3)
+        users[2].verify(admin_id=1, rank_id=1)
 
         db.session.commit()
 
@@ -126,5 +128,7 @@ class BaseTestCase(TestCase):
         users = User.query.all()
         for i in range(0, len(users) - 1):
             self.assertTrue(users[i].is_verified)
-
+        self.assertEqual(users[0].rank_id, 2)
+        self.assertEqual(users[1].rank_id, 3)
+        self.assertEqual(users[2].rank_id, 1)
         self.assertFalse(users[-1].is_verified)
