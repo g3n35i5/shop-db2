@@ -32,8 +32,8 @@ def set_app(configuration):
 
 
 def convert_minimal(data, fields):
-    '''This function returns only the required attributes of all objects in
-       given list.'''
+    """This function returns only the required attributes of all objects in
+       given list."""
 
     if not isinstance(data, list):
         data = [data]
@@ -50,6 +50,7 @@ def convert_minimal(data, fields):
         out.append(element)
 
     return out
+
 
 def check_forbidden(data, allowed_fields, row):
     for item in data:
@@ -74,19 +75,18 @@ def check_allowed_fields_and_types(data, allowed_fields):
         if not isinstance(value, allowed_fields[key]):
             raise exc.WrongType()
 
+
 def update_fields(data, row, updated=None):
-    #pdb.set_trace()
     for item in data:
         if not getattr(row, item) == data[item]:
             setattr(row, item, data[item])
-            if not updated == None:
+            if updated is not None:
                 updated.append(item)
                 if len(updated) == 0:
                     raise exc.NothingHasChanged()
-    if not updated == None:
+    if updated is not None:
         if len(updated) == 0:
                     raise exc.NothingHasChanged()
-
 
 
 def insert_user(data):
@@ -239,13 +239,6 @@ def json_body():
     if jb is None:
         raise exc.InvalidJSON()
     return jb
-
-
-@app.route('/configuration', methods=['GET'])
-def get_config():
-    config = {'DEBT_LIMIT':app.config['DEBT_LIMIT']}
-
-    return jsonify({'configuration': config}), 200
 
 
 @app.route('/', methods=['GET'])
@@ -526,7 +519,7 @@ def update_user(admin, id):
         updated_fields.append('is_admin')
         del data['is_admin']
 
-    #Update rank
+    # Update rank
     if 'rank_id' in data:
         user.set_rank_id(rank_id = data['rank_id'], admin_id=admin.id)
         updated_fields.append('rank_id')
@@ -611,7 +604,6 @@ def list_products(admin):
 def create_product(admin):
     '''Create a product'''
     data = json_body()
-    created_fields = []
     required = ['name', 'price']
     createable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
@@ -1062,6 +1054,7 @@ def update_replenishment(admin, id):
         'message': 'Updated replenishment.',
         'updated_fields': updated_fields
     }), 201
+
 
 @app.route('/replenishments/<int:id>', methods=['DELETE'])
 @adminRequired
