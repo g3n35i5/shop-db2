@@ -48,3 +48,19 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['favorites'], [])
+
+    def test_get_user_favorites_non_existing_user(self):
+        """
+        Getting the favorites from a non existing user should raise an error.
+        """
+        res = self.get(url='/users/5/favorites')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserNotFound)
+
+    def test_get_user_favorites_non_verified_user(self):
+        """
+        Getting the favorites from a non verified user should raise an error.
+        """
+        res = self.get(url='/users/4/favorites')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsNotVerified)

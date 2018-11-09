@@ -35,7 +35,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
             for x in fields:
                 assert x in i
 
-    def test_get_users_deposits_no_insert(self):
+    def test_get_user_deposits_no_insert(self):
         """
         This test ensures that an empty list will be returned for a user's deposits
         if none have yet been entered for him.
@@ -45,5 +45,21 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert 'deposits' in data
         self.assertEqual(data['deposits'], [])
+
+    def test_get_deposit_non_existing_user(self):
+        """
+        Getting the deposits from a non existing user should raise an error.
+        """
+        res = self.get(url='/users/5/deposits')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserNotFound)
+
+    def test_get_deposit_non_verified_user(self):
+        """
+        Getting the deposits from a non verified user should raise an error.
+        """
+        res = self.get(url='/users/4/deposits')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsNotVerified)
 
         
