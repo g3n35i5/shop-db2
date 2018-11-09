@@ -404,7 +404,13 @@ def verify_user(admin, id):
     if user.is_verified:
         raise exc.UserAlreadyVerified()
 
-    user.verify(admin_id=admin.id)
+    data = json_body()
+    # Check all items in the json body.
+    allowed = {'rank_id': int}
+    check_required(data, allowed)
+    check_allowed_fields_and_types(data, allowed)
+
+    user.verify(admin_id=admin.id, rank_id=data['rank_id'])
     db.session.commit()
     return jsonify({'message': 'Verified user.'}), 201
 

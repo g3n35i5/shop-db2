@@ -57,7 +57,7 @@ class UserModelTestCase(BaseTestCase):
         user = User.query.filter_by(id=1).first()
         self.assertTrue(user.is_verified)
         with self.assertRaises(exc.UserAlreadyVerified):
-            user.verify(admin_id=1)
+            user.verify(admin_id=1, rank_id=1)
 
         user = User.query.filter_by(id=1).first()
         self.assertTrue(user.is_verified)
@@ -67,7 +67,7 @@ class UserModelTestCase(BaseTestCase):
            usershave already been verified.'''
         user = User.query.order_by(User.id.desc()).first()
         self.assertFalse(user.is_verified)
-        user.verify(admin_id=1)
+        user.verify(admin_id=1, rank_id=1)
         db.session.commit()
         user = User.query.order_by(User.id.desc()).first()
         self.assertTrue(user.is_verified)
@@ -80,15 +80,15 @@ class UserModelTestCase(BaseTestCase):
     def test_set_user_rank_id(self):
         '''Update the user rank id'''
         user = User.query.filter_by(id=1).first()
-        self.assertEqual(user.rank_id, None)
-        self.assertEqual(user.rank, None)
-        user.set_rank_id(rank_id=2, admin_id=1)
-        db.session.commit()
-        user = User.query.filter_by(id=1).first()
         self.assertEqual(user.rank_id, 2)
         self.assertEqual(user.rank, 'Member')
+        user.set_rank_id(rank_id=3, admin_id=1)
+        db.session.commit()
+        user = User.query.filter_by(id=1).first()
+        self.assertEqual(user.rank_id, 3)
+        self.assertEqual(user.rank, 'Alumni')
         with self.assertRaises(NothingHasChanged):
-            user.set_rank_id(rank_id=2, admin_id=1)
+            user.set_rank_id(rank_id=3, admin_id=1)
 
     def test_update_user_firstname(self):
         '''Update the firstname of a user'''
