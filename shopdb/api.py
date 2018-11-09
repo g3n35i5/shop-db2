@@ -142,7 +142,7 @@ def update_fields(data, row, updated=None):
     :return:                    A list with all already updated fields and
                                 those that have been added.
 
-    :raises: NothingHasChanged: If no fields were changed during the update-
+    :raises: NothingHasChanged: If no fields were changed during the update.
     """
     for item in data:
         if not getattr(row, item) == data[item]:
