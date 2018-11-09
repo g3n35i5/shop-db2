@@ -18,6 +18,7 @@ import random
 import os
 from PIL import Image
 import shutil
+
 app = Flask(__name__)
 
 # Default app settings (to suppress unittest warnings) will be overwritten.
@@ -59,7 +60,7 @@ def check_forbidden(data, allowed_fields, row):
 
 
 def check_required(data, required_fields):
-    """This function checks wether all required fields are in a Dictionary
+    """This function checks whether all required fields are in a Dictionary
        and, if necessary, returns an error message."""
     if any(item not in data for item in required_fields):
         raise exc.DataIsMissing()
@@ -86,7 +87,7 @@ def update_fields(data, row, updated=None):
                     raise exc.NothingHasChanged()
     if updated is not None:
         if len(updated) == 0:
-                    raise exc.NothingHasChanged()
+            raise exc.NothingHasChanged()
 
 
 def insert_user(data):
@@ -137,9 +138,10 @@ def adminRequired(f):
     """This function checks whether a valid token is contained in the request.
        If this is not the case, or the user has no admin rights, the request
        will be blocked."""
+
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Does the request heder contain a token?
+        # Does the request header contain a token?
         try:
             token = request.headers['token']
         except KeyError:
@@ -169,6 +171,7 @@ def adminRequired(f):
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
         return f(admin, *args, **kwargs)
+
     return decorated
 
 
@@ -176,6 +179,7 @@ def adminOptional(f):
     """This function checks whether a valid token is contained in the request.
        If this is not the case, or the user has no admin rights, the following
        function returns only a part of the available data."""
+
     @wraps(f)
     def decorated(*args, **kwargs):
         # Does the request heder contain a token?
@@ -208,6 +212,7 @@ def adminOptional(f):
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
         return f(admin, *args, **kwargs)
+
     return decorated
 
 
@@ -228,7 +233,7 @@ def handle_error(error):
     # Create, if possible, a user friendly response.
     if all(hasattr(error, item) for item in ['type', 'message', 'code']):
         return jsonify(result=error.type, message=error.message), error.code
-    else:   # pragma: no cover
+    else:  # pragma: no cover
         raise error
     # If for some reason no exception has been raised yet, this is done now.
     raise error  # pragma: no cover
@@ -309,7 +314,7 @@ def upload(admin):
         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         can_be_used = not os.path.isfile(path)
 
-    # Move the temporary image to its desination path.
+    # Move the temporary image to its destination path.
     shutil.move(temp_filename, path)
 
     # Create an upload
@@ -331,7 +336,6 @@ def upload(admin):
 def login():
     """Authenticate a registered user"""
     data = json_body()
-    user = None
     # Check all items in the json body.
     allowed = {'id': int, 'password': str}
     check_required(data, allowed)
@@ -521,7 +525,7 @@ def update_user(admin, id):
 
     # Update rank
     if 'rank_id' in data:
-        user.set_rank_id(rank_id = data['rank_id'], admin_id=admin.id)
+        user.set_rank_id(rank_id=data['rank_id'], admin_id=admin.id)
         updated_fields.append('rank_id')
         del data['rank_id']
 
@@ -760,7 +764,7 @@ def create_purchase():
     # Check credit
     limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
     current_credit = user.credit
-    future_credit = current_credit - (product.price*data['amount'])
+    future_credit = current_credit - (product.price * data['amount'])
     if future_credit < limit:
         raise exc.InsufficientCredit()
 
@@ -981,7 +985,7 @@ def create_replenishmentcollection(admin):
         db.session.flush()
 
         for repl in repls:
-            rep = Replenishment(replcoll_id = replcoll.id, **repl)
+            rep = Replenishment(replcoll_id=replcoll.id, **repl)
             db.session.add(rep)
         db.session.commit()
 
@@ -1008,7 +1012,7 @@ def update_replenishmentcollection(admin, id):
     updateable = {'revoked': bool}
     check_forbidden(data, updateable, replcoll)
     check_allowed_fields_and_types(data, updateable)
-    
+
     # Handle deposit revoke
     if replcoll.revoked == data['revoked']:
         raise exc.NothingHasChanged()
@@ -1039,7 +1043,7 @@ def update_replenishment(admin, id):
     check_forbidden(data, updateable, repl)
     check_allowed_fields_and_types(data, updateable)
     check_required(data, updateable)
-    
+
     updated_fields = []
 
     update_fields(data, repl, updated=updated_fields)
@@ -1075,7 +1079,7 @@ def delete_replenishment(admin, id):
     # Check if ReplenishmentCollection still has Replenishments
     repls = replcoll.replenishments.all()
     if not repls:
-        message = message + (' Deletetd ReplenishmentCollection ID: {}'
+        message = message + (' Deleted ReplenishmentCollection ID: {}'
                              .format(replcoll.id))
         db.session.delete(replcoll)
 

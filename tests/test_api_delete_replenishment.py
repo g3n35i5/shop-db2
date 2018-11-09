@@ -47,7 +47,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Deleted Replenishment. Deletetd'
+        self.assertEqual(data['message'], 'Deleted Replenishment. Deleted'
                                           + ' ReplenishmentCollection ID: 2')
         repl = Replenishment.query.filter_by(id=3).first()
         self.assertEqual(repl, None)
