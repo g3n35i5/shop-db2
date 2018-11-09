@@ -28,13 +28,28 @@ bcrypt = Bcrypt(app)
 
 
 def set_app(configuration):
+    """
+    Sets all parameters of the applications to those defined in the dictionary
+    "configuration" and returns the application object.
+
+    :param configuration: The dictionary with all settings for the application
+
+    :return:              The application object with the updated settings.
+    """
     app.config.from_object(configuration)
     return app
 
 
 def convert_minimal(data, fields):
-    """This function returns only the required attributes of all objects in
-       given list."""
+    """
+    This function returns only the required attributes of all objects in
+    given list.
+
+    :param data:   The object from which the attributes are obtained.
+    :param fields: A list of all attributes to be output.
+
+    :return:       A dictionary with all requested attributes.
+    """
 
     if not isinstance(data, list):
         data = [data]
@@ -54,21 +69,55 @@ def convert_minimal(data, fields):
 
 
 def check_forbidden(data, allowed_fields, row):
+    """
+    This function checks whether any illegal fields exist in the data sent to
+    the API with the request. If so, an exception is raised and the request
+    is canceled.
+
+    :param data:             The data sent to the API.
+    :param allowed_fields:   A list of all allowed fields.
+    :param row:              The object for which you want to check whether the
+                             fields are forbidden.
+
+    :return:                 None
+
+    :raises ForbiddenField : If a forbidden field is in the data.
+    """
     for item in data:
         if (item not in allowed_fields) and (hasattr(row, item)):
             raise exc.ForbiddenField()
 
 
 def check_required(data, required_fields):
-    """This function checks whether all required fields are in a Dictionary
-       and, if necessary, returns an error message."""
+    """
+    This function checks whether all required fields are in a Dictionary
+    and, if necessary, returns an error message.
+
+    :param data:            The data sent to the API.
+    :param required_fields: A list of all required fields.
+
+    :return:                None
+
+    :raises DataIsMissing:  If a required field is not in the data.
+    """
     if any(item not in data for item in required_fields):
         raise exc.DataIsMissing()
 
 
 def check_allowed_fields_and_types(data, allowed_fields):
-    """This function checks whether the data contains an invalid field.
-       At the same time, all entries are checked for their type."""
+    """
+    This function checks whether the data contains an invalid field.
+    At the same time, all entries are checked for their type.
+
+    :param data:            The dictionary whose entries are to be checked.
+    :param allowed_fields:  A dictionary with all allowed entries and their
+                            types.
+
+    :return:                None
+
+    :raises UnknownField:   If there's an unknown field in the data.
+    :raises WrongType:      If a field is of the wrong type.
+    """
     if not all(x in allowed_fields for x in data):
         raise exc.UnknownField()
 
@@ -78,6 +127,23 @@ def check_allowed_fields_and_types(data, allowed_fields):
 
 
 def update_fields(data, row, updated=None):
+    """
+    This helper function updates all fields defined in the dictionary "data"
+    for a given database object "row". If modifications have already been made
+    to the object, the names of the fields that have already been updated can
+    be transferred with the "updated" list. All updated fields are added to
+    this list.
+
+    :param data:                The dictionary with all entries to be updated.
+    :param row:                 The database object to be updated.
+    :param updated:             A list of all fields that have already been
+                                updated.
+
+    :return:                    A list with all already updated fields and
+                                those that have been added.
+
+    :raises: NothingHasChanged: If no fields were changed during the update-
+    """
     for item in data:
         if not getattr(row, item) == data[item]:
             setattr(row, item, data[item])
@@ -91,7 +157,22 @@ def update_fields(data, row, updated=None):
 
 
 def insert_user(data):
-    """Helper function to create a user."""
+    """
+    This help function creates a new user with the given data.
+
+    :param data:                      Is the dictionary with all the data for
+                                      the user.
+
+    :return:                          None
+
+    :raises DataIsMissing:            If not all required data is available.
+    :raises WrongType:                If one or more data is of the wrong type.
+    :raises PasswordsDoNotMatch:      If the passwords do not match.
+    :raises UsernameAlreadyTaken:     If the username is already taken.
+    :raises EmailAddressAlreadyTaken: If the email address is already taken.
+    :raises CouldNotCreateEntry:      If the new user cannot be added to the
+                                      database.
+    """
     required = ['firstname', 'lastname', 'username', 'email',
                 'password', 'password_repeat']
 
@@ -135,10 +216,24 @@ def insert_user(data):
 
 
 def adminRequired(f):
-    """This function checks whether a valid token is contained in the request.
-       If this is not the case, or the user has no admin rights, the request
-       will be blocked."""
+    """
+    This function checks whether a valid token is contained in the request.
+    If this is not the case, or the user has no admin rights, the request
+    will be blocked.
 
+    :param f:                   Is the wrapped function.
+
+    :return:                    The wrapped function f with the additional
+                                parameter admin.
+
+    :raises UnauthorizedAccess: If no token object can be found in the request
+                                header.
+    :raises TokenIsInvalid:     If the token cannot be decoded.
+    :raises TokenHasExpired:    If the token has been expired.
+    :raises TokenIsInvalid:     If no user object could be found in the
+                                decoded token.
+    :raises UnauthorziedAccess: The user has no administrator privileges.
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
         # Does the request header contain a token?
@@ -176,9 +271,22 @@ def adminRequired(f):
 
 
 def adminOptional(f):
-    """This function checks whether a valid token is contained in the request.
-       If this is not the case, or the user has no admin rights, the following
-       function returns only a part of the available data."""
+    """
+    This function checks whether a valid token is contained in the request.
+    If this is not the case, or the user has no admin rights, the following
+    function returns only a part of the available data.
+
+    :param f:                   Is the wrapped function.
+
+    :return:                    Returns the wrapped function f with the
+                                additional parameter admin, if present.
+                                Otherwise, the parameter admin is None.
+
+    :raises TokenIsInvalid:     If the token cannot be decoded.
+    :raises TokenHasExpired:    If the token has been expired.
+    :raises TokenIsInvalid:     If no user object could be found in the
+                                decoded token.
+    """
 
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -417,7 +525,15 @@ def verify_user(admin, id):
 @app.route('/users', methods=['GET'])
 @adminOptional
 def list_users(admin):
-    """Return a list of all users"""
+    """
+    Returns a list of all users. If this route is called by an
+    administrator, all information is returned. However, if it is called
+    without further rights, a minimal version is returned.
+
+    :param admin: Administrator User, determined by @adminOptional
+
+    :return: A list of all users
+    """
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
         fields = ['id', 'firstname', 'lastname', 'username']
@@ -589,7 +705,15 @@ def delete_user(admin, id):
 @app.route('/products', methods=['GET'])
 @adminOptional
 def list_products(admin):
-    """Return a list of all products"""
+    """
+    Returns a list of all products. If this route is called by an
+    administrator, all information is returned. However, if it is called
+    without further rights, a minimal version is returned.
+
+    :param admin: Administrator User, determined by @adminOptional
+
+    :return: A list of all products
+    """
     if not admin:
         result = (Product.query
                   .filter(Product.active.is_(True))
@@ -718,7 +842,15 @@ def update_product(admin, id):
 @app.route('/purchases', methods=['GET'])
 @adminOptional
 def list_purchases(admin):
-    """Return a list of all purchases"""
+    """
+    Returns a list of all purchases. If this route is called by an
+    administrator, all information is returned. However, if it is called
+    without further rights, a minimal version is returned.
+
+    :param admin: Administrator User, determined by @adminOptional
+
+    :return: A list of all purchases
+    """
     # Create a list for an admin
     if admin:
         res = Purchase.query.all()
