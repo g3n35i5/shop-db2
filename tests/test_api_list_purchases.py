@@ -13,7 +13,7 @@ import pdb
 
 class ListPurchasesAPITestCase(BaseAPITestCase):
     def insert_test_purchases(self):
-        '''Helper function to insert some test purchases'''
+        """Helper function to insert some test purchases"""
         p1 = Purchase(user_id=1, product_id=1, amount=1)
         p2 = Purchase(user_id=2, product_id=3, amount=2)
         p3 = Purchase(user_id=2, product_id=2, amount=4)
@@ -24,7 +24,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_list_purchases_as_admin(self):
-        '''Test for listing all purchases as admin'''
+        """Test for listing all purchases as admin"""
         # Do 5 purchases
         self.insert_test_purchases()
         res = self.get(url='/purchases', role='admin')
@@ -45,8 +45,8 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
             assert all(x in purchase for x in required)
 
     def test_list_purchases_as_user(self):
-        '''Test for listing all purchases without token. Revoked purchases
-           should not be listed.'''
+        """Test for listing all purchases without token. Revoked purchases
+           should not be listed."""
         # Do 5 purchases
         self.insert_test_purchases()
         # Revoke the third purchase

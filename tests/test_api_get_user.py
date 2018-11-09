@@ -13,7 +13,7 @@ import pdb
 
 class GetUserAPITestCase(BaseAPITestCase):
     def test_get_single_user(self):
-        '''Test for getting a single user'''
+        """Test for getting a single user"""
         res = self.get(url='/users/1')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
@@ -27,13 +27,13 @@ class GetUserAPITestCase(BaseAPITestCase):
         self.assertEqual(data['user']['credit'], 0)
 
     def test_get_non_existing_user(self):
-        '''Getting a non existing user should raise an error.'''
+        """Getting a non existing user should raise an error."""
         res = self.get(url='/users/5')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserNotFound)
 
     def test_get_non_verified_user(self):
-        '''Getting a non verified user should raise an error.'''
+        """Getting a non verified user should raise an error."""
         res = self.get(url='/users/4')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)

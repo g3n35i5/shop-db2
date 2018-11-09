@@ -13,7 +13,7 @@ import pdb
 
 class RegisterAPITestCase(BaseAPITestCase):
     def test_register_user(self):
-        '''This test is designed to test the registration of a new user'''
+        """This test is designed to test the registration of a new user"""
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
@@ -35,8 +35,8 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertFalse(user.is_verified)
 
     def test_register_existing_email(self):
-        '''This test should ensure that the correct exception gets returned
-           on creating a user with an email address already taken.'''
+        """This test should ensure that the correct exception gets returned
+           on creating a user with an email address already taken."""
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
@@ -52,8 +52,8 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertEqual(len(users), 4)
 
     def test_register_existing_username(self):
-        '''This test should ensure that the correct exception gets returned
-           on creating a user with an username already taken.'''
+        """This test should ensure that the correct exception gets returned
+           on creating a user with an username already taken."""
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
@@ -69,8 +69,8 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertEqual(len(users), 4)
 
     def test_register_missing_data(self):
-        '''This test should ensure that the correct exception gets returned
-           on creating a user with missing data.'''
+        """This test should ensure that the correct exception gets returned
+           on creating a user with missing data."""
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
@@ -91,8 +91,8 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertEqual(len(users), 4)
 
     def test_register_wrong_type(self):
-        '''This test should ensure that the correct exception gets returned
-           on creating a user with a wrong data type.'''
+        """This test should ensure that the correct exception gets returned
+           on creating a user with a wrong data type."""
 
         data = {
             'firstname': 'John',
@@ -114,8 +114,8 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertEqual(len(users), 4)
 
     def test_register_passwords_do_not_match(self):
-        '''This test should ensure that the correct exception gets returned
-           on creating a user when the passwords do not match.'''
+        """This test should ensure that the correct exception gets returned
+           on creating a user when the passwords do not match."""
         data = {
             'firstname': 'John',
             'lastname': 'Doe',

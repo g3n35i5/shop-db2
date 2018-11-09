@@ -13,7 +13,7 @@ import pdb
 
 class VerifyUserAPITestCase(BaseAPITestCase):
     def test_verify_user(self):
-        '''Test verifying a user.'''
+        """Test verifying a user."""
         user = User.query.filter_by(id=4).first()
         self.assertFalse(user.is_verified)
         data = {'rank_id': 1}
@@ -23,7 +23,7 @@ class VerifyUserAPITestCase(BaseAPITestCase):
         self.assertTrue(user.is_verified)
 
     def test_verify_user_twice(self):
-        '''Test verifying a user twice.'''
+        """Test verifying a user twice."""
         user = User.query.filter_by(id=2).first()
         self.assertTrue(user.is_verified)
         data = {'rank_id': 1}
@@ -32,7 +32,7 @@ class VerifyUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserAlreadyVerified)
 
     def test_verify_non_existing_user(self):
-        '''Test verifying a non existing user.'''
+        """Test verifying a non existing user."""
         data = {'rank_id': 1}
         res = self.post(url='/verify/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)

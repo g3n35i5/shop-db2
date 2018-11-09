@@ -59,15 +59,15 @@ def check_forbidden(data, allowed_fields, row):
 
 
 def check_required(data, required_fields):
-    '''This function checks wether all required fields are in a Dictionary
-       and, if necessary, returns an error message.'''
+    """This function checks wether all required fields are in a Dictionary
+       and, if necessary, returns an error message."""
     if any(item not in data for item in required_fields):
         raise exc.DataIsMissing()
 
 
 def check_allowed_fields_and_types(data, allowed_fields):
-    '''This function checks whether the data contains an invalid field.
-       At the same time, all entries are checked for their type.'''
+    """This function checks whether the data contains an invalid field.
+       At the same time, all entries are checked for their type."""
     if not all(x in allowed_fields for x in data):
         raise exc.UnknownField()
 
@@ -90,7 +90,7 @@ def update_fields(data, row, updated=None):
 
 
 def insert_user(data):
-    '''Helper function to create a user.'''
+    """Helper function to create a user."""
     required = ['firstname', 'lastname', 'username', 'email',
                 'password', 'password_repeat']
 
@@ -134,9 +134,9 @@ def insert_user(data):
 
 
 def adminRequired(f):
-    '''This function checks whether a valid token is contained in the request.
+    """This function checks whether a valid token is contained in the request.
        If this is not the case, or the user has no admin rights, the request
-       will be blocked.'''
+       will be blocked."""
     @wraps(f)
     def decorated(*args, **kwargs):
         # Does the request heder contain a token?
@@ -173,9 +173,9 @@ def adminRequired(f):
 
 
 def adminOptional(f):
-    '''This function checks whether a valid token is contained in the request.
+    """This function checks whether a valid token is contained in the request.
        If this is not the case, or the user has no admin rights, the following
-       function returns only a part of the available data.'''
+       function returns only a part of the available data."""
     @wraps(f)
     def decorated(*args, **kwargs):
         # Does the request heder contain a token?
@@ -213,8 +213,8 @@ def adminOptional(f):
 
 @app.errorhandler(Exception)
 def handle_error(error):
-    '''This wrapper catches all exceptions and, if possible, returns a user
-       friendly response. Otherwise, it will raise the error'''
+    """This wrapper catches all exceptions and, if possible, returns a user
+       friendly response. Otherwise, it will raise the error"""
     # Perform a rollback. All changes that have not yet been committed are
     # thus reset.
     db.session.rollback()
@@ -329,7 +329,7 @@ def upload(admin):
 # Login route ################################################################
 @app.route('/login', methods=['POST'])
 def login():
-    '''Authenticate a registered user'''
+    """Authenticate a registered user"""
     data = json_body()
     user = None
     # Check all items in the json body.
@@ -373,7 +373,7 @@ def login():
 # Register route #############################################################
 @app.route('/register', methods=['POST'])
 def register():
-    '''Register a new user'''
+    """Register a new user"""
     insert_user(json_body())
     try:
         db.session.commit()
@@ -387,7 +387,7 @@ def register():
 @app.route('/verifications', methods=['GET'])
 @adminRequired
 def list_pending_validations(admin):
-    '''Returns a list of all non verified users'''
+    """Returns a list of all non verified users"""
     res = (db.session.query(User)
            .filter(~exists().where(UserVerification.user_id == User.id))
            .all())
@@ -419,7 +419,7 @@ def verify_user(admin, id):
 @app.route('/users', methods=['GET'])
 @adminOptional
 def list_users(admin):
-    '''Return a list of all users'''
+    """Return a list of all users"""
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
         fields = ['id', 'firstname', 'lastname', 'username']
@@ -432,7 +432,7 @@ def list_users(admin):
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])
 def get_user_favorites(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -445,7 +445,7 @@ def get_user_favorites(id):
 
 @app.route('/users/<int:id>/deposits', methods=['GET'])
 def get_user_deposits(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -461,7 +461,7 @@ def get_user_deposits(id):
 
 @app.route('/users/<int:id>/purchases', methods=['GET'])
 def get_user_purchases(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -478,7 +478,7 @@ def get_user_purchases(id):
 
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -494,7 +494,7 @@ def get_user(id):
 @app.route('/users/<int:id>', methods=['PUT'])
 @adminRequired
 def update_user(admin, id):
-    '''Update the user with the given id'''
+    """Update the user with the given id"""
     data = json_body()
 
     # Query user
@@ -566,8 +566,8 @@ def update_user(admin, id):
 @app.route('/users/<int:id>', methods=['DELETE'])
 @adminRequired
 def delete_user(admin, id):
-    '''Delete the user with the given id. This is only possible with
-       non-verified users'''
+    """Delete the user with the given id. This is only possible with
+       non-verified users"""
     # Check if the user exists
     user = User.query.filter_by(id=id).first()
     if not user:
@@ -591,7 +591,7 @@ def delete_user(admin, id):
 @app.route('/products', methods=['GET'])
 @adminOptional
 def list_products(admin):
-    '''Return a list of all products'''
+    """Return a list of all products"""
     if not admin:
         result = (Product.query
                   .filter(Product.active.is_(True))
@@ -608,7 +608,7 @@ def list_products(admin):
 @app.route('/products', methods=['POST'])
 @adminRequired
 def create_product(admin):
-    '''Create a product'''
+    """Create a product"""
     data = json_body()
     required = ['name', 'price']
     createable = {
@@ -645,7 +645,7 @@ def create_product(admin):
 @app.route('/products/<int:id>', methods=['GET'])
 @adminOptional
 def get_product(admin, id):
-    '''Return the product with the given id'''
+    """Return the product with the given id"""
     product = Product.query.filter(Product.id == id).first()
     if not product:
         raise exc.ProductNotFound()
@@ -661,7 +661,7 @@ def get_product(admin, id):
 @app.route('/products/<int:id>', methods=['PUT'])
 @adminRequired
 def update_product(admin, id):
-    '''Update the product with the given id'''
+    """Update the product with the given id"""
     data = json_body()
 
     # Check, if the product exists.
@@ -720,7 +720,7 @@ def update_product(admin, id):
 @app.route('/purchases', methods=['GET'])
 @adminOptional
 def list_purchases(admin):
-    '''Return a list of all purchases'''
+    """Return a list of all purchases"""
     # Create a list for an admin
     if admin:
         res = Purchase.query.all()
@@ -738,7 +738,7 @@ def list_purchases(admin):
 
 @app.route('/purchases', methods=['POST'])
 def create_purchase():
-    '''Create a purchase'''
+    """Create a purchase"""
     data = json_body()
     required = {'user_id': int, 'product_id': int, 'amount': int}
 
@@ -782,7 +782,7 @@ def create_purchase():
 
 @app.route('/purchases/<int:id>', methods=['GET'])
 def get_purchase(id):
-    '''Return the purchase with the given id'''
+    """Return the purchase with the given id"""
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
         raise exc.PurchaseNotFound()
@@ -793,7 +793,7 @@ def get_purchase(id):
 
 @app.route('/purchases/<int:id>', methods=['PUT'])
 def update_purchase(id):
-    '''Update the purchase with the given id'''
+    """Update the purchase with the given id"""
     # Check purchase
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
@@ -833,7 +833,7 @@ def update_purchase(id):
 @app.route('/deposits', methods=['GET'])
 @adminRequired
 def list_deposits(admin):
-    '''List all deposits'''
+    """List all deposits"""
     deposits = Deposit.query.all()
     fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
               'admin_id']
@@ -843,7 +843,7 @@ def list_deposits(admin):
 @app.route('/deposits', methods=['POST'])
 @adminRequired
 def create_deposit(admin):
-    '''Create a deposit'''
+    """Create a deposit"""
     data = json_body()
     required = {'user_id': int, 'amount': int, 'comment': str}
     check_required(data, required)
@@ -888,7 +888,7 @@ def get_deposit(id):
 @app.route('/deposits/<int:id>', methods=['PUT'])
 @adminRequired
 def update_deposit(admin, id):
-    '''Update the deposit with the given id'''
+    """Update the deposit with the given id"""
     # Check deposit
     deposit = Deposit.query.filter_by(id=id).first()
     if not deposit:
@@ -924,7 +924,7 @@ def update_deposit(admin, id):
 @app.route('/replenishmentcollections', methods=['GET'])
 @adminRequired
 def list_replenishmentcollections(admin):
-    '''List all replenishmentcollections.'''
+    """List all replenishmentcollections."""
     data = ReplenishmentCollection.query.all()
     fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked']
     response = convert_minimal(data, fields)
@@ -934,7 +934,7 @@ def list_replenishmentcollections(admin):
 @app.route('/replenishmentcollections/<int:id>', methods=['GET'])
 @adminRequired
 def get_replenishmentcollection(admin, id):
-    '''Get a single replenishmentcollection.'''
+    """Get a single replenishmentcollection."""
     replcoll = ReplenishmentCollection.query.filter_by(id=id).first()
     fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
                        'revokehistory']
@@ -954,7 +954,7 @@ def get_replenishmentcollection(admin, id):
 @app.route('/replenishmentcollections', methods=['POST'])
 @adminRequired
 def create_replenishmentcollection(admin):
-    '''Create replenishmentcollection.'''
+    """Create replenishmentcollection."""
     data = json_body()
     required_data = {'admin_id': int, 'replenishments': list}
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
@@ -1000,7 +1000,7 @@ def create_replenishmentcollection(admin):
 @app.route('/replenishmentcollections/<int:id>', methods=['PUT'])
 @adminRequired
 def update_replenishmentcollection(admin, id):
-    '''Update a replenishmentcollection.'''
+    """Update a replenishmentcollection."""
     # Check ReplenishmentCollection
     replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
     if not replcoll:
@@ -1033,7 +1033,7 @@ def update_replenishmentcollection(admin, id):
 @app.route('/replenishments/<int:id>', methods=['PUT'])
 @adminRequired
 def update_replenishment(admin, id):
-    '''Update a replenishment.'''
+    """Update a replenishment."""
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
@@ -1065,7 +1065,7 @@ def update_replenishment(admin, id):
 @app.route('/replenishments/<int:id>', methods=['DELETE'])
 @adminRequired
 def delete_replenishment(admin, id):
-    '''Update a replenishment.'''
+    """Update a replenishment."""
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:

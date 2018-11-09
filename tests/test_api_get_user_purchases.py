@@ -13,7 +13,7 @@ import pdb
 
 class GetUserPurchasesAPITestCase(BaseAPITestCase):
     def _insert_test_purchases(self):
-        '''Helper function to insert some test purchases'''
+        """Helper function to insert some test purchases"""
         p1 = Purchase(user_id=1, product_id=1, amount=1)
         p2 = Purchase(user_id=2, product_id=3, amount=2)
         p3 = Purchase(user_id=2, product_id=2, amount=4)
@@ -24,7 +24,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_get_user_purchases(self):
-        '''TODO'''
+        """TODO"""
         self._insert_test_purchases()
         res = self.get(url='/users/2/purchases')
         self.assertEqual(res.status_code, 200)
@@ -37,7 +37,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
                 assert x in i
 
     def test_get_users_purchases_no_insert(self):
-        '''TODO'''
+        """TODO"""
         res = self.get(url='/users/2/purchases')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)

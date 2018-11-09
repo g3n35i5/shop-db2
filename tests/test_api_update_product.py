@@ -15,7 +15,7 @@ import pdb
 
 class UpdateProductAPITestCase(BaseAPITestCase):
     def test_update_authorization(self):
-        '''This route should only be available for adminisrators'''
+        """This route should only be available for adminisrators"""
         res = self.put(url='/products/2', data={})
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
@@ -27,7 +27,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
 
     def test_update_forbidden_field(self):
-        '''Updating a forbidden field should raise an error.'''
+        """Updating a forbidden field should raise an error."""
         self.assertTrue(Product.query.filter_by(id=1).first().countable)
         data = {'countable': False}
         res = self.put(url='/products/2', data=data, role='admin')
@@ -36,14 +36,14 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertTrue(Product.query.filter_by(id=1).first().countable)
 
     def test_update_non_existing_product(self):
-        '''Updating a non existing product should raise an error.'''
+        """Updating a non existing product should raise an error."""
         data = {'name': 'Bread'}
         res = self.put(url='/products/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ProductNotFound)
 
     def test_update_wrong_type(self):
-        '''A wrong field type should raise an error'''
+        """A wrong field type should raise an error"""
         product1 = Product.query.filter_by(id=1).first()
         data = {'name': True}
         res = self.put(url='/products/1', data=data, role='admin')
@@ -53,14 +53,14 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(product1, product2)
 
     def test_update_unknown_field(self):
-        '''An unknown field should raise an error'''
+        """An unknown field should raise an error"""
         data = {'color': 'red'}
         res = self.put(url='/products/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
     def test_update_product_name(self):
-        '''Update product name'''
+        """Update product name"""
         self.assertEqual(Product.query.filter_by(id=1).first().name, 'Pizza')
         data = {'name': 'Bread'}
         res = self.put(url='/products/1', data=data, role='admin')
@@ -72,7 +72,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(Product.query.filter_by(id=1).first().name, 'Bread')
 
     def test_update_product_price(self):
-        '''Update product price'''
+        """Update product price"""
         self.assertEqual(Product.query.filter_by(id=1).first().price, 300)
         pricehist = (ProductPrice.query
                      .filter(ProductPrice.product_id == 1)
@@ -95,7 +95,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(pricehist[1].price, 200)
 
     def test_update_product_image(self):
-        '''Update the product image'''
+        """Update the product image"""
         # Upload a product image
         filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'
         with open(filepath, 'rb') as test:
@@ -118,8 +118,8 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         os.remove(filepath)
 
     def test_update_product_non_existing_image(self):
-        '''Update the product image with a non existing image should
-           raise an error'''
+        """Update the product image with a non existing image should
+           raise an error"""
         data = {'imagename': 'test.png'}
         res = self.put(url='/products/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)

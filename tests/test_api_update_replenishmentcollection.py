@@ -30,7 +30,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_revoke_replenishment_collection_as_admin_I(self):
-        '''Revoke a replenishmentcollection as admin'''
+        """Revoke a replenishmentcollection as admin"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': True}, role='admin')
@@ -45,7 +45,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
             assert item in replcoll.revokehistory[0]
 
     def test_revoke_replenishment_collection_as_admin_II(self):
-        '''Revoke a replenishmentcollection as admin multiple times'''
+        """Revoke a replenishmentcollection as admin multiple times"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': True}, role='admin')
@@ -65,7 +65,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
                 assert item in i
 
     def test_revoke_replenishment_collection_as_user(self):
-        '''Revoking a replenishmentcollection as user'''
+        """Revoking a replenishmentcollection as user"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': True}, role='user')
@@ -73,7 +73,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnauthorizedAccess)
 
     def test_update_replenishment_collection_no_changes(self):
-        '''Revoking a replenishmentcollection with no changes'''
+        """Revoking a replenishmentcollection with no changes"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': False}, role='admin')
@@ -81,7 +81,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
 
     def test_update_replenishment_collection_with_invalid_id(self):
-        '''Revoking a replenishmentcollection that doesnt exist'''
+        """Revoking a replenishmentcollection that doesnt exist"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/4',
                        data={'revoked': True}, role='admin')
@@ -89,7 +89,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ReplenishmentCollectionNotFound)
 
     def test_update_replenishment_collection_with_forbidden_field(self):
-        '''Revoking forbidden fields of a replenishmentcollection'''
+        """Revoking forbidden fields of a replenishmentcollection"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': True, 'timestamp': ''}, role='admin')
@@ -97,7 +97,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ForbiddenField)
 
     def test_update_replenishment_collection_with_unknown_field(self):
-        '''Revoking nonexisting fields of a replenishmentcollection'''
+        """Revoking nonexisting fields of a replenishmentcollection"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={'Nonsense': ''}, role='admin')
@@ -105,7 +105,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
 
     def test_update_replenishment_collection_with_wrong_type(self):
-        '''Revoking fields of a replenishmentcollection with wrong types'''
+        """Revoking fields of a replenishmentcollection with wrong types"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': 'yes'}, role='admin')
@@ -113,7 +113,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.WrongType)
 
     def test_update_replenishment_collection_with_no_data(self):
-        '''Revoking a replenishmentcollection with no data'''
+        """Revoking a replenishmentcollection with no data"""
         self._insert_testdata()
         res = self.put(url='/replenishmentcollections/1',
                        data={}, role='admin')

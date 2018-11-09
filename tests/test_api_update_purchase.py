@@ -13,7 +13,7 @@ import pdb
 
 class UpdatePurchaseAPITestCase(BaseAPITestCase):
     def insert_test_purchases(self):
-        '''Helper function to insert some test purchases'''
+        """Helper function to insert some test purchases"""
         p1 = Purchase(user_id=1, product_id=1, amount=1)
         p2 = Purchase(user_id=2, product_id=3, amount=2)
         p3 = Purchase(user_id=2, product_id=2, amount=4)
@@ -24,7 +24,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_update_nothing(self):
-        '''Updating a purchase with no data should do nothing.'''
+        """Updating a purchase with no data should do nothing."""
         self.insert_test_purchases()
         purchase1 = Purchase.query.filter_by(id=1).first()
         res = self.put(url='/purchases/1', data={}, role='admin')
@@ -34,7 +34,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(purchase1, purchase2)
 
     def test_update_forbidden_field(self):
-        '''Updating a forbidden field should raise an error.'''
+        """Updating a forbidden field should raise an error."""
         self.insert_test_purchases()
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
         data = {'id': 2}
@@ -44,7 +44,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
 
     def test_update_unknown_field(self):
-        '''Updating a unknwon field should raise an error.'''
+        """Updating a unknwon field should raise an error."""
         self.insert_test_purchases()
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
         data = {'foo': 'bar'}
@@ -54,7 +54,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
 
     def test_update_non_existing_purchase(self):
-        '''Updating a non existing purchase should raise an error.'''
+        """Updating a non existing purchase should raise an error."""
         self.insert_test_purchases()
         data = {'amount': 5}
         res = self.put(url='/purchases/6', data=data, role='admin')
@@ -62,7 +62,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.PurchaseNotFound)
 
     def test_update_revoke_purchase_twice(self):
-        '''Revoking a purchase twice should raise an error and do nothing.'''
+        """Revoking a purchase twice should raise an error and do nothing."""
         self.insert_test_purchases()
         data = {'revoked': True}
         res = self.put(url='/purchases/1', data=data, role='admin')
@@ -74,7 +74,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertTrue(Purchase.query.filter_by(id=1).first().revoked)
 
     def test_update_wrong_type(self):
-        '''A wrong field type should raise an error.'''
+        """A wrong field type should raise an error."""
         self.insert_test_purchases()
         purchase1 = Purchase.query.filter_by(id=1).first()
         data = {'amount': '2'}
@@ -85,7 +85,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(purchase1, purchase2)
 
     def test_update_unknown_field(self):
-        '''An unknown field should raise an error.'''
+        """An unknown field should raise an error."""
         self.insert_test_purchases()
         data = {'color': 'red'}
         res = self.put(url='/purchases/1', data=data, role='admin')
@@ -93,7 +93,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
 
     def test_update_purchase_revoked(self):
-        '''Update purchase revoked field.'''
+        """Update purchase revoked field."""
         self.insert_test_purchases()
         self.assertFalse(Purchase.query.filter_by(id=1).first().revoked)
         data = {'revoked': True}
@@ -106,7 +106,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertTrue(Purchase.query.filter_by(id=1).first().revoked)
 
     def test_update_purchase_amount(self):
-        '''Update product price'''
+        """Update product price"""
         self.insert_test_purchases()
         purchase = Purchase.query.filter_by(id=1).first()
         self.assertEqual(purchase.amount, 1)

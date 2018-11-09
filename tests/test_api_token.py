@@ -14,7 +14,7 @@ import datetime
 
 class TokenAPITestCase(BaseAPITestCase):
     def test_manipulate_token(self):
-        '''A manipulated/invalid token should raise an error.'''
+        """A manipulated/invalid token should raise an error."""
         data = {'identifier': u_usernames[0], 'password': u_passwords[0]}
         res = self.post(url='/login', data=data)
         token = json.loads(res.data)['token']
@@ -34,7 +34,7 @@ class TokenAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.TokenIsInvalid)
 
     def test_token_expired(self):
-        '''An expired token should raise an error.'''
+        """An expired token should raise an error."""
         data = {'identifier': u_usernames[0], 'password': u_passwords[0]}
         res = self.post(url='/login', data=data)
         token = json.loads(res.data)['token']
@@ -59,8 +59,8 @@ class TokenAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.TokenHasExpired)
 
     def test_token_missing_user(self):
-        '''Each token contains a user dictionary. If it is missing, an error
-           should be raised.'''
+        """Each token contains a user dictionary. If it is missing, an error
+           should be raised."""
         data = {'identifier': u_usernames[0], 'password': u_passwords[0]}
         res = self.post(url='/login', data=data)
         token = json.loads(res.data)['token']

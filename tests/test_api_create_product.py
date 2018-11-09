@@ -13,7 +13,7 @@ import pdb
 
 class CreateProductsAPITestCase(BaseAPITestCase):
     def test_create_product_authorization(self):
-        '''This route should only be available for adminisrators'''
+        """This route should only be available for adminisrators"""
         res = self.post(url='/products', data={})
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
@@ -25,7 +25,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
 
     def test_create_product(self):
-        '''Create a Product as admin.'''
+        """Create a Product as admin."""
         p_data = {
             'name': 'Bread', 'price': 100,
             'barcode': '12345678', 'active': True,
@@ -41,7 +41,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertEqual(product.created_by, 1)
 
     def test_create_product_wrong_type(self):
-        '''Create a Product as admin with wrong type(s).'''
+        """Create a Product as admin with wrong type(s)."""
         p_data = {
             'name': 'Bread', 'price': 100,
             'barcode': '12345678', 'active': True,
@@ -57,7 +57,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Product.query.all()), 4)
 
     def test_create_product_missing_name(self):
-        '''Create a Product as admin with missing name.'''
+        """Create a Product as admin with missing name."""
         data = {'price': 100}
         res = self.post(url='/products', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
@@ -65,7 +65,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertFalse(Product.query.filter_by(id=5).first())
 
     def test_create_product_missing_price(self):
-        '''Create a Product as admin with missing price.'''
+        """Create a Product as admin with missing price."""
         data = {'name': 'Bread'}
         res = self.post(url='/products', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
@@ -73,7 +73,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertFalse(Product.query.filter_by(id=5).first())
 
     def test_create_product_already_existing(self):
-        '''Creating a product which already exists should not be possible.'''
+        """Creating a product which already exists should not be possible."""
         data = {'name': 'Pizza', 'price': 300}
         res = self.post(url='/products', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
@@ -81,7 +81,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertFalse(Product.query.filter_by(id=5).first())
 
     def test_create_product_unknown_field(self):
-        '''Unknown fields should raise an exception.'''
+        """Unknown fields should raise an exception."""
         data = {'name': 'Bread', 'price': 100, 'color': 'blue'}
         res = self.post(url='/products', role='admin', data=data)
         self.assertEqual(res.status_code, 401)

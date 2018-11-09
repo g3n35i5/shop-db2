@@ -308,7 +308,7 @@ class Purchase(db.Model):
 
     @validates('user_id')
     def validate_user(self, key, user_id):
-        '''Make sure that the user is verified'''
+        """Make sure that the user is verified"""
         user = User.query.filter(User.id == user_id).first()
         if not user or not user.is_verified:
             raise UserIsNotVerified()
@@ -317,7 +317,7 @@ class Purchase(db.Model):
 
     @validates('product_id')
     def validate_product(self, key, product_id):
-        '''Make sure that the product is active'''
+        """Make sure that the product is active"""
         product = Product.query.filter(Product.id == product_id).first()
         if not product or not product.active:
             raise ProductIsInactive()

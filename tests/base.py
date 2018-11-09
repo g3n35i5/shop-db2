@@ -52,8 +52,8 @@ class BaseTestCase(TestCase):
         db.drop_all()
 
     def generate_passwords(self, pwds):
-        '''This function generates hashes of passwords and stores them in the
-           global variable so that they do not have to be created again.'''
+        """This function generates hashes of passwords and stores them in the
+           global variable so that they do not have to be created again."""
         global passwords
         if passwords is None:
             passwords = [None] * len(pwds)
@@ -103,7 +103,7 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     def test_default_users(self):
-        '''Check if all users have been entered correctly'''
+        """Check if all users have been entered correctly"""
         users = User.query.all()
         # Check number of users
         self.assertEqual(len(users), len(u_firstnames))
@@ -117,14 +117,14 @@ class BaseTestCase(TestCase):
                             users[i].password, u_passwords[i]))
 
     def test_insert_default_ranks(self):
-        '''Check if all ranks have been entered correctly'''
+        """Check if all ranks have been entered correctly"""
         ranks = Rank.query.all()
         self.assertEqual(len(ranks), len(r_names))
         for i in range(0, len(r_names)):
             self.assertEqual(ranks[i].name, r_names[i])
 
     def test_verify_all_users_except_last(self):
-        '''Check if all users except the last one have been verified'''
+        """Check if all users except the last one have been verified"""
         users = User.query.all()
         for i in range(0, len(users) - 1):
             self.assertTrue(users[i].is_verified)

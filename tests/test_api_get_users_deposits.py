@@ -23,7 +23,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_get_user_deposit(self):
-        '''TODO'''
+        """TODO"""
         self._insert_deposits()
         res = self.get(url='/users/2/deposits')
         self.assertEqual(res.status_code, 200)
@@ -35,7 +35,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
                 assert x in i
 
     def test_get_users_deposits_no_insert(self):
-        '''TODO'''
+        """TODO"""
         res = self.get(url='/users/2/deposits')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)

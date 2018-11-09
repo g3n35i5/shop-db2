@@ -13,7 +13,7 @@ import pdb
 
 class PendingVerificationsAPITestCase(BaseAPITestCase):
     def test_get_pending_verifications(self):
-        '''Testing getting a list of all non verified users'''
+        """Testing getting a list of all non verified users"""
         # This route should only be available for adminisrators
         res = self.get(url='/verifications')
         self.assertEqual(res.status_code, 401)

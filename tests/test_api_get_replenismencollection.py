@@ -31,7 +31,7 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_get_replenishment_collection_as_admin(self):
-        '''Getting a single ReplenishmentCollection as admin'''
+        """Getting a single ReplenishmentCollection as admin"""
         self._insert_testdata()
         res = self.get(url='/replenishmentcollections/1', role='admin')
         self.assertEqual(res.status_code, 200)
@@ -48,7 +48,7 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
             assert all(x in repl for x in required_repl)
 
     def test_get_replenishment_collection_as_user(self):
-        '''Trying to get a single ReplenishmentCollection as user'''
+        """Trying to get a single ReplenishmentCollection as user"""
         self._insert_testdata()
         res = self.get(url='/replenishmentcollections/2', role='user')
         self.assertEqual(res.status_code, 401)
