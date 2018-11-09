@@ -15,7 +15,7 @@ import pdb
 
 class UploadAPITestCase(BaseAPITestCase):
     def test_authorization(self):
-        '''This route should only be available for admins.'''
+        """This route should only be available for admins."""
         res = self.post(url='/upload', role=None,
                         content_type='multipart/form-data')
         self.assertException(res, exc.UnauthorizedAccess)
@@ -28,14 +28,14 @@ class UploadAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_no_file_included(self):
-        '''A request without any data should raise an error.'''
+        """A request without any data should raise an error."""
         res = self.post(url='/upload', role='admin',
                         content_type='multipart/form-data')
         self.assertException(res, exc.NoFileIncluded)
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_invalid_extension(self):
-        '''A request with an invalid file extension should raise an error.'''
+        """A request with an invalid file extension should raise an error."""
         data = dict({'file': (io.BytesIO(b'abcdefg'), 'test.txt')})
         res = self.post(url='/upload', data=data, role='admin',
                         content_type='multipart/form-data')
@@ -43,7 +43,7 @@ class UploadAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_file_too_large(self):
-        '''A request with an file which is too large should raise an error.'''
+        """A request with an file which is too large should raise an error."""
         bytes = b'1' * 6 * 1024 * 1024
         data = dict({'file': (io.BytesIO(bytes), 'test.png')})
         res = self.post(url='/upload', data=data, role='admin',
@@ -52,7 +52,7 @@ class UploadAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_invalid_filename(self):
-        '''A request with an invalid file extension should raise an error.'''
+        """A request with an invalid file extension should raise an error."""
         data = dict({'file': (io.BytesIO(b'abcdefg'), '.txt')})
         res = self.post(url='/upload', data=data, role='admin',
                         content_type='multipart/form-data')
@@ -60,7 +60,7 @@ class UploadAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_broken_image(self):
-        '''A request with a broken imageshould raise an error.'''
+        """A request with a broken imageshould raise an error."""
         for ext in ['png', 'jpg', 'jpeg']:
             filepath = app.config['UPLOAD_FOLDER'] + 'broken_image.' + ext
             with open(filepath, 'rb') as test:
@@ -72,7 +72,7 @@ class UploadAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_valid_image(self):
-        '''A request with valid images should work.'''
+        """A request with valid images should work."""
         for ext in ['png', 'jpg', 'jpeg']:
             filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.' + ext
             with open(filepath, 'rb') as test:

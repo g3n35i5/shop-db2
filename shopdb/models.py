@@ -66,9 +66,9 @@ class User(db.Model):
 
     @hybrid_property
     def verification_date(self):
-        v = Verification.query.filter(Verification.user_id == self.id).first()
-        if v:
-            return v.timestamp
+        verification = UserVerification.query.filter(UserVerification.user_id == self.id).first()
+        if verification:
+            return verification.timestamp
         return None
 
     @hybrid_method
@@ -79,11 +79,12 @@ class User(db.Model):
         db.session.add(au)
 
     @hybrid_method
-    def verify(self, admin_id):
+    def verify(self, admin_id, rank_id):
         if self.is_verified:
             raise UserAlreadyVerified()
         self.is_verified = True
         uv = UserVerification(user_id=self.id, admin_id=admin_id)
+        self.set_rank_id(rank_id, admin_id)
         db.session.add(uv)
 
     @hybrid_property
@@ -196,6 +197,7 @@ class Rank(db.Model):
     __tablename__ = 'ranks'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=True, nullable=False)
+    debt_limit = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return f'<Rank {self.name}>'
@@ -306,7 +308,7 @@ class Purchase(db.Model):
 
     @validates('user_id')
     def validate_user(self, key, user_id):
-        '''Make sure that the user is verified'''
+        """Make sure that the user is verified"""
         user = User.query.filter(User.id == user_id).first()
         if not user or not user.is_verified:
             raise UserIsNotVerified()
@@ -315,7 +317,7 @@ class Purchase(db.Model):
 
     @validates('product_id')
     def validate_product(self, key, product_id):
-        '''Make sure that the product is active'''
+        """Make sure that the product is active"""
         product = Product.query.filter(Product.id == product_id).first()
         if not product or not product.active:
             raise ProductIsInactive()

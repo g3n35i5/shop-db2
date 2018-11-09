@@ -2,11 +2,14 @@
 
 from shopdb.models import *
 import shopdb.exceptions as exc
-from flask import (Flask, request, g, make_response, jsonify)
+from flask import (Flask, request, g, make_response, jsonify,
+                   send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import RequestEntityTooLarge, NotFound
 import jwt
+import json
+import base64
 import sqlite3
 import sqlalchemy
 from sqlalchemy.sql import exists
@@ -18,6 +21,7 @@ import random
 import os
 from PIL import Image
 import shutil
+
 app = Flask(__name__)
 
 # Default app settings (to suppress unittest warnings) will be overwritten.
@@ -27,13 +31,28 @@ bcrypt = Bcrypt(app)
 
 
 def set_app(configuration):
+    """
+    Sets all parameters of the applications to those defined in the dictionary
+    "configuration" and returns the application object.
+
+    :param configuration: The dictionary with all settings for the application
+
+    :return:              The application object with the updated settings.
+    """
     app.config.from_object(configuration)
     return app
 
 
 def convert_minimal(data, fields):
-    '''This function returns only the required attributes of all objects in
-       given list.'''
+    """
+    This function returns only the required attributes of all objects in
+    given list.
+
+    :param data:   The object from which the attributes are obtained.
+    :param fields: A list of all attributes to be output.
+
+    :return:       A dictionary with all requested attributes.
+    """
 
     if not isinstance(data, list):
         data = [data]
@@ -51,22 +70,58 @@ def convert_minimal(data, fields):
 
     return out
 
+
 def check_forbidden(data, allowed_fields, row):
+    """
+    This function checks whether any illegal fields exist in the data sent to
+    the API with the request. If so, an exception is raised and the request
+    is canceled.
+
+    :param data:             The data sent to the API.
+    :param allowed_fields:   A list of all allowed fields.
+    :param row:              The object for which you want to check whether the
+                             fields are forbidden.
+
+    :return:                 None
+
+    :raises ForbiddenField : If a forbidden field is in the data.
+    """
     for item in data:
         if (item not in allowed_fields) and (hasattr(row, item)):
             raise exc.ForbiddenField()
 
 
 def check_required(data, required_fields):
-    '''This function checks wether all required fields are in a Dictionary
-       and, if necessary, returns an error message.'''
+    """
+    This function checks whether all required fields are in a Dictionary
+    and, if necessary, returns an error message.
+
+    :param data:            The data sent to the API.
+    :param required_fields: A list of all required fields.
+
+    :return:                None
+
+    :raises DataIsMissing:  If a required field is not in the data.
+    """
     if any(item not in data for item in required_fields):
         raise exc.DataIsMissing()
 
 
 def check_allowed_fields_and_types(data, allowed_fields):
-    '''This function checks whether the data contains an invalid field.
-       At the same time, all entries are checked for their type.'''
+    """
+    This function checks whether the data contains an invalid field.
+    At the same time, all entries are checked for their type.
+
+    :param data:            The dictionary whose entries are to be checked.
+    :param allowed_fields:  A dictionary with all allowed entries and their
+                            types.
+
+    :return:                None
+
+    :raises UnknownField:   If there's an unknown field in the data.
+    :raises WrongType:      If a field is of the wrong type.
+    """
+
     if not all(x in allowed_fields for x in data):
         raise exc.UnknownField()
 
@@ -75,8 +130,55 @@ def check_allowed_fields_and_types(data, allowed_fields):
             raise exc.WrongType()
 
 
+def update_fields(data, row, updated=None):
+    """
+    This helper function updates all fields defined in the dictionary "data"
+    for a given database object "row". If modifications have already been made
+    to the object, the names of the fields that have already been updated can
+    be transferred with the "updated" list. All updated fields are added to
+    this list.
+
+    :param data:                The dictionary with all entries to be updated.
+    :param row:                 The database object to be updated.
+    :param updated:             A list of all fields that have already been
+                                updated.
+
+    :return:                    A list with all already updated fields and
+                                those that have been added.
+
+    :raises: NothingHasChanged: If no fields were changed during the update.
+    """
+    for item in data:
+        if not getattr(row, item) == data[item]:
+            setattr(row, item, data[item])
+            if updated is not None:
+                updated.append(item)
+            else:
+                updated = [item]
+
+    if not updated or len(updated) == 0:
+        raise exc.NothingHasChanged()
+
+    return updated
+
+
 def insert_user(data):
-    '''Helper function to create a user.'''
+    """
+    This help function creates a new user with the given data.
+
+    :param data:                      Is the dictionary with all the data for
+                                      the user.
+
+    :return:                          None
+
+    :raises DataIsMissing:            If not all required data is available.
+    :raises WrongType:                If one or more data is of the wrong type.
+    :raises PasswordsDoNotMatch:      If the passwords do not match.
+    :raises UsernameAlreadyTaken:     If the username is already taken.
+    :raises EmailAddressAlreadyTaken: If the email address is already taken.
+    :raises CouldNotCreateEntry:      If the new user cannot be added to the
+                                      database.
+    """
     required = ['firstname', 'lastname', 'username', 'email',
                 'password', 'password_repeat']
 
@@ -127,12 +229,27 @@ def insert_user(data):
 
 
 def adminRequired(f):
-    '''This function checks whether a valid token is contained in the request.
-       If this is not the case, or the user has no admin rights, the request
-       will be blocked.'''
+    """
+    This function checks whether a valid token is contained in the request.
+    If this is not the case, or the user has no admin rights, the request
+    will be blocked.
+
+    :param f:                   Is the wrapped function.
+
+    :return:                    The wrapped function f with the additional
+                                parameter admin.
+
+    :raises UnauthorizedAccess: If no token object can be found in the request
+                                header.
+    :raises TokenIsInvalid:     If the token cannot be decoded.
+    :raises TokenHasExpired:    If the token has been expired.
+    :raises TokenIsInvalid:     If no user object could be found in the
+                                decoded token.
+    :raises UnauthorziedAccess: The user has no administrator privileges.
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Does the request heder contain a token?
+        # Does the request header contain a token?
         try:
             token = request.headers['token']
         except KeyError:
@@ -162,13 +279,28 @@ def adminRequired(f):
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
         return f(admin, *args, **kwargs)
+
     return decorated
 
 
 def adminOptional(f):
-    '''This function checks whether a valid token is contained in the request.
-       If this is not the case, or the user has no admin rights, the following
-       function returns only a part of the available data.'''
+    """
+    This function checks whether a valid token is contained in the request.
+    If this is not the case, or the user has no admin rights, the following
+    function returns only a part of the available data.
+
+    :param f:                   Is the wrapped function.
+
+    :return:                    Returns the wrapped function f with the
+                                additional parameter admin, if present.
+                                Otherwise, the parameter admin is None.
+
+    :raises TokenIsInvalid:     If the token cannot be decoded.
+    :raises TokenHasExpired:    If the token has been expired.
+    :raises TokenIsInvalid:     If no user object could be found in the
+                                decoded token.
+    """
+
     @wraps(f)
     def decorated(*args, **kwargs):
         # Does the request heder contain a token?
@@ -201,13 +333,14 @@ def adminOptional(f):
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
         return f(admin, *args, **kwargs)
+
     return decorated
 
 
 @app.errorhandler(Exception)
 def handle_error(error):
-    '''This wrapper catches all exceptions and, if possible, returns a user
-       friendly response. Otherwise, it will raise the error'''
+    """This wrapper catches all exceptions and, if possible, returns a user
+       friendly response. Otherwise, it will raise the error"""
     # Perform a rollback. All changes that have not yet been committed are
     # thus reset.
     db.session.rollback()
@@ -216,12 +349,12 @@ def handle_error(error):
         return jsonify(result='error', message='Page does not exist.'), 404
     # As long as the application is in debug mode, all other exceptions
     # should be output immediately.
-    if app.config['DEBUG']:  # pragma: no cover
-        raise error
+    if app.config['DEBUG'] and not app.config['DEVELOPMENT']:
+        raise error  # pragma: no cover
     # Create, if possible, a user friendly response.
     if all(hasattr(error, item) for item in ['type', 'message', 'code']):
         return jsonify(result=error.type, message=error.message), error.code
-    else:   # pragma: no cover
+    else:  # pragma: no cover
         raise error
     # If for some reason no exception has been raised yet, this is done now.
     raise error  # pragma: no cover
@@ -234,16 +367,34 @@ def json_body():
     return jb
 
 
-@app.route('/configuration', methods=['GET'])
-def get_config():
-    config = {'DEBT_LIMIT':app.config['DEBT_LIMIT']}
-
-    return jsonify({'configuration': config}), 200
-
-
 @app.route('/', methods=['GET'])
 def index():
     return jsonify({'message': 'Backend is online.'})
+
+
+@app.route('/initial_setup', methods=['POST'])
+def initial_setup():
+    data = json_body()
+    # Check whether there are already users in the database.
+    # If this is the case, the request must be aborted immediately.
+    if User.query.all():
+        raise exc.UnauthorizedAccess()
+
+    # Check whether all required objects exist in the data.
+    required = ['user', 'init_token']
+    try:
+        assert(all(x in data for x in required))
+    except AssertionError:
+        raise exc.DataIsMissing()
+
+    # Check the init token.
+    if data['init_token'] != app.config['init_token']:
+        raise exc.UnauthorizedAccess()
+
+    # Handle the user.
+    insert_user(data['user'])
+
+    return jsonify({'message': 'shop.db was successfully initialized'}), 200
 
 
 @app.route('/images/', methods=['GET'], defaults={'imagename': None})
@@ -261,12 +412,12 @@ def get_image(imagename):
 @app.route('/upload', methods=['POST'])
 @adminRequired
 def upload(admin):
+
+    VALID_EXTENSIONS = ['png']
     # Get the file. Raise an error if its file exceedes the maximum file size
     # defined in the app configuration file.
     try:
-        if 'file' not in request.files:
-            raise exc.NoFileIncluded()
-        file = request.files['file']
+        file = json.loads(request.data)
     except RequestEntityTooLarge:
         raise exc.FileTooLarge()
     # Check if the  file
@@ -275,31 +426,43 @@ def upload(admin):
     # Check if the filename is empty. There is no way to create a file with
     # empty filename in python so this can not be tested. Anyway, this is
     # a possible error vector.
-    if file.filename == '':
+    if file['filename'] == '':
         raise exc.InvalidFilename()
 
     # Check if the filename is valid
-    filename = file.filename.split('.')[0]
+    filename = file['filename'].split('.')[0]
     if filename is '' or not filename:
         raise exc.InvalidFilename()
 
     # Check the file extension
-    extension = file.filename.split('.')[1].lower()
-    valid_extension = extension in ['png', 'jpg', 'jpeg']
+    extension = file['filename'].split('.')[1].lower()
+    valid_extension = extension in VALID_EXTENSIONS
     if not valid_extension:
         raise exc.InvalidFileType()
 
     # Check if the image is a valid image file.
     try:
         # Save the image to a temporary file.
-        temp_filename = '/tmp/' + file.filename
-        file.save(temp_filename)
+        temp_filename = '/tmp/' + file['filename']
+        filedata = file['value']
+        f = open(temp_filename, 'wb')
+        f.write(base64.b64decode(filedata))
+        f.close()
         image = Image.open(temp_filename)
 
     # An invalid file will lead to an exception.
     except IOError:
         os.remove(temp_filename)
         raise exc.BrokenImage()
+
+    # Check the real extension again
+    if image.format not in [x.upper() for x in VALID_EXTENSIONS]:
+        raise exc.InvalidFileType()
+
+    # Check aspect ratio
+    width, height = image.size
+    if width != height:
+        raise exc.ImageMustBeQuadratic()
 
     # Create a unique filename.
     can_be_used = False
@@ -309,7 +472,7 @@ def upload(admin):
         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         can_be_used = not os.path.isfile(path)
 
-    # Move the temporary image to its desination path.
+    # Move the temporary image to its destination path.
     shutil.move(temp_filename, path)
 
     # Create an upload
@@ -329,24 +492,17 @@ def upload(admin):
 # Login route ################################################################
 @app.route('/login', methods=['POST'])
 def login():
-    '''Authenticate a registered user'''
+    """Authenticate a registered user"""
     data = json_body()
-    user = None
     # Check all items in the json body.
-    allowed = {'identifier': str, 'password': str}
+    allowed = {'id': int, 'password': str}
     check_required(data, allowed)
     check_allowed_fields_and_types(data, allowed)
 
-    # Try to get the user with the identifier.
-    if data['identifier'] is not '':
-        # Try the email address.
-        user = User.query.filter_by(email=data['identifier']).first()
-        # If there is no match, try the username.
-        if not user:
-            user = User.query.filter_by(username=data['identifier']).first()
+    # Try to get the user with the id
+    user = User.query.filter_by(id=data['id']).first()
 
-    # If no user with this data exists or there is no password in the
-    # request, cancel the authentication.
+    # If no user with this data exists cancel the authentication.
     if not user:
         raise exc.InvalidCredentials()
 
@@ -373,7 +529,7 @@ def login():
 # Register route #############################################################
 @app.route('/register', methods=['POST'])
 def register():
-    '''Register a new user'''
+    """Register a new user"""
     insert_user(json_body())
     try:
         db.session.commit()
@@ -387,7 +543,7 @@ def register():
 @app.route('/verifications', methods=['GET'])
 @adminRequired
 def list_pending_validations(admin):
-    '''Returns a list of all non verified users'''
+    """Returns a list of all non verified users"""
     res = (db.session.query(User)
            .filter(~exists().where(UserVerification.user_id == User.id))
            .all())
@@ -404,7 +560,13 @@ def verify_user(admin, id):
     if user.is_verified:
         raise exc.UserAlreadyVerified()
 
-    user.verify(admin_id=admin.id)
+    data = json_body()
+    # Check all items in the json body.
+    allowed = {'rank_id': int}
+    check_required(data, allowed)
+    check_allowed_fields_and_types(data, allowed)
+
+    user.verify(admin_id=admin.id, rank_id=data['rank_id'])
     db.session.commit()
     return jsonify({'message': 'Verified user.'}), 201
 
@@ -413,7 +575,15 @@ def verify_user(admin, id):
 @app.route('/users', methods=['GET'])
 @adminOptional
 def list_users(admin):
-    '''Return a list of all users'''
+    """
+    Returns a list of all users. If this route is called by an
+    administrator, all information is returned. However, if it is called
+    without further rights, a minimal version is returned.
+
+    :param admin: Administrator User, determined by @adminOptional
+
+    :return: A list of all users
+    """
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
         fields = ['id', 'firstname', 'lastname', 'username']
@@ -426,7 +596,7 @@ def list_users(admin):
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])
 def get_user_favorites(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -439,7 +609,7 @@ def get_user_favorites(id):
 
 @app.route('/users/<int:id>/deposits', methods=['GET'])
 def get_user_deposits(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -455,7 +625,7 @@ def get_user_deposits(id):
 
 @app.route('/users/<int:id>/purchases', methods=['GET'])
 def get_user_purchases(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -472,7 +642,7 @@ def get_user_purchases(id):
 
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
-    '''Return the user with the given id'''
+    """Return the user with the given id"""
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -480,7 +650,7 @@ def get_user(id):
         raise exc.UserIsNotVerified()
 
     fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
-              'is_admin']
+              'is_admin', 'creation_date', 'verification_date']
     user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
 
@@ -488,7 +658,7 @@ def get_user(id):
 @app.route('/users/<int:id>', methods=['PUT'])
 @adminRequired
 def update_user(admin, id):
-    '''Update the user with the given id'''
+    """Update the user with the given id"""
     data = json_body()
 
     # Query user
@@ -503,7 +673,8 @@ def update_user(admin, id):
         'email': str,
         'password': str,
         'password_repeat': str,
-        'is_admin': bool}
+        'is_admin': bool,
+        'rank_id': int}
 
     # Check the data for forbidden fields.
     check_forbidden(data, allowed, user)
@@ -517,6 +688,12 @@ def update_user(admin, id):
         user.set_admin(is_admin=data['is_admin'], admin_id=admin.id)
         updated_fields.append('is_admin')
         del data['is_admin']
+
+    # Update rank
+    if 'rank_id' in data:
+        user.set_rank_id(rank_id=data['rank_id'], admin_id=admin.id)
+        updated_fields.append('rank_id')
+        del data['rank_id']
 
     # Check password
     if 'password' in data:
@@ -539,15 +716,8 @@ def update_user(admin, id):
 
     # All other fields
     updateable = ['firstname', 'lastname', 'username', 'email']
-    for item in data:
-        if item in updateable:
-            if not isinstance(data[item], str):
-                raise exc.WrongType()
-            setattr(user, item, str(data[item]))
-            updated_fields.append(item)
-
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    check_forbidden(data, updateable, user)
+    updated_fields = update_fields(data, user, updated=updated_fields)
 
     # Apply changes
     try:
@@ -564,8 +734,8 @@ def update_user(admin, id):
 @app.route('/users/<int:id>', methods=['DELETE'])
 @adminRequired
 def delete_user(admin, id):
-    '''Delete the user with the given id. This is only possible with
-       non-verified users'''
+    """Delete the user with the given id. This is only possible with
+       non-verified users"""
     # Check if the user exists
     user = User.query.filter_by(id=id).first()
     if not user:
@@ -589,7 +759,15 @@ def delete_user(admin, id):
 @app.route('/products', methods=['GET'])
 @adminOptional
 def list_products(admin):
-    '''Return a list of all products'''
+    """
+    Returns a list of all products. If this route is called by an
+    administrator, all information is returned. However, if it is called
+    without further rights, a minimal version is returned.
+
+    :param admin: Administrator User, determined by @adminOptional
+
+    :return: A list of all products
+    """
     if not admin:
         result = (Product.query
                   .filter(Product.active.is_(True))
@@ -606,9 +784,8 @@ def list_products(admin):
 @app.route('/products', methods=['POST'])
 @adminRequired
 def create_product(admin):
-    '''Create a product'''
+    """Create a product"""
     data = json_body()
-    created_fields = []
     required = ['name', 'price']
     createable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
@@ -644,7 +821,7 @@ def create_product(admin):
 @app.route('/products/<int:id>', methods=['GET'])
 @adminOptional
 def get_product(admin, id):
-    '''Return the product with the given id'''
+    """Return the product with the given id"""
     product = Product.query.filter(Product.id == id).first()
     if not product:
         raise exc.ProductNotFound()
@@ -653,14 +830,14 @@ def get_product(admin, id):
         raise exc.UnauthorizedAccess()
 
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-              'revokeable', 'imagename']
+              'revokeable', 'imagename', 'pricehistory']
     return jsonify({'product': convert_minimal(product, fields)[0]}), 200
 
 
 @app.route('/products/<int:id>', methods=['PUT'])
 @adminRequired
 def update_product(admin, id):
-    '''Update the product with the given id'''
+    """Update the product with the given id"""
     data = json_body()
 
     # Check, if the product exists.
@@ -701,14 +878,7 @@ def update_product(admin, id):
             updated_fields.append('imagename')
 
     # Update all other fields
-    for item in data:
-        if not hasattr(product, item):
-            raise exc.UnknownField()
-        setattr(product, item, data[item])
-        updated_fields.append(item)
-
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    updated_fields = update_fields(data, product, updated=updated_fields)
 
     # Apply changes
     try:
@@ -726,7 +896,15 @@ def update_product(admin, id):
 @app.route('/purchases', methods=['GET'])
 @adminOptional
 def list_purchases(admin):
-    '''Return a list of all purchases'''
+    """
+    Returns a list of all purchases. If this route is called by an
+    administrator, all information is returned. However, if it is called
+    without further rights, a minimal version is returned.
+
+    :param admin: Administrator User, determined by @adminOptional
+
+    :return: A list of all purchases
+    """
     # Create a list for an admin
     if admin:
         res = Purchase.query.all()
@@ -744,7 +922,7 @@ def list_purchases(admin):
 
 @app.route('/purchases', methods=['POST'])
 def create_purchase():
-    '''Create a purchase'''
+    """Create a purchase"""
     data = json_body()
     required = {'user_id': int, 'product_id': int, 'amount': int}
 
@@ -770,9 +948,10 @@ def create_purchase():
         raise exc.InvalidAmount()
 
     # Check credit
+    limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
     current_credit = user.credit
-    future_credit = current_credit - (product.price*data['amount'])
-    if future_credit < app.config['DEBT_LIMIT']:
+    future_credit = current_credit - (product.price * data['amount'])
+    if future_credit < limit:
         raise exc.InsufficientCredit()
 
     try:
@@ -787,7 +966,7 @@ def create_purchase():
 
 @app.route('/purchases/<int:id>', methods=['GET'])
 def get_purchase(id):
-    '''Return the purchase with the given id'''
+    """Return the purchase with the given id"""
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
         raise exc.PurchaseNotFound()
@@ -798,7 +977,7 @@ def get_purchase(id):
 
 @app.route('/purchases/<int:id>', methods=['PUT'])
 def update_purchase(id):
-    '''Update the purchase with the given id'''
+    """Update the purchase with the given id"""
     # Check purchase
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
@@ -820,15 +999,7 @@ def update_purchase(id):
         del data['revoked']
 
     # Handle all other fields
-    for item in data:
-        if not hasattr(purchase, item):
-            raise exc.UnknownField()
-        setattr(purchase, item, data[item])
-        updated_fields.append(item)
-
-    # Check the amount of updated fields
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    updated_fields = update_fields(data, purchase, updated=updated_fields)
 
     # Apply changes
     try:
@@ -846,7 +1017,7 @@ def update_purchase(id):
 @app.route('/deposits', methods=['GET'])
 @adminRequired
 def list_deposits(admin):
-    '''List all deposits'''
+    """List all deposits"""
     deposits = Deposit.query.all()
     fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
               'admin_id']
@@ -856,7 +1027,7 @@ def list_deposits(admin):
 @app.route('/deposits', methods=['POST'])
 @adminRequired
 def create_deposit(admin):
-    '''Create a deposit'''
+    """Create a deposit"""
     data = json_body()
     required = {'user_id': int, 'amount': int, 'comment': str}
     check_required(data, required)
@@ -901,7 +1072,7 @@ def get_deposit(id):
 @app.route('/deposits/<int:id>', methods=['PUT'])
 @adminRequired
 def update_deposit(admin, id):
-    '''Update the deposit with the given id'''
+    """Update the deposit with the given id"""
     # Check deposit
     deposit = Deposit.query.filter_by(id=id).first()
     if not deposit:
@@ -922,13 +1093,6 @@ def update_deposit(admin, id):
             raise exc.NothingHasChanged()
         deposit.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
 
-    # Check credit
-    user = User.query.filter_by(id=deposit.user_id).first()
-    current_credit = user.credit
-    future_credit = current_credit - deposit.amount
-    if future_credit < app.config['DEBT_LIMIT']:
-        raise exc.InsufficientCredit()
-
     # Apply changes
     try:
         db.session.commit()
@@ -944,7 +1108,7 @@ def update_deposit(admin, id):
 @app.route('/replenishmentcollections', methods=['GET'])
 @adminRequired
 def list_replenishmentcollections(admin):
-    '''List all replenishmentcollections.'''
+    """List all replenishmentcollections."""
     data = ReplenishmentCollection.query.all()
     fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked']
     response = convert_minimal(data, fields)
@@ -954,7 +1118,7 @@ def list_replenishmentcollections(admin):
 @app.route('/replenishmentcollections/<int:id>', methods=['GET'])
 @adminRequired
 def get_replenishmentcollection(admin, id):
-    '''Get a single replenishmentcollection.'''
+    """Get a single replenishmentcollection."""
     replcoll = ReplenishmentCollection.query.filter_by(id=id).first()
     fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
                        'revokehistory']
@@ -974,7 +1138,7 @@ def get_replenishmentcollection(admin, id):
 @app.route('/replenishmentcollections', methods=['POST'])
 @adminRequired
 def create_replenishmentcollection(admin):
-    '''Create replenishmentcollection.'''
+    """Create replenishmentcollection."""
     data = json_body()
     required_data = {'admin_id': int, 'replenishments': list}
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
@@ -1007,7 +1171,7 @@ def create_replenishmentcollection(admin):
         db.session.flush()
 
         for repl in repls:
-            rep = Replenishment(replcoll_id = replcoll.id, **repl)
+            rep = Replenishment(replcoll_id=replcoll.id, **repl)
             db.session.add(rep)
         db.session.commit()
 
@@ -1020,7 +1184,7 @@ def create_replenishmentcollection(admin):
 @app.route('/replenishmentcollections/<int:id>', methods=['PUT'])
 @adminRequired
 def update_replenishmentcollection(admin, id):
-    '''Update a replenishmentcollection.'''
+    """Update a replenishmentcollection."""
     # Check ReplenishmentCollection
     replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
     if not replcoll:
@@ -1034,7 +1198,7 @@ def update_replenishmentcollection(admin, id):
     updateable = {'revoked': bool}
     check_forbidden(data, updateable, replcoll)
     check_allowed_fields_and_types(data, updateable)
-    
+
     # Handle deposit revoke
     if replcoll.revoked == data['revoked']:
         raise exc.NothingHasChanged()
@@ -1053,7 +1217,7 @@ def update_replenishmentcollection(admin, id):
 @app.route('/replenishments/<int:id>', methods=['PUT'])
 @adminRequired
 def update_replenishment(admin, id):
-    '''Update a replenishment.'''
+    """Update a replenishment."""
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
@@ -1065,18 +1229,8 @@ def update_replenishment(admin, id):
     check_forbidden(data, updateable, repl)
     check_allowed_fields_and_types(data, updateable)
     check_required(data, updateable)
-    
-    updated_fields = []
 
-    # Handle fields
-    for item in data:
-        if not getattr(repl, item) == data[item]:
-            setattr(repl, item, data[item])
-            updated_fields.append(item)
-
-    # Check the amount of updated fields
-    if len(updated_fields) == 0:
-        raise exc.NothingHasChanged()
+    updated_fields = update_fields(data, repl)
 
     # Apply changes
     try:
@@ -1089,10 +1243,11 @@ def update_replenishment(admin, id):
         'updated_fields': updated_fields
     }), 201
 
+
 @app.route('/replenishments/<int:id>', methods=['DELETE'])
 @adminRequired
 def delete_replenishment(admin, id):
-    '''Update a replenishment.'''
+    """Update a replenishment."""
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
@@ -1108,7 +1263,7 @@ def delete_replenishment(admin, id):
     # Check if ReplenishmentCollection still has Replenishments
     repls = replcoll.replenishments.all()
     if not repls:
-        message = message + (' Deletetd ReplenishmentCollection ID: {}'
+        message = message + (' Deleted ReplenishmentCollection ID: {}'
                              .format(replcoll.id))
         db.session.delete(replcoll)
 

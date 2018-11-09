@@ -32,7 +32,7 @@ class ListReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_list_replenishment_collections_as_admin(self):
-        '''Getting a list of all ReplenishmentCollections as admin'''
+        """Getting a list of all ReplenishmentCollections as admin"""
         self._insert_testdata()
         res = self.get(url='/replenishmentcollections', role='admin')
         self.assertEqual(res.status_code, 200)
@@ -44,7 +44,7 @@ class ListReplenishmentCollectionsAPITestCase(BaseAPITestCase):
             assert all(x in replcoll for x in required)
 
     def test_list_replenishment_collections_as_user(self):
-        '''Trying to get a list of all ReplenishmentCollections as user'''
+        """Trying to get a list of all ReplenishmentCollections as user"""
         self._insert_testdata()
         res = self.get(url='/replenishmentcollections', role='user')
         self.assertEqual(res.status_code, 401)

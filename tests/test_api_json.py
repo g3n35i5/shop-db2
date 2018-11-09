@@ -14,6 +14,6 @@ import datetime
 
 class JSONAPITestCase(BaseAPITestCase):
     def test_empty_json(self):
-        '''An empty json body should raise an error.'''
+        """An empty json body should raise an error."""
         res = self.client.post('/login', data=None)
         self.assertException(res, exc.InvalidJSON)

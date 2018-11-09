@@ -13,7 +13,7 @@ import pdb
 
 class GetPurchaseAPITestCase(BaseAPITestCase):
     def insert_test_purchases(self):
-        '''Helper function to insert some test purchases'''
+        """Helper function to insert some test purchases"""
         p1 = Purchase(user_id=1, product_id=1, amount=1)
         p2 = Purchase(user_id=2, product_id=3, amount=2)
         p3 = Purchase(user_id=2, product_id=2, amount=4)
@@ -24,7 +24,7 @@ class GetPurchaseAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_get_single_purchase(self):
-        '''Test for getting a single purchase'''
+        """Test for getting a single purchase"""
         # Insert test purchases
         self.insert_test_purchases()
         res = self.get(url='/purchases/3')
@@ -41,7 +41,7 @@ class GetPurchaseAPITestCase(BaseAPITestCase):
         self.assertFalse(purchase['revoked'])
 
     def test_get_non_existing_purchase(self):
-        '''Getting a non existing purchase should raise an error.'''
+        """Getting a non existing purchase should raise an error."""
         res = self.get(url='/purchases/5')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.PurchaseNotFound)

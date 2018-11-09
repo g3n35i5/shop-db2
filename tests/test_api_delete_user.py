@@ -13,7 +13,7 @@ import pdb
 
 class DeleteUserAPITestCase(BaseAPITestCase):
     def test_delete_user(self):
-        '''Test for deleting a user'''
+        """Test for deleting a user"""
         # Create new user which is not verified
         data = {
             'firstname': 'John',
@@ -35,13 +35,13 @@ class DeleteUserAPITestCase(BaseAPITestCase):
         self.assertEqual(user, None)
 
     def test_delete_verified_user(self):
-        '''Deleting a user that has been verified should raise an error.'''
+        """Deleting a user that has been verified should raise an error."""
         res = self.delete(url='/users/2', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserCanNotBeDeleted)
 
     def test_delete_non_existing_user(self):
-        '''Deleting a user that has been verified should raise an error.'''
+        """Deleting a user that has been verified should raise an error."""
         res = self.delete(url='/users/5', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserNotFound)

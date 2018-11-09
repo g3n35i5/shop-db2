@@ -12,7 +12,7 @@ import pdb
 class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_create_replenishment_collection_as_admin(self):
-        '''Creating a ReplenishmentCollection as admin'''
+        """Creating a ReplenishmentCollection as admin"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
         data = {'admin_id': 1, 'replenishments': replenishments}
@@ -35,7 +35,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
                 self.assertEqual(getattr(repls[i], key), dict[key])
 
     def test_create_replenishment_collection_as_user(self):
-        '''Creating a ReplenishmentCollection as user'''
+        """Creating a ReplenishmentCollection as user"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
         data = {'admin_id': 1, 'replenishments': replenishments}
@@ -45,7 +45,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnauthorizedAccess)
 
     def test_create_replenishment_collection_with_missing_data_I(self):
-        '''Creating a ReplenishmentCollection with missing data for replcoll'''
+        """Creating a ReplenishmentCollection with missing data for replcoll"""
         data = {'admin_id': 1}
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
@@ -53,7 +53,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
 
     def test_create_replenishment_collection_with_missing_data_II(self):
-        '''Creating a ReplenishmentCollection with missing data for repl'''
+        """Creating a ReplenishmentCollection with missing data for repl"""
         replenishments = [{'product_id': 1, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
         data = {'admin_id': 1, 'replenishments': replenishments}
@@ -63,7 +63,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
 
     def test_create_replenishment_collection_with_unknown_field_I(self):
-        '''Creating a ReplenishmentCollection with unknown field in replcoll'''
+        """Creating a ReplenishmentCollection with unknown field in replcoll"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
         data = {'admin_id': 1, 'replenishments': replenishments, 'Nonsense': 9}
@@ -73,7 +73,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
 
     def test_create_replenishment_collection_with_unknown_field_II(self):
-        '''Creating a ReplenishmentCollection with unknown field in repl'''
+        """Creating a ReplenishmentCollection with unknown field in repl"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'Nonsense': 98,
                            'total_price': 20}]
@@ -84,7 +84,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
 
     def test_create_replenishment_collection_with_wrong_type_I(self):
-        '''Creating a ReplenishmentCollection with wrong type in replcoll'''
+        """Creating a ReplenishmentCollection with wrong type in replcoll"""
         replenishments = [{'product_id': 1, 'amount': 'Hallo',
                            'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
@@ -95,7 +95,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.WrongType)
 
     def test_create_replenishment_collection_with_wrong_type_II(self):
-        '''Creating a ReplenishmentCollection with wrong type in repl'''
+        """Creating a ReplenishmentCollection with wrong type in repl"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': '2', 'amount': 20, 'total_price': 20}]
         data = {'admin_id': 1, 'replenishments': replenishments}
@@ -105,7 +105,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.WrongType)
 
     def test_create_replenishment_collection_with_invalid_amount(self):
-        '''Creating a ReplenishmentCollection with negative amount'''
+        """Creating a ReplenishmentCollection with negative amount"""
         replenishments = [{'product_id': 1, 'amount': -10, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
         data = {'admin_id': 1, 'replenishments': replenishments}
@@ -115,7 +115,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.InvalidAmount)
 
     def test_create_replenishment_collection_with_invalid_product(self):
-        '''Creating a ReplenishmentCollection with a nonexisting product_id'''
+        """Creating a ReplenishmentCollection with a nonexisting product_id"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 20, 'amount': 20, 'total_price': 20}]
         data = {'admin_id': 1, 'replenishments': replenishments}

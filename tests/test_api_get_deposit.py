@@ -13,7 +13,7 @@ import pdb
 
 class GetDepositAPITestCase(BaseAPITestCase):
     def insert_test_deposits(self):
-        '''Helper function to insert some test deposits'''
+        """Helper function to insert some test deposits"""
         d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
         d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
@@ -24,7 +24,7 @@ class GetDepositAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_get_single_deposit(self):
-        '''Test for getting a single deposit'''
+        """Test for getting a single deposit"""
         # Insert test deposits
         self.insert_test_deposits()
         res = self.get(url='/deposits/3')
@@ -38,13 +38,13 @@ class GetDepositAPITestCase(BaseAPITestCase):
         self.assertFalse(deposit['revoked'])
 
     def test_get_non_existing_deposit(self):
-        '''Getting a non existing deposit should raise an error.'''
+        """Getting a non existing deposit should raise an error."""
         res = self.get(url='/deposits/6')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DepositNotFound)
 
     def test_get_deposit_revokehistory(self):
-        '''Getting the revokehistory of a single deposit'''
+        """Getting the revokehistory of a single deposit"""
         self.insert_test_deposits()
         deprevoke = DepositRevoke(deposit_id=1, admin_id=1, revoked=True)
         db.session.add(deprevoke)
