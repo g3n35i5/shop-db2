@@ -13,7 +13,7 @@ import pdb
 
 class GetUserFavoritesAPITestCase(BaseAPITestCase):
     def _insert_purchases(self):
-        """TODO"""
+        """Helper function to insert some test purchases."""
          # Insert user 1 purchases.
         p1 = Purchase(user_id=1, product_id=1, amount=4)
         p2 = Purchase(user_id=1, product_id=2, amount=4)
@@ -32,7 +32,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         db.session.commit()
         
     def test_get_user_favorites(self):
-        """TODO"""
+        """This test ensures that the user's favorites are generated reliably."""
         self._insert_purchases()
         res = self.get(url='/users/1/favorites')
         data = json.loads(res.data)
@@ -40,8 +40,27 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         self.assertEqual(data['favorites'], [3, 2, 1, 4])
 
     def test_get_user_favorites_no_purchase(self):
-        """TODO"""
+        """
+        This test ensures that an empty list is displayed for the user's favorites
+        if no purchases have yet been made.
+        """
         res = self.get(url='/users/1/favorites')
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['favorites'], [])
+
+    def test_get_user_favorites_non_existing_user(self):
+        """
+        Getting the favorites from a non existing user should raise an error.
+        """
+        res = self.get(url='/users/5/favorites')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserNotFound)
+
+    def test_get_user_favorites_non_verified_user(self):
+        """
+        Getting the favorites from a non verified user should raise an error.
+        """
+        res = self.get(url='/users/4/favorites')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsNotVerified)

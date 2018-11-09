@@ -13,7 +13,7 @@ import pdb
 
 class ListUsersAPITestCase(BaseAPITestCase):
     def test_list_users_without_token(self):
-        '''Get a list of all users as user'''
+        """Get a list of all users as user"""
         res = self.get(url='/users')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
@@ -26,9 +26,9 @@ class ListUsersAPITestCase(BaseAPITestCase):
                 assert item in user
 
     def test_list_users_with_token(self):
-        '''Get a list of all users as admin. It should contain more information
+        """Get a list of all users as admin. It should contain more information
            than the list which gets returned without a token in the request
-           header.'''
+           header."""
         res = self.get(url='/users', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)

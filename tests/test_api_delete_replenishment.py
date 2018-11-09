@@ -30,7 +30,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_delete_replenishment_as_admin_I(self):
-        '''Deleting a single replenishment as admin'''
+        """Deleting a single replenishment as admin"""
         self._insert_testdata()
         res = self.delete(url='/replenishments/1', role='admin')
         self.assertEqual(res.status_code, 201)
@@ -41,13 +41,13 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(repl, None)
 
     def test_delete_replenishment_as_admin_II(self):
-        '''Deleting a single replenishment leding to deletion of replcoll'''
+        """Deleting a single replenishment leding to deletion of replcoll"""
         self._insert_testdata()
         res = self.delete(url='/replenishments/3', role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Deleted Replenishment. Deletetd'
+        self.assertEqual(data['message'], 'Deleted Replenishment. Deleted'
                                           + ' ReplenishmentCollection ID: 2')
         repl = Replenishment.query.filter_by(id=3).first()
         self.assertEqual(repl, None)
@@ -55,14 +55,14 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(replcoll, None)
 
     def test_delete_replenishment_as_user(self):
-        '''Trying to delete a single replenishment as user'''
+        """Trying to delete a single replenishment as user"""
         self._insert_testdata()
         res = res = self.delete(url='/replenishments/1', role='user')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
     def test_delete_replenishment_with_invalid_id(self):
-        '''Trying to delete a single replenishment with invalid id'''
+        """Trying to delete a single replenishment with invalid id"""
         self._insert_testdata()
         res = res = self.delete(url='/replenishments/4', role='admin')
         self.assertEqual(res.status_code, 401)

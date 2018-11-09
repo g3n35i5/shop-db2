@@ -13,7 +13,7 @@ import pdb
 
 class ListDepositsAPITestCase(BaseAPITestCase):
     def insert_test_deposits(self):
-        '''Helper function to insert some test deposits'''
+        """Helper function to insert some test deposits"""
         d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
         d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
@@ -24,7 +24,7 @@ class ListDepositsAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_list_deposits_as_admin(self):
-        '''Test for listing all deposits as admin'''
+        """Test for listing all deposits as admin"""
         # Do 5 deposits
         self.insert_test_deposits()
         res = self.get(url='/deposits', role='admin')
@@ -45,8 +45,8 @@ class ListDepositsAPITestCase(BaseAPITestCase):
             assert all(x in deposit for x in required)
 
     def test_list_deposits_as_user(self):
-        '''Test for listing all deposits without token. This should not be
-           possible.'''
+        """Test for listing all deposits without token. This should not be
+           possible."""
         res = self.get(url='/deposits')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)

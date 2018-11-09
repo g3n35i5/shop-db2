@@ -13,7 +13,7 @@ import pdb
 
 class CreateDepositAPITestCase(BaseAPITestCase):
     def test_create_deposit(self):
-        '''Create a deposit.'''
+        """Create a deposit."""
         data = {'user_id': 2, 'amount': 1000, 'comment': 'Test deposit'}
         res = self.post(url='/deposits', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
@@ -28,7 +28,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertFalse(deposits[0].revoked)
 
     def test_create_deposit_wrong_type(self):
-        '''Create a deposit with wrong type(s).'''
+        """Create a deposit with wrong type(s)."""
         data = {'user_id': 2, 'amount': 1000, 'comment': 'Test deposit'}
 
         for field in data:
@@ -41,7 +41,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Deposit.query.all()), 0)
 
     def test_create_deposit_unknown_field(self):
-        '''Create a deposit with an unknown field.'''
+        """Create a deposit with an unknown field."""
         data = {'user_id': 2, 'amount': 1000, 'comment': 'Test deposit',
                 'foo': 'bar'}
         res = self.post(url='/deposits', role='admin', data=data)
@@ -50,7 +50,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Deposit.query.all()), 0)
 
     def test_create_deposit_not_all_required_fields(self):
-        '''Create a deposit with a missing field should raise an error'''
+        """Create a deposit with a missing field should raise an error"""
         data = {'user_id': 2, 'amount': 1000}
         res = self.post(url='/deposits', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
@@ -58,7 +58,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Deposit.query.all()), 0)
 
     def test_create_deposit_non_verified_user(self):
-        '''Create a deposit as non verified user.'''
+        """Create a deposit as non verified user."""
         data = {'user_id': 4, 'amount': 1000, 'comment': 'Test deposit'}
         res = self.post(url='/deposits', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
@@ -66,7 +66,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Deposit.query.all()), 0)
 
     def test_create_deposit_non_existing_user(self):
-        '''Create a deposit as non existing user.'''
+        """Create a deposit as non existing user."""
         data = {'user_id': 5, 'amount': 1000, 'comment': 'Test deposit'}
         res = self.post(url='/deposits', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
@@ -74,7 +74,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(len(Deposit.query.all()), 0)
 
     def test_create_purchase_invalid_amount(self):
-        '''Create a purchase with an invalid amount.'''
+        """Create a purchase with an invalid amount."""
         data = {'user_id': 2, 'amount': -1000, 'comment': 'Test deposit'}
         res = self.post(url='/deposits', role='admin', data=data)
         self.assertEqual(res.status_code, 401)

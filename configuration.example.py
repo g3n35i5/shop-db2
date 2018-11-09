@@ -13,8 +13,6 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = PATH + '/shopdb/uploads/'
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
-    DEBT_LIMIT = -2000
-    MINIMUM_PASSWORD_LENGTH = 6
 
 
 class ProductiveConfig(BaseConfig):
