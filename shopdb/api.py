@@ -149,11 +149,13 @@ def update_fields(data, row, updated=None):
             setattr(row, item, data[item])
             if updated is not None:
                 updated.append(item)
-                if len(updated) == 0:
-                    raise exc.NothingHasChanged()
-    if updated is not None:
-        if len(updated) == 0:
-            raise exc.NothingHasChanged()
+            else:
+                updated = [item]
+
+    if not updated or len(updated) == 0:
+        raise exc.NothingHasChanged()
+
+    return updated
 
 
 def insert_user(data):
@@ -663,7 +665,7 @@ def update_user(admin, id):
     # All other fields
     updateable = ['firstname', 'lastname', 'username', 'email']
     check_forbidden(data, updateable, user)
-    update_fields(data, user, updated=updated_fields)
+    updated_fields = update_fields(data, user, updated=updated_fields)
 
     # Apply changes
     try:
@@ -824,7 +826,7 @@ def update_product(admin, id):
             updated_fields.append('imagename')
 
     # Update all other fields
-    update_fields(data, product, updated=updated_fields)
+    updated_fields = update_fields(data, product, updated=updated_fields)
 
     # Apply changes
     try:
@@ -945,7 +947,7 @@ def update_purchase(id):
         del data['revoked']
 
     # Handle all other fields
-    update_fields(data, purchase, updated=updated_fields)
+    updated_fields = update_fields(data, purchase, updated=updated_fields)
 
     # Apply changes
     try:
@@ -1176,9 +1178,7 @@ def update_replenishment(admin, id):
     check_allowed_fields_and_types(data, updateable)
     check_required(data, updateable)
 
-    updated_fields = []
-
-    update_fields(data, repl, updated=updated_fields)
+    updated_fields = update_fields(data, repl)
 
     # Apply changes
     try:
