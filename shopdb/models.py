@@ -66,9 +66,9 @@ class User(db.Model):
 
     @hybrid_property
     def verification_date(self):
-        v = Verification.query.filter(Verification.user_id == self.id).first()
-        if v:
-            return v.timestamp
+        verification = UserVerification.query.filter(UserVerification.user_id == self.id).first()
+        if verification:
+            return verification.timestamp
         return None
 
     @hybrid_method

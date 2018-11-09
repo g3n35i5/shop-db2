@@ -484,7 +484,7 @@ def get_user(id):
         raise exc.UserIsNotVerified()
 
     fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
-              'is_admin']
+              'is_admin', 'creation_date', 'verification_date']
     user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
 

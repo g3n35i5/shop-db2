@@ -25,6 +25,8 @@ class GetUserAPITestCase(BaseAPITestCase):
         self.assertEqual(data['user']['username'], u_usernames[0])
         self.assertEqual(data['user']['email'], u_emails[0])
         self.assertEqual(data['user']['credit'], 0)
+        self.assertTrue(isinstance(data['user']['creation_date'], str))
+        self.assertTrue(isinstance(data['user']['verification_date'], str))
 
     def test_get_non_existing_user(self):
         """Getting a non existing user should raise an error."""

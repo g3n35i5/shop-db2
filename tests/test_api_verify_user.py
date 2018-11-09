@@ -16,11 +16,13 @@ class VerifyUserAPITestCase(BaseAPITestCase):
         """Test verifying a user."""
         user = User.query.filter_by(id=4).first()
         self.assertFalse(user.is_verified)
+        self.assertFalse(user.verification_date)
         data = {'rank_id': 1}
         res = self.post(url='/verify/4', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         user = User.query.filter_by(id=4).first()
         self.assertTrue(user.is_verified)
+        self.assertTrue(isinstance(user.verification_date, datetime.datetime))
 
     def test_verify_user_twice(self):
         """Test verifying a user twice."""
