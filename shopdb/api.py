@@ -2,7 +2,8 @@
 
 from shopdb.models import *
 import shopdb.exceptions as exc
-from flask import (Flask, request, g, make_response, jsonify, send_from_directory)
+from flask import (Flask, request, g, make_response, jsonify,
+                   send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import RequestEntityTooLarge, NotFound
