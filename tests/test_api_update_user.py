@@ -86,7 +86,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         """Update user password"""
         # Login should fail
         data = {
-            'identifier': u_emails[0],
+            'id': 1,
             'password': 'SuperSecret'
         }
         res = self.post(url='/login', data=data)
@@ -100,7 +100,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
 
         # Login should work
         data = {
-            'identifier': u_emails[0],
+            'id': 1,
             'password': 'SuperSecret'
         }
         res = self.post(url='/login', data=data)

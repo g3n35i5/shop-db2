@@ -26,13 +26,13 @@ class BaseAPITestCase(BaseTestCase):
             sys.exit(f'Wrong role: {role}')
 
         if role == 'admin':
-            email = u_emails[0]
+            id = 1
             password = u_passwords[0]
         elif role == 'user':
-            email = u_emails[1]
+            id = 2
             password = u_passwords[1]
         else:
-            email = None
+            id = None
             password = None
 
         # Only serialize the data to JSON if it is a json object.
@@ -40,8 +40,8 @@ class BaseAPITestCase(BaseTestCase):
             data = json.dumps(data)
 
         headers = {'content-type': content_type}
-        if email and password:
-            res = self.login(email, password)
+        if id and password:
+            res = self.login(id, password)
             headers['token'] = json.loads(res.data)['token']
         if type == 'POST':
             res = self.client.post(url, data=data, headers=headers)
@@ -80,8 +80,8 @@ class BaseAPITestCase(BaseTestCase):
         return self._request(type='DELETE', url=url, data=data, role=role,
                              content_type=content_type)
 
-    def login(self, identifier, password):
+    def login(self, id, password):
         """Helper function to perform a login"""
-        data = {'identifier': identifier, 'password': password}
+        data = {'id': id, 'password': password}
         return self.client.post('/login', data=json.dumps(data),
                                 headers={'content-type': 'application/json'})

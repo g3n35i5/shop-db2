@@ -333,20 +333,14 @@ def login():
     data = json_body()
     user = None
     # Check all items in the json body.
-    allowed = {'identifier': str, 'password': str}
+    allowed = {'id': int, 'password': str}
     check_required(data, allowed)
     check_allowed_fields_and_types(data, allowed)
 
-    # Try to get the user with the identifier.
-    if data['identifier'] is not '':
-        # Try the email address.
-        user = User.query.filter_by(email=data['identifier']).first()
-        # If there is no match, try the username.
-        if not user:
-            user = User.query.filter_by(username=data['identifier']).first()
+    # Try to get the user with the id
+    user = User.query.filter_by(id=data['id']).first()
 
-    # If no user with this data exists or there is no password in the
-    # request, cancel the authentication.
+    # If no user with this data exists cancel the authentication.
     if not user:
         raise exc.InvalidCredentials()
 
