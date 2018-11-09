@@ -24,7 +24,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_get_user_purchases(self):
-        """TODO"""
+        """This test ensures that all purchases made by a user are listed."""
         self._insert_test_purchases()
         res = self.get(url='/users/2/purchases')
         self.assertEqual(res.status_code, 200)
@@ -37,7 +37,10 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
                 assert x in i
 
     def test_get_users_purchases_no_insert(self):
-        """TODO"""
+        """
+        This test ensures that an empty list is returned for a user's
+        purchases if he has not yet made any purchases.
+        """
         res = self.get(url='/users/2/purchases')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)

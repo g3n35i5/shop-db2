@@ -13,6 +13,7 @@ import pdb
 
 class GetUserDepositsAPITestCase(BaseAPITestCase):
     def _insert_deposits(self):
+        """Helper function to insert some test deposits."""
         d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
         d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
@@ -23,7 +24,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         db.session.commit()
 
     def test_get_user_deposit(self):
-        """TODO"""
+        """This test ensures that all deposits made for a user are listed."""
         self._insert_deposits()
         res = self.get(url='/users/2/deposits')
         self.assertEqual(res.status_code, 200)
@@ -35,7 +36,10 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
                 assert x in i
 
     def test_get_users_deposits_no_insert(self):
-        """TODO"""
+        """
+        This test ensures that an empty list will be returned for a user's deposits
+        if none have yet been entered for him.
+        """
         res = self.get(url='/users/2/deposits')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
