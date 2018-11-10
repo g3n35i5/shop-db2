@@ -338,28 +338,45 @@ def adminOptional(f):
 
 @app.errorhandler(Exception)
 def handle_error(error):
-    """This wrapper catches all exceptions and, if possible, returns a user
-       friendly response. Otherwise, it will raise the error"""
+    """
+    This wrapper catches all exceptions and, if possible, returns a user
+    friendly response. Otherwise, it will raise the error
+
+    :param error: Is the exception to be raised.
+
+    :return: Return a json response with the message that the page cannot be found if it is a 404 error.
+    :return: Return a json response with the custom exception message, if it is a custom exception.
+
+    :raises: Raises the passed exception if the application is in debug mode or cannot be interpreted.
+    """
     # Perform a rollback. All changes that have not yet been committed are
     # thus reset.
     db.session.rollback()
+
     # Catch the 404-error.
     if isinstance(error, NotFound):
         return jsonify(result='error', message='Page does not exist.'), 404
+
     # As long as the application is in debug mode, all other exceptions
     # should be output immediately.
     if app.config['DEBUG'] and not app.config['DEVELOPMENT']:
         raise error  # pragma: no cover
+
     # Create, if possible, a user friendly response.
     if all(hasattr(error, item) for item in ['type', 'message', 'code']):
         return jsonify(result=error.type, message=error.message), error.code
     else:  # pragma: no cover
         raise error
-    # If for some reason no exception has been raised yet, this is done now.
-    raise error  # pragma: no cover
 
 
 def json_body():
+    """
+    Returns the json data from the current request.
+
+    :return: the json body from the current request.
+
+    :raises InvalidJSON if the json data cannot be interpreted.
+    """
     jb = request.get_json()
     if jb is None:
         raise exc.InvalidJSON()
