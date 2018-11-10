@@ -302,7 +302,7 @@ def adminOptional(f):
 
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Does the request heder contain a token?
+        # Does the request header contain a token?
         try:
             token = request.headers['token']
         except KeyError:
