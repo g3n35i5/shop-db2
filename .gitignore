@@ -2,6 +2,9 @@
 *.db
 configuration.py
 .idea
+shopdb/uploads
+!shopdb/uploads/valid*
+!shopdb/uploads/broken*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
