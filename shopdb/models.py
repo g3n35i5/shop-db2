@@ -256,6 +256,20 @@ class Product(db.Model):
                 .order_by(ProductPrice.id.desc())
                 .first().price)
 
+    @hybrid_property
+    def pricehistory(self):
+        res = (ProductPrice.query
+               .filter(ProductPrice.product_id == self.id)
+               .all())
+        pricehistory = []
+        for price in res:
+            pricehistory.append({
+                'id': price.id,
+                'timestamp': price.timestamp,
+                'price': price.price
+            })
+        return pricehistory
+
     @hybrid_method
     def set_price(self, price, admin_id):
         productprice = ProductPrice(
