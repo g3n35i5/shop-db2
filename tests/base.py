@@ -3,9 +3,8 @@
 from shopdb.api import *
 from shopdb.models import *
 from flask_testing import TestCase
-from flask_bcrypt import Bcrypt
 import configuration as config
-import pdb
+
 # Global password storage. Hashing the passwords for each unit test
 # would take too long. For this reason, the passwords are created once
 # and then stored in this array.

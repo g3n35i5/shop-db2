@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 
 from shopdb.api import *
-import shopdb.models as models
-import shopdb.exceptions as exc
-from sqlalchemy.exc import *
-from time import sleep
-from base import BaseTestCase, u_emails, u_passwords, u_usernames
+from base import BaseTestCase, u_passwords
 from flask import json
-import jwt
-import pdb
+import sys
 
 
 class BaseAPITestCase(BaseTestCase):
@@ -52,7 +47,7 @@ class BaseAPITestCase(BaseTestCase):
         elif type == 'DELETE':
             res = self.client.delete(url, data=data, headers=headers)
         else:  # pragma: no cover
-            sys.exit('Wrong request type: {}'.format(_type))
+            sys.exit('Wrong request type: {}'.format(type))
 
         return res
 
