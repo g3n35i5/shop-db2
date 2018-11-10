@@ -1,96 +1,79 @@
 from shopdb.api import *
-import shopdb.models as models
 import shopdb.exceptions as exc
-from sqlalchemy.exc import *
-from time import sleep
-from base import u_emails, u_passwords, u_firstnames, u_lastnames, u_usernames
 from base_api import BaseAPITestCase
 from flask import json
-import jwt
-from copy import copy
-import io
+
+import base64
 import os
-import pdb
 
 
 class UploadAPITestCase(BaseAPITestCase):
     def test_authorization(self):
         """This route should only be available for admins."""
-        res = self.post(url='/upload', role=None,
-                        content_type='multipart/form-data')
+        res = self.post(url='/upload', role=None)
         self.assertException(res, exc.UnauthorizedAccess)
-        res = self.post(url='/upload', role='user',
-                        content_type='multipart/form-data')
+        res = self.post(url='/upload', role='user')
         self.assertException(res, exc.UnauthorizedAccess)
-        res = self.post(url='/upload', role='admin',
-                        content_type='multipart/form-data')
+        res = self.post(url='/upload', role='admin')
         self.assertException(res, exc.NoFileIncluded)
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_no_file_included(self):
         """A request without any data should raise an error."""
-        res = self.post(url='/upload', role='admin',
-                        content_type='multipart/form-data')
+        res = self.post(url='/upload', role='admin')
         self.assertException(res, exc.NoFileIncluded)
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_invalid_extension(self):
         """A request with an invalid file extension should raise an error."""
-        data = dict({'file': (io.BytesIO(b'abcdefg'), 'test.txt')})
-        res = self.post(url='/upload', data=data, role='admin',
-                        content_type='multipart/form-data')
+        image = {'filename': 'test.abc', 'value': base64.b64encode(b'abc').decode()}
+        res = self.post(url='/upload', data=image, role='admin')
         self.assertException(res, exc.InvalidFileType)
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_file_too_large(self):
         """A request with an file which is too large should raise an error."""
         bytes = b'1' * 6 * 1024 * 1024
-        data = dict({'file': (io.BytesIO(bytes), 'test.png')})
-        res = self.post(url='/upload', data=data, role='admin',
-                        content_type='multipart/form-data')
+        image = {'filename': 'test.png', 'value': base64.b64encode(bytes).decode()}
+        res = self.post(url='/upload', data=image, role='admin')
         self.assertException(res, exc.FileTooLarge)
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_invalid_filename(self):
         """A request with an invalid file extension should raise an error."""
-        data = dict({'file': (io.BytesIO(b'abcdefg'), '.txt')})
-        res = self.post(url='/upload', data=data, role='admin',
-                        content_type='multipart/form-data')
+        image = {'filename': '.abc', 'value': base64.b64encode(b'abc').decode()}
+        res = self.post(url='/upload', data=image, role='admin')
         self.assertException(res, exc.InvalidFilename)
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_broken_image(self):
-        """A request with a broken imageshould raise an error."""
-        for ext in ['png', 'jpg', 'jpeg']:
-            filepath = app.config['UPLOAD_FOLDER'] + 'broken_image.' + ext
-            with open(filepath, 'rb') as test:
-                imgStringIO = io.BytesIO(test.read())
-            data = dict({'file': (imgStringIO, 'broken_image.' + ext)})
-            res = self.post(url='/upload', data=data, role='admin',
-                            content_type='multipart/form-data')
-            self.assertException(res, exc.BrokenImage)
+        """A request with a broken image should raise an error."""
+        filepath = app.config['UPLOAD_FOLDER'] + 'broken_image.png'
+        with open(filepath, 'rb') as test:
+            bytes = test.read()
+        image = {'filename': 'broken.png', 'value': base64.b64encode(bytes).decode()}
+        res = self.post(url='/upload', data=image, role='admin')
+        self.assertException(res, exc.BrokenImage)
         self.assertEqual(len(Upload.query.all()), 0)
 
     def test_upload_valid_image(self):
         """A request with valid images should work."""
-        for ext in ['png', 'jpg', 'jpeg']:
-            filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.' + ext
-            with open(filepath, 'rb') as test:
-                imgStringIO = io.BytesIO(test.read())
-            data = dict({'file': (imgStringIO, 'valid_image.' + ext)})
-            res = self.post(url='/upload', data=data, role='admin',
-                            content_type='multipart/form-data')
-            self.assertEqual(res.status_code, 200)
-            data = json.loads(res.data)
-            assert 'message' in data
-            assert 'filename' in data
-            self.assertEqual(data['message'], 'Image uploaded successfully.')
-            assert data['filename'].endswith(ext)
-            path = os.path.join(app.config['UPLOAD_FOLDER'], data['filename'])
-            self.assertTrue(os.path.isfile(path))
-            upload = Upload.query.filter_by(filename=data['filename']).first()
-            self.assertTrue(upload)
-            self.assertEqual(upload.filename, data['filename'])
-            self.assertEqual(upload.admin_id, 1)
-            # Delete the created file from the upload folder
-            os.remove(path)
+        filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'
+        with open(filepath, 'rb') as test:
+            bytes = test.read()
+        image = {'filename': 'valid.png', 'value': base64.b64encode(bytes).decode()}
+        res = self.post(url='/upload', data=image, role='admin')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'message' in data
+        assert 'filename' in data
+        self.assertEqual(data['message'], 'Image uploaded successfully.')
+        assert data['filename'].endswith('png')
+        path = os.path.join(app.config['UPLOAD_FOLDER'], data['filename'])
+        self.assertTrue(os.path.isfile(path))
+        upload = Upload.query.filter_by(filename=data['filename']).first()
+        self.assertTrue(upload)
+        self.assertEqual(upload.filename, data['filename'])
+        self.assertEqual(upload.admin_id, 1)
+        # Delete the created file from the upload folder
+        os.remove(path)

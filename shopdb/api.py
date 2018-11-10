@@ -6,9 +6,8 @@ from flask import (Flask, request, g, make_response, jsonify,
                    send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import RequestEntityTooLarge, NotFound
+from werkzeug.exceptions import NotFound
 import jwt
-import json
 import base64
 import sqlite3
 import sqlalchemy
@@ -413,16 +412,11 @@ def get_image(imagename):
 @adminRequired
 def upload(admin):
 
-    VALID_EXTENSIONS = ['png']
-    # Get the file. Raise an error if its file exceedes the maximum file size
-    # defined in the app configuration file.
-    try:
-        file = json.loads(request.data)
-    except RequestEntityTooLarge:
-        raise exc.FileTooLarge()
-    # Check if the  file
+    # Get the file. Raise an exception if there is no data.
+    file = request.get_json()
     if not file:
         raise exc.NoFileIncluded()
+
     # Check if the filename is empty. There is no way to create a file with
     # empty filename in python so this can not be tested. Anyway, this is
     # a possible error vector.
@@ -436,9 +430,17 @@ def upload(admin):
 
     # Check the file extension
     extension = file['filename'].split('.')[1].lower()
-    valid_extension = extension in VALID_EXTENSIONS
+    valid_extension = extension in app.config['VALID_EXTENSIONS']
     if not valid_extension:
         raise exc.InvalidFileType()
+
+    # Check if the image data has a value field.
+    if 'value' not in file:
+        raise exc.NoFileIncluded()
+
+    # Check the content size.
+    if len(file['value']) > app.config.get('MAX_CONTENT_LENGTH'):
+        raise exc.FileTooLarge()
 
     # Check if the image is a valid image file.
     try:
@@ -456,7 +458,7 @@ def upload(admin):
         raise exc.BrokenImage()
 
     # Check the real extension again
-    if image.format not in [x.upper() for x in VALID_EXTENSIONS]:
+    if image.format not in [x.upper() for x in app.config['VALID_EXTENSIONS']]:
         raise exc.InvalidFileType()
 
     # Check aspect ratio

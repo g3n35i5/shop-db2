@@ -1,16 +1,8 @@
 from shopdb.api import *
-import shopdb.models as models
 import shopdb.exceptions as exc
-from sqlalchemy.exc import *
-from time import sleep
-from base import u_emails, u_passwords, u_firstnames, u_lastnames, u_usernames
 from base_api import BaseAPITestCase
 from flask import json
-import jwt
-from copy import copy
-import io
 import os
-import pdb
 
 
 class UpdateProductAPITestCase(BaseAPITestCase):
@@ -99,10 +91,9 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         # Upload a product image
         filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'
         with open(filepath, 'rb') as test:
-            imgStringIO = io.BytesIO(test.read())
-        data = dict({'file': (imgStringIO, 'valid_image.png')})
-        res = self.post(url='/upload', data=data, role='admin',
-                        content_type='multipart/form-data')
+            bytes = test.read()
+        image = {'filename': 'valid_image.png', 'value': base64.b64encode(bytes).decode()}
+        res = self.post(url='/upload', data=image, role='admin')
         filename = json.loads(res.data)['filename']
         upload = Upload.query.filter_by(filename=filename).first()
         data = {'imagename': filename}

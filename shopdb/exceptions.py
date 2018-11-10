@@ -207,6 +207,12 @@ class BrokenImage(BaseException):
     code = 401
 
 
+class ImageMustBeQuadratic(BaseException):
+    type = 'error'
+    message = 'The image must be quadratic.'
+    code = 401
+
+
 class InvalidFileType(BaseException):
     type = 'error'
     message = 'The file is of the wrong type.'
