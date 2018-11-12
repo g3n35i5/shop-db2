@@ -808,6 +808,7 @@ def update_user(admin, id):
 
     :raises UserNotFound:        If the user with this ID does not exist.
     :raises UserIsNotVerified:   If the user has not yet been verified.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
                                  data.
     :raises InvalidType:         If one or more parameters have an invalid type.
