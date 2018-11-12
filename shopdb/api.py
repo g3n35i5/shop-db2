@@ -703,6 +703,7 @@ def get_user_favorites(id):
     empty if no favourite products exist.
 
     :param id:                 Is the user id.
+
     :return:                   A list with the IDs of the favorite products.
 
     :raises UserNotFound:      If the user with this ID does not exist.
