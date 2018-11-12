@@ -445,7 +445,7 @@ def upload(admin):
     set in the configuration under "VALID_EXTENSIONS".
 
     :param admin:                 Is the administrator user, determined by
-                                  @adminOptional.
+                                  @adminRequired.
 
     :return:                      The generated file name under which the image
                                   has been stored.
@@ -625,7 +625,7 @@ def list_pending_validations(admin):
     """
     Returns a list of all non verified users.
 
-    :param admin: Is the administrator user, determined by @adminOptional.
+    :param admin: Is the administrator user, determined by @adminRequired.
 
     :return:      A list of all non verified users.
     """
@@ -643,7 +643,7 @@ def verify_user(admin, id):
     Verify a user.
 
     :param admin:                 Is the administrator user, determined by
-                                  @adminOptional.
+                                  @adminRequired.
     :param id:                    Is the user id.
 
     :return:                      A message that the verification was
@@ -776,6 +776,7 @@ def get_user(id):
     Returns the user with the requested id.
 
     :param id:                 Is the user id.
+
     :return:                   The requested user as JSON object.
 
     :raises UserNotFound:      If the user with this ID does not exist.
@@ -800,7 +801,7 @@ def update_user(admin, id):
     Update the user with the given id.
 
     :param admin:                Is the administrator user, determined by
-                                 @adminOptional.
+                                 @adminRequired.
     :param id:                   Is the user id.
     :return:                     A message that the update was
                                  successful and a list of all updated fields.
@@ -899,7 +900,7 @@ def delete_user(admin, id):
     Delete a user. This is only possible if the user has not yet been verified.
 
     :param admin:                Is the administrator user, determined by
-                                 @adminOptional.
+                                 @adminRequired.
     :param id:                   Is the user id.
 
     :return:                     A message that the deletion was successful.
@@ -961,7 +962,7 @@ def create_product(admin):
     Route to create a new product.
 
     :param admin:                 Is the administrator user, determined by
-                                  @adminOptional.
+                                  @adminRequired.
 
     :return:                      A message that the creation was successful.
 
