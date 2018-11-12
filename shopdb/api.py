@@ -857,7 +857,7 @@ def update_user(admin, id):
     try:
         db.session.commit()
     except IntegrityError:
-        raise UserCanNotBeDeleted()
+        raise exc.UserCanNotBeUpdated()
 
     return jsonify({
         'message': 'Updated user.',

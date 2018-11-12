@@ -27,6 +27,12 @@ class UserCanNotBeDeleted(BaseException):
     code = 401
 
 
+class UserCanNotBeUpdated(BaseException):
+    type = 'error'
+    message = 'This user can not be updated.'
+    code = 401
+
+
 class DataIsMissing(BaseException):
     type = 'error'
     message = 'Some or more details are missing.'
