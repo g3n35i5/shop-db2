@@ -345,10 +345,13 @@ def handle_error(error):
 
     :param error: Is the exception to be raised.
 
-    :return: Return a json response with the message that the page cannot be found if it is a 404 error.
-    :return: Return a json response with the custom exception message, if it is a custom exception.
+    :return:      Return a json response with the message that the page cannot
+                  be found if it is a 404 error.
+    :return:      Return a json response with the custom exception message,
+                  if it is a custom exception.
 
-    :raises: Raises the passed exception if the application is in debug mode or cannot be interpreted.
+    :raises:      Raises the passed exception if the application is in debug
+                  mode or cannot be interpreted.
     """
     # Perform a rollback. All changes that have not yet been committed are
     # thus reset.
@@ -374,9 +377,9 @@ def json_body():
     """
     Returns the json data from the current request.
 
-    :return: the json body from the current request.
+    :return:             The json body from the current request.
 
-    :raises InvalidJSON if the json data cannot be interpreted.
+    :raises InvalidJSON: If the json data cannot be interpreted.
     """
     jb = request.get_json()
     if jb is None:
@@ -421,9 +424,9 @@ def get_image(imagename):
     A picture can be requested via this route. If the image is not found or if
     the image name is empty, a default image will be returned.
 
-    :param imagename: is the name of the requested image.
+    :param imagename: Is the name of the requested image.
 
-    :return:          the requested image or the default image, if applicable.
+    :return:          The requested image or the default image, if applicable.
     """
     if not imagename:
         return send_from_directory(app.config['UPLOAD_FOLDER'], 'default.png')
@@ -441,20 +444,20 @@ def upload(admin):
     You can upload pictures via this route. The valid file formats can be
     set in the configuration under "VALID_EXTENSIONS".
 
-    :param admin:                 is the administrator user, determined by
+    :param admin:                 Is the administrator user, determined by
                                   @adminOptional.
 
-    :return:                      the generated file name under which the image
+    :return:                      The generated file name under which the image
                                   has been stored.
 
-    :raises NoFileIncluded:       if no data was found in the request.
-    :raises InvalidFilename:      if the filename is empty empty or invalid in
+    :raises NoFileIncluded:       If no data was found in the request.
+    :raises InvalidFilename:      If the filename is empty empty or invalid in
                                   any other form.
-    :raises InvalidFileType:      if the file format is not allowed.
-    :raises FileTooLarge:         if the size of the file exceeds the maximum
+    :raises InvalidFileType:      If the file format is not allowed.
+    :raises FileTooLarge:         If the size of the file exceeds the maximum
                                   allowed file size.
-    :raises BrokenImage:          if the image file could not be read.
-    :raises ImageMustBeQuadratic: if the height and width of the image are not
+    :raises BrokenImage:          If the image file could not be read.
+    :raises ImageMustBeQuadratic: If the height and width of the image are not
                                   identical.
     :raises CouldNotCreateEntry:  If the new image cannot be added to the
                                   database.
@@ -544,17 +547,17 @@ def login():
     """
     Registered users can log in on this route.
 
-    :return:                    a temporary valid token, which users can use
+    :return:                    A temporary valid token, which users can use
                                 to identify themselves when making requests to
                                 the API.
 
-    :raises: DataIsMissing:     if the id or password (or both) is not included
+    :raises: DataIsMissing:     If the id or password (or both) is not included
                                 in the request.
-    :raises: UnknownField:      if an unknown parameter exists in the request
+    :raises: UnknownField:      If an unknown parameter exists in the request
                                 data.
-    :raises InvalidType:        if one or more parameters have an invalid type.
-    :raises InvalidCredentials: if no user can be found with the given data.
-    :raises UserIsNotVerified:  if the user has not been verified yet.
+    :raises InvalidType:        If one or more parameters have an invalid type.
+    :raises InvalidCredentials: If no user can be found with the given data.
+    :raises UserIsNotVerified:  If the user has not been verified yet.
     """
     data = json_body()
     # Check all items in the json body.
@@ -656,9 +659,9 @@ def list_users(admin):
     administrator, all information is returned. However, if it is called
     without further rights, a minimal version is returned.
 
-    :param admin: is the administrator user, determined by @adminOptional.
+    :param admin: Is the administrator user, determined by @adminOptional.
 
-    :return: A list of all users
+    :return:      A list of all users.
     """
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
@@ -840,9 +843,9 @@ def list_products(admin):
     administrator, all information is returned. However, if it is called
     without further rights, a minimal version is returned.
 
-    :param admin: Administrator User, determined by @adminOptional
+    :param admin: Is the administrator user, determined by @adminOptional.
 
-    :return: A list of all products
+    :return:      A list of all products
     """
     if not admin:
         result = (Product.query
@@ -977,9 +980,9 @@ def list_purchases(admin):
     administrator, all information is returned. However, if it is called
     without further rights, a minimal version is returned.
 
-    :param admin: Administrator User, determined by @adminOptional
+    :param admin: Is the administrator user, determined by @adminOptional.
 
-    :return: A list of all purchases
+    :return:      A list of all purchases.
     """
     # Create a list for an admin
     if admin:
