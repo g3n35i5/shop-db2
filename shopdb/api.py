@@ -622,7 +622,13 @@ def register():
 @app.route('/verifications', methods=['GET'])
 @adminRequired
 def list_pending_validations(admin):
-    """Returns a list of all non verified users"""
+    """
+    Returns a list of all non verified users.
+
+    :param admin: Is the administrator user, determined by @adminOptional.
+
+    :return:      A list of all non verified users.
+    """
     res = (db.session.query(User)
            .filter(~exists().where(UserVerification.user_id == User.id))
            .all())
@@ -633,6 +639,23 @@ def list_pending_validations(admin):
 @app.route('/verify/<int:id>', methods=['POST'])
 @adminRequired
 def verify_user(admin, id):
+    """
+    Verify a user.
+
+    :param admin:                 Is the administrator user, determined by
+                                  @adminOptional.
+    :param id:                    Is the user id.
+
+    :return:                      A message that the verification was
+                                  successful.
+
+    :raises: UserAlreadyVerified: If the user already has been verified.
+    :raises: DataIsMissing:       If the rank_id is not included in the request.
+    :raises: UnknownField:        If an unknown parameter exists in the request
+                                  data.
+    :raises InvalidType:          If one or more parameters have an invalid
+                                  type.
+    """
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
