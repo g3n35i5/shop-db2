@@ -721,7 +721,16 @@ def get_user_favorites(id):
 
 @app.route('/users/<int:id>/deposits', methods=['GET'])
 def get_user_deposits(id):
-    """Return the user with the given id"""
+    """
+    Returns a list with all deposits of a user.
+
+    :param id:                 Is the user id.
+
+    :return:                   A list with all deposits of the user.
+
+    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises UserIsNotVerified: If the user has not yet been verified.
+    """
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -737,7 +746,16 @@ def get_user_deposits(id):
 
 @app.route('/users/<int:id>/purchases', methods=['GET'])
 def get_user_purchases(id):
-    """Return the user with the given id"""
+    """
+    Returns a list with all purchases of a user.
+
+    :param id:                 Is the user id.
+
+    :return:                   A list with all purchases of the user.
+
+    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises UserIsNotVerified: If the user has not yet been verified.
+    """
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
