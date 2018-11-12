@@ -557,7 +557,7 @@ def login():
                                 data.
     :raises InvalidType:        If one or more parameters have an invalid type.
     :raises InvalidCredentials: If no user can be found with the given data.
-    :raises UserIsNotVerified:  If the user has not been verified yet.
+    :raises UserIsNotVerified:  If the user has not yet been verified.
     """
     data = json_body()
     # Check all items in the json body.
