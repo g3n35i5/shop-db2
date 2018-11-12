@@ -772,7 +772,15 @@ def get_user_purchases(id):
 
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
-    """Return the user with the given id"""
+    """
+    Returns the user with the requested id.
+
+    :param id:                 Is the user id.
+    :return:                   The requested user as JSON object.
+
+    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises UserIsNotVerified: If the user has not yet been verified.
+    """
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
@@ -788,7 +796,26 @@ def get_user(id):
 @app.route('/users/<int:id>', methods=['PUT'])
 @adminRequired
 def update_user(admin, id):
-    """Update the user with the given id"""
+    """
+    Update the user with the given id.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminOptional.
+    :param id:                   Is the user id.
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
+
+    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises UserIsNotVerified:   If the user has not yet been verified.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises PasswordsDoNotMatch: If the password and its repetition do not
+                                 match.
+    :raises DataIsMissing:       If the password is to be updated but no
+                                 repetition of the password exists in the
+                                 request.
+    """
     data = json_body()
 
     # Query user
