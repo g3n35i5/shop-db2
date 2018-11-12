@@ -246,6 +246,7 @@ def adminRequired(f):
                                 decoded token.
     :raises UnauthorziedAccess: The user has no administrator privileges.
     """
+
     @wraps(f)
     def decorated(*args, **kwargs):
         # Does the request header contain a token?
@@ -399,7 +400,7 @@ def initial_setup():
     # Check whether all required objects exist in the data.
     required = ['user', 'init_token']
     try:
-        assert(all(x in data for x in required))
+        assert (all(x in data for x in required))
     except AssertionError:
         raise exc.DataIsMissing()
 
@@ -428,7 +429,6 @@ def get_image(imagename):
 @app.route('/upload', methods=['POST'])
 @adminRequired
 def upload(admin):
-
     # Get the file. Raise an exception if there is no data.
     file = request.get_json()
     if not file:
