@@ -244,7 +244,7 @@ def adminRequired(f):
     :raises TokenHasExpired:    If the token has been expired.
     :raises TokenIsInvalid:     If no user object could be found in the
                                 decoded token.
-    :raises UnauthorziedAccess: The user has no administrator privileges.
+    :raises UnauthorizedAccess: The user has no administrator privileges.
     """
 
     @wraps(f)
