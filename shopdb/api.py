@@ -417,6 +417,14 @@ def initial_setup():
 @app.route('/images/', methods=['GET'], defaults={'imagename': None})
 @app.route('/images/<imagename>', methods=['GET'])
 def get_image(imagename):
+    """
+    A picture can be requested via this route. If the image is not found or if
+    the image name is empty, a default image will be returned.
+
+    :param imagename: is the name of the requested image.
+
+    :return:          the requested image or the default image, if applicable.
+    """
     if not imagename:
         return send_from_directory(app.config['UPLOAD_FOLDER'], 'default.png')
     else:
@@ -429,6 +437,28 @@ def get_image(imagename):
 @app.route('/upload', methods=['POST'])
 @adminRequired
 def upload(admin):
+    """
+    You can upload pictures via this route. The valid file formats can be
+    set in the configuration under "VALID_EXTENSIONS".
+
+    :param admin:                 is the administrator user, determined by
+                                  @adminOptional.
+
+    :return:                      the generated file name under which the image
+                                  has been stored.
+
+    :raises NoFileIncluded:       if no data was found in the request.
+    :raises InvalidFilename:      if the filename is empty empty or invalid in
+                                  any other form.
+    :raises InvalidFileType:      if the file format is not allowed.
+    :raises FileTooLarge:         if the size of the file exceeds the maximum
+                                  allowed file size.
+    :raises BrokenImage:          if the image file could not be read.
+    :raises ImageMustBeQuadratic: if the height and width of the image are not
+                                  identical.
+    :raises CouldNotCreateEntry:  If the new image cannot be added to the
+                                  database.
+    """
     # Get the file. Raise an exception if there is no data.
     file = request.get_json()
     if not file:
@@ -511,7 +541,21 @@ def upload(admin):
 # Login route ################################################################
 @app.route('/login', methods=['POST'])
 def login():
-    """Authenticate a registered user"""
+    """
+    Registered users can log in on this route.
+
+    :return:                    a temporary valid token, which users can use
+                                to identify themselves when making requests to
+                                the API.
+
+    :raises: DataIsMissing:     if the id or password (or both) is not included
+                                in the request.
+    :raises: UnknownField:      if an unknown parameter exists in the request
+                                data.
+    :raises InvalidType:        if one or more parameters have an invalid type.
+    :raises InvalidCredentials: if no user can be found with the given data.
+    :raises UserIsNotVerified:  if the user has not been verified yet.
+    """
     data = json_body()
     # Check all items in the json body.
     allowed = {'id': int, 'password': str}
@@ -548,7 +592,20 @@ def login():
 # Register route #############################################################
 @app.route('/register', methods=['POST'])
 def register():
-    """Register a new user"""
+    """
+    Registration of new users.
+
+    :return:                          A message that the registration was
+                                      successful.
+
+    :raises DataIsMissing:            If not all required data is available.
+    :raises WrongType:                If one or more data is of the wrong type.
+    :raises PasswordsDoNotMatch:      If the passwords do not match.
+    :raises UsernameAlreadyTaken:     If the username is already taken.
+    :raises EmailAddressAlreadyTaken: If the email address is already taken.
+    :raises CouldNotCreateEntry:      If the new user cannot be added to the
+                                      database.
+    """
     insert_user(json_body())
     try:
         db.session.commit()
@@ -599,7 +656,7 @@ def list_users(admin):
     administrator, all information is returned. However, if it is called
     without further rights, a minimal version is returned.
 
-    :param admin: Administrator User, determined by @adminOptional
+    :param admin: is the administrator user, determined by @adminOptional.
 
     :return: A list of all users
     """
