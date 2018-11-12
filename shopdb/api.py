@@ -957,7 +957,24 @@ def list_products(admin):
 @app.route('/products', methods=['POST'])
 @adminRequired
 def create_product(admin):
-    """Create a product"""
+    """
+    Route to create a new product.
+
+    :param admin:                 Is the administrator user, determined by
+                                  @adminOptional.
+
+    :return:                      A message that the creation was successful.
+
+    :raises DataIsMissing:        If one or more fields are missing to create
+                                  the product.
+    :raises UnknownField:         If an unknown parameter exists in the request
+                                  data.
+    :raises InvalidType:          If one or more parameters have an invalid
+                                  type.
+    :raises ProductAlreadyExists: If a product with this name already exists.
+    :raises CouldNotCreateEntry:  If the new product cannot be added to the
+                                  database.
+    """
     data = json_body()
     required = ['name', 'price']
     createable = {
