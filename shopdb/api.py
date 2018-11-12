@@ -698,7 +698,16 @@ def list_users(admin):
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])
 def get_user_favorites(id):
-    """Return the user with the given id"""
+    """
+    Returns a list with the IDs of a user's favorite products. The list is
+    empty if no favourite products exist.
+
+    :param id:                 Is the user id.
+    :return:                   A list with the IDs of the favorite products.
+
+    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises UserIsNotVerified: If the user has not yet been verified.
+    """
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.UserNotFound()
