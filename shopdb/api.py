@@ -895,8 +895,20 @@ def update_user(admin, id):
 @app.route('/users/<int:id>', methods=['DELETE'])
 @adminRequired
 def delete_user(admin, id):
-    """Delete the user with the given id. This is only possible with
-       non-verified users"""
+    """
+    Delete a user. This is only possible if the user has not yet been verified.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminOptional.
+    :param id:                   Is the user id.
+
+    :return:                     A message that the deletion was successful.
+
+    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises UserCanNotBeDeleted: If the user has already been verified or the
+                                 deletion cannot take place for any other
+                                 reason.
+    """
     # Check if the user exists
     user = User.query.filter_by(id=id).first()
     if not user:
