@@ -796,6 +796,10 @@ def update_user(admin, id):
     if not user:
         raise exc.UserNotFound()
 
+    # Raise an exception if the user has not been verified yet.
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+
     allowed = {
         'firstname': str,
         'lastname': str,
