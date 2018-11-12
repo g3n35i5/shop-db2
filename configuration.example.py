@@ -14,6 +14,7 @@ class BaseConfig(object):
     UPLOAD_FOLDER = PATH + '/shopdb/uploads/'
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
     VALID_EXTENSIONS = ['png']
+    MINIMUM_PASSWORD_LENGTH = 6
 
 
 class ProductiveConfig(BaseConfig):
