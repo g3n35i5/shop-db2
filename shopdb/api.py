@@ -1041,7 +1041,25 @@ def get_product(admin, id):
 @app.route('/products/<int:id>', methods=['PUT'])
 @adminRequired
 def update_product(admin, id):
-    """Update the product with the given id"""
+    """
+    Update the product with the given id.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the product id.
+
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
+
+    :raises ProductNotFound:     If the product with this ID does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises ImageNotFound:       If the image is to be changed but no image
+                                 with this name exists.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
     data = json_body()
 
     # Check, if the product exists.
