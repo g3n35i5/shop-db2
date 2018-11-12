@@ -1012,7 +1012,19 @@ def create_product(admin):
 @app.route('/products/<int:id>', methods=['GET'])
 @adminOptional
 def get_product(admin, id):
-    """Return the product with the given id"""
+    """
+        Returns the product with the requested id.
+
+        :param admin:               Is the administrator user, determined by
+                                    @adminOptional.
+        :param id:                  Is the product id.
+
+        :return:                    The requested product as JSON object.
+
+        :raises ProductNotFound:    If the product with this ID does not exist.
+        :raises UnauthorizedAccess: If the product is inactive and the request
+                                    does not come from an administrator.
+        """
     product = Product.query.filter(Product.id == id).first()
     if not product:
         raise exc.ProductNotFound()
