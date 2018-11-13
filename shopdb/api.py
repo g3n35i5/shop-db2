@@ -1460,7 +1460,23 @@ def get_replenishmentcollection(admin, id):
 @app.route('/replenishmentcollections', methods=['POST'])
 @adminRequired
 def create_replenishmentcollection(admin):
-    """Create replenishmentcollection."""
+    """
+    Insert a new replenishmentcollection.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+
+    :return:                     A message that the creation was successful.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises ForbiddenField :     If a forbidden field is in the data.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises ProductNotFound:     If the product with with the id of any
+                                 replenishment does not exist.
+    :raises InvalidAmount:       If amount of any replenishment is less than
+                                 or equal to zero.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
     data = json_body()
     required_data = {'admin_id': int, 'replenishments': list}
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
