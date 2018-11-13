@@ -80,3 +80,10 @@ class BaseAPITestCase(BaseTestCase):
         data = {'id': id, 'password': password}
         return self.client.post('/login', data=json.dumps(data),
                                 headers={'content-type': 'application/json'})
+
+    def test_get_api_root(self):
+        """An empty json body should raise an error."""
+        res = self.client.get('/')
+        message = json.loads(res.data)['message']
+        self.assertEqual(message, 'Backend is online.')
+
