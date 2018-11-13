@@ -1411,7 +1411,13 @@ def update_deposit(admin, id):
 @app.route('/replenishmentcollections', methods=['GET'])
 @adminRequired
 def list_replenishmentcollections(admin):
-    """List all replenishmentcollections."""
+    """
+    Returns a list of all replenishmentcollections.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A list of all replenishmentcollections.
+    """
     data = ReplenishmentCollection.query.all()
     fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked']
     response = convert_minimal(data, fields)
