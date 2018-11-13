@@ -1293,7 +1293,20 @@ def list_deposits(admin):
 @app.route('/deposits', methods=['POST'])
 @adminRequired
 def create_deposit(admin):
-    """Create a deposit"""
+    """
+    Insert a new deposit.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:                     A message that the creation was successful.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises UserIsNotVerified:   If the user has not yet been verified.
+    :raises InvalidAmount:       If amount is less than or equal to zero.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
     data = json_body()
     required = {'user_id': int, 'amount': int, 'comment': str}
     check_required(data, required)
