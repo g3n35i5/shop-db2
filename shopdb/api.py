@@ -1277,7 +1277,13 @@ def update_purchase(id):
 @app.route('/deposits', methods=['GET'])
 @adminRequired
 def list_deposits(admin):
-    """List all deposits"""
+    """
+    Returns a list of all deposits.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A list of all deposits.
+    """
     deposits = Deposit.query.all()
     fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
               'admin_id']
