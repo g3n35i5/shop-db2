@@ -1625,7 +1625,23 @@ def update_replenishment(admin, id):
 @app.route('/replenishments/<int:id>', methods=['DELETE'])
 @adminRequired
 def delete_replenishment(admin, id):
-    """Update a replenishment."""
+    """
+    Delete a replenishment. If the replenishmentcollection to which this
+    replenishment belongs no longer has any entries after deletion, it is also
+    deleted.
+
+    :param admin:                         Is the administrator user, determined
+                                          by @adminRequired.
+    :param id:                            Is the replenishment id.
+
+    :return:                              A message that the deletion has been
+                                          successful.
+
+    :raises ReplenishmentNotFound:        If the replenishment with this ID
+                                          does not exist.
+    :raises ReplenishmentCanNotBeDeleted: If the replenishment can not be
+                                          deleted.
+    """
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
