@@ -1548,8 +1548,7 @@ def update_replenishmentcollection(admin, id):
     except IntegrityError:
         raise exc.CouldNotUpdateEntry()
 
-    return jsonify({
-        'message': 'Revoked ReplenishmentCollection.'}), 201
+    return jsonify({'message': 'Revoked ReplenishmentCollection.'}), 201
 
 
 @app.route('/replenishments/<int:id>', methods=['PUT'])
