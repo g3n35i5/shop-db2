@@ -37,7 +37,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Revoked ReplenishmentCollection.')
+        self.assertEqual(data['message'], 'Updated replenishmentcollection.')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.revoked, True)
         required = ['id', 'revoked', 'timestamp']
