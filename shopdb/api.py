@@ -1360,7 +1360,22 @@ def get_deposit(id):
 @app.route('/deposits/<int:id>', methods=['PUT'])
 @adminRequired
 def update_deposit(admin, id):
-    """Update the deposit with the given id"""
+    """
+    Update the deposit with the given id.
+
+    :param id:                   Is the deposit id.
+
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
+
+    :raises DepositNotFound:     If the deposit with this ID does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
     # Check deposit
     deposit = Deposit.query.filter_by(id=id).first()
     if not deposit:
