@@ -1222,7 +1222,22 @@ def get_purchase(id):
 
 @app.route('/purchases/<int:id>', methods=['PUT'])
 def update_purchase(id):
-    """Update the purchase with the given id"""
+    """
+    Update the purchase with the given id.
+
+    :param id:                   Is the purchase id.
+
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
+
+    :raises PurchaseNotFound:    If the purchase with this ID does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
     # Check purchase
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
