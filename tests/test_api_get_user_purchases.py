@@ -36,6 +36,23 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
             for x in fields:
                 assert x in i
 
+    def test_get_user_purchases_non_existing_user(self):
+        """
+        This test ensures that an exception is made if the user does not exist.
+        """
+        self._insert_test_purchases()
+        res = self.get(url='/users/5/purchases')
+        self.assertException(res, UserNotFound)
+
+    def test_get_user_purchases_non_verified_user(self):
+        """
+        This test ensures that an exception is made if the user has not been
+        verified yet.
+        """
+        self._insert_test_purchases()
+        res = self.get(url='/users/4/purchases')
+        self.assertException(res, UserIsNotVerified)
+
     def test_get_users_purchases_no_insert(self):
         """
         This test ensures that an empty list is returned for a user's

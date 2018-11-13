@@ -68,6 +68,23 @@ class RegisterAPITestCase(BaseAPITestCase):
         users = User.query.all()
         self.assertEqual(len(users), 4)
 
+    def test_register_password_too_short(self):
+        """This test should ensure that the correct exception gets returned
+           on creating a user with a short password."""
+        data = {
+            'firstname': 'John',
+            'lastname': 'Doe',
+            'username': u_usernames[0],
+            'email': 'john.doe@test.com',
+            'password': 'short',
+            'password_repeat': 'short'
+        }
+        res = self.post(url='/register', data=data)
+        self.assertException(res, PasswordTooShort)
+
+        users = User.query.all()
+        self.assertEqual(len(users), 4)
+
     def test_register_missing_data(self):
         """This test should ensure that the correct exception gets returned
            on creating a user with missing data."""

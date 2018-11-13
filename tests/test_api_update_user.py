@@ -24,6 +24,19 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
+    def test_update_user_non_verified(self):
+        """
+        This test ensures that an exception is made when attempting to modify
+        an unverified user.
+        """
+        user = User.query.filter_by(id=4).first()
+        self.assertEqual(user.firstname, u_firstnames[3])
+        data = {'firstname': 'Bob'}
+        res = self.put(url='/users/4', data=data, role='admin')
+        self.assertException(res, UserIsNotVerified)
+        user = User.query.filter_by(id=4).first()
+        self.assertEqual(user.firstname, u_firstnames[3])
+
     def test_promote_user_to_admin(self):
         """Update the admin state of a user."""
         self.assertFalse(User.query.filter_by(id=2).first().is_admin)
@@ -81,6 +94,15 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         res = self.put(url='/users/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserNotFound)
+
+    def test_update_user_password_too_short(self):
+        """
+        This test ensures that an exception is made if the user's password is
+        too short.
+        """
+        data = {'password': 'short', 'password_repeat': 'short'}
+        res = self.put(url='/users/1', data=data, role='admin')
+        self.assertException(res, PasswordTooShort)
 
     def test_update_user_password(self):
         """Update user password"""
