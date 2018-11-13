@@ -1144,7 +1144,22 @@ def list_purchases(admin):
 
 @app.route('/purchases', methods=['POST'])
 def create_purchase():
-    """Create a purchase"""
+    """
+    Insert a new purchase.
+
+    :return:                     A message that the creation was successful.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises UserIsNotVerified:   If the user has not yet been verified.
+    :raises ProductNotFound:     If the product with this ID does not exist.
+    :raises ProductIsInactive:   If the product is inactive.
+    :raises InvalidAmount:       If amount is less than or equal to zero.
+    :raises InsufficientCredit:  If the credit balance of the user is not
+                                 sufficient.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
     data = json_body()
     required = {'user_id': int, 'product_id': int, 'amount': int}
 
