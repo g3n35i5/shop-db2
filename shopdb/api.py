@@ -1665,6 +1665,6 @@ def delete_replenishment(admin, id):
     try:
         db.session.commit()
     except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
+        raise exc.ReplenishmentCanNotBeDeleted()
 
     return jsonify({'message': message}), 201

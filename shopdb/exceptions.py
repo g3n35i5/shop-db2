@@ -117,6 +117,12 @@ class ReplenishmentNotFound(BaseException):
     code = 401
 
 
+class ReplenishmentCanNotBeDeleted(BaseException):
+    type = 'error'
+    message = 'The replenishment can not be deleted.'
+    code = 401
+
+
 class ReplenishmentCollectionNotFound(BaseException):
     type = 'error'
     message = 'There is no ReplenishmentCollection with this id.'
