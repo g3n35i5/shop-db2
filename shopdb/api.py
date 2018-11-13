@@ -1433,14 +1433,9 @@ def get_replenishmentcollection(admin, id):
     fields_repl = ['id', 'replcoll_id', 'product_id', 'amount', 'total_price']
     repls = replcoll.replenishments.all()
 
-    response = []
-    new_replcoll = {}
-    for field in fields_replcoll:
-        new_replcoll[field] = getattr(replcoll, field)
-    new_replcoll['replenishments'] = convert_minimal(repls, fields_repl)
-    response.append(new_replcoll)
-
-    return jsonify({'replenishmentcollection': response}), 200
+    result = convert_minimal(replcoll, fields_replcoll)[0]
+    result['replenishments'] = convert_minimal(repls, fields_repl)
+    return jsonify({'replenishmentcollection': result}), 200
 
 
 @app.route('/replenishmentcollections', methods=['POST'])

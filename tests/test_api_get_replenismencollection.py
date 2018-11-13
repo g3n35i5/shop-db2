@@ -1,8 +1,5 @@
 from shopdb.api import *
-import shopdb.models as models
 import shopdb.exceptions as exc
-from sqlalchemy.exc import *
-from base import u_emails, u_passwords, u_firstnames, u_lastnames, u_usernames
 from base_api import BaseAPITestCase
 from flask import json
 import pdb
@@ -37,7 +34,7 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
         assert 'replenishmentcollection' in data
-        replcoll = data['replenishmentcollection'][0]
+        replcoll = data['replenishmentcollection']
         required_replcoll = ['id', 'timestamp', 'admin_id', 'price',
                              'replenishments', 'revoked', 'revokehistory']
         required_repl = ['id', 'replcoll_id', 'product_id', 'amount',
