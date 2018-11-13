@@ -1296,7 +1296,8 @@ def create_deposit(admin):
     """
     Insert a new deposit.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
 
     :return:                     A message that the creation was successful.
 
