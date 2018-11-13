@@ -1576,7 +1576,26 @@ def update_replenishmentcollection(admin, id):
 @app.route('/replenishments/<int:id>', methods=['PUT'])
 @adminRequired
 def update_replenishment(admin, id):
-    """Update a replenishment."""
+    """
+    Update the replenishment with the given id.
+
+    :param admin:                  Is the administrator user, determined by
+                                   @adminRequired.
+    :param id:                     Is the replenishment id.
+
+    :return:                       A message that the update was successful
+                                   and a list of all updated fields.
+
+    :raises ReplenishmentNotFound: If the replenishment with this ID does not
+                                   exist.
+    :raises ForbiddenField:        If a forbidden field is in the request data.
+    :raises UnknownField:          If an unknown parameter exists in the
+                                   request data.
+    :raises InvalidType:           If one or more parameters have an invalid
+                                   type.
+    :raises NothingHasChanged:     If no change occurred after the update.
+    :raises CouldNotUpdateEntry:   If any other error occurs.
+    """
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
