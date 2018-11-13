@@ -1500,7 +1500,7 @@ def create_replenishmentcollection(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created deposit.'}), 201
+    return jsonify({'message': 'Created replenishmentcollection.'}), 201
 
 
 @app.route('/replenishmentcollections/<int:id>', methods=['PUT'])
