@@ -1427,7 +1427,19 @@ def list_replenishmentcollections(admin):
 @app.route('/replenishmentcollections/<int:id>', methods=['GET'])
 @adminRequired
 def get_replenishmentcollection(admin, id):
-    """Get a single replenishmentcollection."""
+    """
+    Returns the replenishmentcollection with the requested id. In addition,
+    all replenishments that belong to this collection are returned.
+
+    :param id:                               Is the replenishmentcollection id.
+
+    :return:                                 The requested
+                                             replenishmentcollection and all
+                                             related replenishments JSON object.
+
+    :raises ReplenishmentcollectionNotFound: If the replenishmentcollection
+                                             with this ID does not exist.
+    """
     # Query the replenishmentcollection.
     replcoll = ReplenishmentCollection.query.filter_by(id=id).first()
     # If it does not exist, raise an exception.
