@@ -470,7 +470,7 @@ def upload(admin):
     # Check if the filename is empty. There is no way to create a file with
     # empty filename in python so this can not be tested. Anyway, this is
     # a possible error vector.
-    if file['filename'] == '':
+    if 'filename' not in file or file['filename'] == '':
         raise exc.InvalidFilename()
 
     # Check if the filename is valid
