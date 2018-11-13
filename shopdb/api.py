@@ -1203,7 +1203,15 @@ def create_purchase():
 
 @app.route('/purchases/<int:id>', methods=['GET'])
 def get_purchase(id):
-    """Return the purchase with the given id"""
+    """
+    Returns the purchase with the requested id.
+
+    :param id:                  Is the purchase id.
+
+    :return:                    The requested purchase as JSON object.
+
+    :raises PurchaseNotFound:   If the purchase with this ID does not exist.
+    """
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
         raise exc.PurchaseNotFound()
