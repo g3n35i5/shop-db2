@@ -53,3 +53,12 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         res = self.get(url='/replenishmentcollections/2', role='user')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
+
+    def test_get_non_existing_replenishmentcollection(self):
+        """
+        This test ensures that an exception is raised if the requested
+        replenishmentcollection does not exist.
+        """
+        res = self.get(url='/replenishmentcollections/5', role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.ReplenishmentCollectionNotFound)

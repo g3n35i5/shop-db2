@@ -1422,7 +1422,12 @@ def list_replenishmentcollections(admin):
 @adminRequired
 def get_replenishmentcollection(admin, id):
     """Get a single replenishmentcollection."""
+    # Query the replenishmentcollection.
     replcoll = ReplenishmentCollection.query.filter_by(id=id).first()
+    # If it does not exist, raise an exception.
+    if not replcoll:
+        raise exc.ReplenishmentCollectionNotFound()
+
     fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
                        'revokehistory']
     fields_repl = ['id', 'replcoll_id', 'product_id', 'amount', 'total_price']
