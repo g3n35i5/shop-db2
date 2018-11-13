@@ -1337,6 +1337,15 @@ def create_deposit(admin):
 
 @app.route('/deposits/<int:id>', methods=['GET'])
 def get_deposit(id):
+    """
+    Returns the deposit with the requested id.
+
+    :param id:                 Is the deposit id.
+
+    :return:                   The requested deposit as JSON object.
+
+    :raises DepositNotFound:   If the deposit with this ID does not exist.
+    """
     # Query the deposit
     res = Deposit.query.filter_by(id=id).first()
     # If it not exists, return an error
