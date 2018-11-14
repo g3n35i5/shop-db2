@@ -389,6 +389,11 @@ def json_body():
 
 @app.route('/', methods=['GET'])
 def index():
+    """
+    A route that simply returns that the backend is online.
+
+    :return: A message which says that the backend is online.
+    """
     return jsonify({'message': 'Backend is online.'})
 
 
