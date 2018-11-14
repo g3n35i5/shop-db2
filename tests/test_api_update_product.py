@@ -92,7 +92,8 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'
         with open(filepath, 'rb') as test:
             bytes = test.read()
-        image = {'filename': 'valid_image.png', 'value': base64.b64encode(bytes).decode()}
+        image = {'filename': 'valid_image.png',
+                 'value': base64.b64encode(bytes).decode()}
         res = self.post(url='/upload', data=image, role='admin')
         filename = json.loads(res.data)['filename']
         upload = Upload.query.filter_by(filename=filename).first()

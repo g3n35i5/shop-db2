@@ -7,7 +7,7 @@ from flask import json
 
 class UpdateUserAPITestCase(BaseAPITestCase):
     def test_update_authorization(self):
-        """This route should only be available for adminisrators"""
+        """This route should only be available for administrators"""
         res = self.put(url='/users/2', data={})
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)

@@ -6,9 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
-from sqlalchemy import event
 from email_validator import validate_email, EmailNotValidError
-import pdb
 
 db = SQLAlchemy()
 
@@ -66,7 +64,9 @@ class User(db.Model):
 
     @hybrid_property
     def verification_date(self):
-        verification = UserVerification.query.filter(UserVerification.user_id == self.id).first()
+        verification = (UserVerification.query
+                        .filter(UserVerification.user_id == self.id)
+                        .first())
         if verification:
             return verification.timestamp
         return None
@@ -125,7 +125,6 @@ class User(db.Model):
 
         return d_amount - p_amount
 
-
     @hybrid_property
     def favorites(self):
         """
@@ -138,11 +137,11 @@ class User(db.Model):
             ids: A list of the favorite product ids in descending order.
         """
         result = (db.session.query(Purchase.product_id)
-               .filter(Purchase.user_id == self.id)
-               .filter(Purchase.revoked.is_(False))
-               .group_by(Purchase.product_id)
-               .order_by(func.sum(Purchase.amount).desc())
-               .all())
+                  .filter(Purchase.user_id == self.id)
+                  .filter(Purchase.revoked.is_(False))
+                  .group_by(Purchase.product_id)
+                  .order_by(func.sum(Purchase.amount).desc())
+                  .all())
         return [id for id, in result]
 
 

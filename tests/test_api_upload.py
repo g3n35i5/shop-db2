@@ -93,7 +93,6 @@ class UploadAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ImageMustBeQuadratic)
         self.assertEqual(len(Upload.query.all()), 0)
 
-
     def test_upload_valid_image(self):
         """A request with valid images should work."""
         filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'

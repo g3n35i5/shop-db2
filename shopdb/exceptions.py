@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 from sqlalchemy.exc import DontWrapMixin
-from flask import jsonify
-import pdb
 
 
 class BaseException(Exception, DontWrapMixin):
@@ -235,6 +233,7 @@ class FileTooLarge(BaseException):
     type = 'error'
     message = 'The file is too large.'
     code = 401
+
 
 class InsufficientCredit(BaseException):
     type = 'error'

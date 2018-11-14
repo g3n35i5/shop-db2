@@ -1364,6 +1364,8 @@ def update_deposit(admin, id):
     """
     Update the deposit with the given id.
 
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
     :param id:                   Is the deposit id.
 
     :return:                     A message that the update was
@@ -1432,6 +1434,8 @@ def get_replenishmentcollection(admin, id):
     Returns the replenishmentcollection with the requested id. In addition,
     all replenishments that belong to this collection are returned.
 
+    :param admin:                            Is the administrator user,
+                                             determined by @adminRequired.
     :param id:                               Is the replenishmentcollection id.
 
     :return:                                 The requested

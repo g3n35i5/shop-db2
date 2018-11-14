@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from shopdb.api import *
-from base import BaseTestCase, u_passwords
+from tests.base import BaseTestCase, u_passwords
 from flask import json
 import sys
 

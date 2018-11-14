@@ -46,7 +46,6 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-
     def test_update_replenishment_as_user(self):
         """Updating a single replenishment as user"""
         data = {'amount': 0, 'total_price': 0}
