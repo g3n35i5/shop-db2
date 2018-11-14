@@ -44,7 +44,7 @@ class User(db.Model):
 
         # Check email regex
         try:
-            validated = validate_email(email)
+            validated = validate_email(email, check_deliverability=False)
             email = validated['email']
         except EmailNotValidError:
             raise InvalidEmailAddress

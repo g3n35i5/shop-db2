@@ -44,8 +44,8 @@ class UserModelTestCase(BaseTestCase):
         """Test the regex match of the user email"""
         user = User.query.filter_by(id=1).first()
         backup_email = copy(user.email)
-        for mail in ['test', 'test@test', '@test', 't@test.c', 'test@test-com',
-                     't@test.com.', None, 2]:
+        for mail in ['test', 'test@test', '@test', 'test@test-com',
+                     't@me.com.', None, 2]:
             with self.assertRaises(exc.InvalidEmailAddress):
                 user.email = mail
             db.session.rollback()
