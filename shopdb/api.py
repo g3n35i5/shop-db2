@@ -660,6 +660,8 @@ def verify_user(admin, id):
                                   data.
     :raises InvalidType:          If one or more parameters have an invalid
                                   type.
+    :raises RankNotFound:         If the rank to be assigned to the user does
+                                  not exist.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
@@ -673,7 +675,12 @@ def verify_user(admin, id):
     check_required(data, allowed)
     check_allowed_fields_and_types(data, allowed)
 
-    user.verify(admin_id=admin.id, rank_id=data['rank_id'])
+    rank_id = data['rank_id']
+    rank = Rank.query.filter_by(id=rank_id).first()
+    if not rank:
+        raise exc.RankNotFound()
+
+    user.verify(admin_id=admin.id, rank_id=rank_id)
     db.session.commit()
     return jsonify({'message': 'Verified user.'}), 201
 

@@ -109,6 +109,12 @@ class DepositNotFound(BaseException):
     code = 401
 
 
+class RankNotFound(BaseException):
+    type = 'error'
+    message = 'There is no rank with this id.'
+    code = 401
+
+
 class ReplenishmentNotFound(BaseException):
     type = 'error'
     message = 'There is no Replenishment with this id.'
