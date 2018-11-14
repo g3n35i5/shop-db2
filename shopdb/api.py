@@ -942,6 +942,19 @@ def delete_user(admin, id):
     return jsonify({'message': 'User deleted.'}), 200
 
 
+# Rank routes #############################################################
+@app.route('/ranks', methods=['GET'])
+def list_ranks():
+    """
+    Returns a list of all ranks.
+
+    :return: A list of all ranks.
+    """
+    result = Rank.query.all()
+    ranks = convert_minimal(result, ['id', 'name', 'debt_limit'])
+    return jsonify({'ranks': ranks}), 200
+
+
 # Product routes #############################################################
 @app.route('/products', methods=['GET'])
 @adminOptional
