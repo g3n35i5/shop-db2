@@ -137,15 +137,15 @@ def update_fields(data, row, updated=None):
     be transferred with the "updated" list. All updated fields are added to
     this list.
 
-    :param data:                The dictionary with all entries to be updated.
-    :param row:                 The database object to be updated.
-    :param updated:             A list of all fields that have already been
-                                updated.
+    :param data:               The dictionary with all entries to be updated.
+    :param row:                The database object to be updated.
+    :param updated:            A list of all fields that have already been
+                               updated.
 
-    :return:                    A list with all already updated fields and
-                                those that have been added.
+    :return:                   A list with all already updated fields and
+                               those that have been added.
 
-    :raises: NothingHasChanged: If no fields were changed during the update.
+    :raises NothingHasChanged: If no fields were changed during the update.
     """
     for item in data:
         if not getattr(row, item) == data[item]:
@@ -551,9 +551,9 @@ def login():
                                 to identify themselves when making requests to
                                 the API.
 
-    :raises: DataIsMissing:     If the id or password (or both) is not included
+    :raises DataIsMissing:      If the id or password (or both) is not included
                                 in the request.
-    :raises: UnknownField:      If an unknown parameter exists in the request
+    :raises UnknownField:       If an unknown parameter exists in the request
                                 data.
     :raises InvalidType:        If one or more parameters have an invalid type.
     :raises InvalidCredentials: If no user can be found with the given data.
@@ -649,9 +649,9 @@ def verify_user(admin, id):
     :return:                      A message that the verification was
                                   successful.
 
-    :raises: UserAlreadyVerified: If the user already has been verified.
-    :raises: DataIsMissing:       If the rank_id is not included in the request.
-    :raises: UnknownField:        If an unknown parameter exists in the request
+    :raises UserAlreadyVerified:  If the user already has been verified.
+    :raises DataIsMissing:        If the rank_id is not included in the request.
+    :raises UnknownField:         If an unknown parameter exists in the request
                                   data.
     :raises InvalidType:          If one or more parameters have an invalid
                                   type.
