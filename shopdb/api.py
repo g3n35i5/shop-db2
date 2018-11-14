@@ -704,7 +704,7 @@ def list_users(admin):
         return jsonify({'users': convert_minimal(result, fields)}), 200
 
     fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
-              'is_admin', 'creation_date']
+              'is_admin', 'creation_date', 'rank_id']
     return jsonify({'users': convert_minimal(result, fields)}), 200
 
 
@@ -801,7 +801,7 @@ def get_user(id):
         raise exc.UserIsNotVerified()
 
     fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
-              'is_admin', 'creation_date', 'verification_date']
+              'is_admin', 'creation_date', 'verification_date', 'rank_id']
     user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
 
