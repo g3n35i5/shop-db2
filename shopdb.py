@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 
-import argparse
 import sys
+
+try:
+    import configuration as config
+except ModuleNotFoundError:
+    sys.exit('No configuration file was found. Please make sure, '
+             'that you renamed or copied the sample configuration '
+             'configuration.example.py and adapted it to your needs.')
+
+import argparse
 from shopdb.api import *
 from dev import insert_dev_data
-import configuration as config
 
 parser = argparse.ArgumentParser(description='Starting script shop.db')
 parser.add_argument('--mode', choices=['development'])
