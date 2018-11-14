@@ -6,8 +6,8 @@ from copy import copy
 
 
 class CreateDepositAPITestCase(BaseAPITestCase):
-    def test_create_deposit(self):
-        """Create a deposit."""
+    def test_create_deposit_positive_amount(self):
+        """Create a deposit with a positive amount."""
         data = {'user_id': 2, 'amount': 1000, 'comment': 'Test deposit'}
         res = self.post(url='/deposits', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
@@ -18,6 +18,21 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(len(deposits), 1)
         self.assertEqual(deposits[0].user_id, 2)
         self.assertEqual(deposits[0].amount, 1000)
+        self.assertEqual(deposits[0].comment, 'Test deposit')
+        self.assertFalse(deposits[0].revoked)
+
+    def test_create_deposit_negative_amount(self):
+        """Create a deposit with a negative amount."""
+        data = {'user_id': 2, 'amount': -1000, 'comment': 'Test deposit'}
+        res = self.post(url='/deposits', data=data, role='admin')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'message' in data
+        self.assertEqual(data['message'], 'Created deposit.')
+        deposits = Deposit.query.all()
+        self.assertEqual(len(deposits), 1)
+        self.assertEqual(deposits[0].user_id, 2)
+        self.assertEqual(deposits[0].amount, -1000)
         self.assertEqual(deposits[0].comment, 'Test deposit')
         self.assertFalse(deposits[0].revoked)
 
@@ -69,7 +84,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
 
     def test_create_purchase_invalid_amount(self):
         """Create a purchase with an invalid amount."""
-        data = {'user_id': 2, 'amount': -1000, 'comment': 'Test deposit'}
+        data = {'user_id': 2, 'amount': 0, 'comment': 'Test deposit'}
         res = self.post(url='/deposits', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidAmount)

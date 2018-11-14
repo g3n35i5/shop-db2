@@ -1305,7 +1305,7 @@ def create_deposit(admin):
     :raises WrongType:           If one or more data is of the wrong type.
     :raises UserNotFound:        If the user with this ID does not exist.
     :raises UserIsNotVerified:   If the user has not yet been verified.
-    :raises InvalidAmount:       If amount is less than or equal to zero.
+    :raises InvalidAmount:       If amount is equal to zero.
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
@@ -1321,7 +1321,7 @@ def create_deposit(admin):
         raise exc.UserIsNotVerified()
 
     # Check amount
-    if data['amount'] <= 0:
+    if data['amount'] == 0:
         raise exc.InvalidAmount()
 
     # Create and insert deposit
