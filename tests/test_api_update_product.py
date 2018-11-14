@@ -1,13 +1,13 @@
 from shopdb.api import *
 import shopdb.exceptions as exc
-from base_api import BaseAPITestCase
+from tests.base_api import BaseAPITestCase
 from flask import json
 import os
 
 
 class UpdateProductAPITestCase(BaseAPITestCase):
     def test_update_authorization(self):
-        """This route should only be available for adminisrators"""
+        """This route should only be available for administrators"""
         res = self.put(url='/products/2', data={})
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)

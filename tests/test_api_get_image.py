@@ -1,5 +1,5 @@
 from shopdb.api import *
-from base_api import BaseAPITestCase
+from tests.base_api import BaseAPITestCase
 
 
 class GetImageAPITestCase(BaseAPITestCase):

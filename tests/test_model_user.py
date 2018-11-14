@@ -1,10 +1,8 @@
 from shopdb.api import *
-import shopdb.models as models
 import shopdb.exceptions as exc
 from sqlalchemy.exc import *
-from base import BaseTestCase
+from tests.base import BaseTestCase
 from copy import copy
-import pdb
 
 
 class UserModelTestCase(BaseTestCase):

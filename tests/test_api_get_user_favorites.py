@@ -1,20 +1,13 @@
 from shopdb.api import *
-import shopdb.models as models
 import shopdb.exceptions as exc
-from sqlalchemy.exc import *
-from time import sleep
-from base import u_emails, u_passwords, u_firstnames, u_lastnames, u_usernames
-from base_api import BaseAPITestCase
+from tests.base_api import BaseAPITestCase
 from flask import json
-import jwt
-from copy import copy
-import pdb
 
 
 class GetUserFavoritesAPITestCase(BaseAPITestCase):
     def _insert_purchases(self):
         """Helper function to insert some test purchases."""
-         # Insert user 1 purchases.
+        # Insert user 1 purchases.
         p1 = Purchase(user_id=1, product_id=1, amount=4)
         p2 = Purchase(user_id=1, product_id=2, amount=4)
         p3 = Purchase(user_id=1, product_id=3, amount=5)
@@ -32,7 +25,9 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         db.session.commit()
         
     def test_get_user_favorites(self):
-        """This test ensures that the user's favorites are generated reliably."""
+        """
+        This test ensures that the user's favorites are generated reliably.
+        """
         self._insert_purchases()
         res = self.get(url='/users/1/favorites')
         data = json.loads(res.data)
@@ -41,8 +36,8 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
 
     def test_get_user_favorites_no_purchase(self):
         """
-        This test ensures that an empty list is displayed for the user's favorites
-        if no purchases have yet been made.
+        This test ensures that an empty list is displayed for the user's
+        favorites if no purchases have yet been made.
         """
         res = self.get(url='/users/1/favorites')
         data = json.loads(res.data)

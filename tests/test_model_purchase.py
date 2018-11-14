@@ -1,11 +1,7 @@
 from shopdb.api import *
-import shopdb.models as models
 import shopdb.exceptions as exc
-from sqlalchemy.exc import *
-from time import sleep
-from base import BaseTestCase
+from tests.base import BaseTestCase
 from copy import copy
-import pdb
 import datetime
 
 

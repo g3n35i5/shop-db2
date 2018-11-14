@@ -1,8 +1,7 @@
 from shopdb.api import *
 import shopdb.exceptions as exc
-from base_api import BaseAPITestCase
+from tests.base_api import BaseAPITestCase
 from flask import json
-import pdb
 
 
 class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):

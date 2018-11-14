@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 from shopdb.api import *
-from base import BaseTestCase
-from base import (u_emails, u_passwords, u_firstnames, u_lastnames,
-                  u_usernames, r_names)
+from tests.base import BaseTestCase
+from tests.base import (u_emails, u_passwords, u_firstnames, u_lastnames,
+                        u_usernames, r_names)
 
 
 class DefaultDataTest(BaseTestCase):

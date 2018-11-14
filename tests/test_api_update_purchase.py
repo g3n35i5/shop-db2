@@ -1,14 +1,7 @@
 from shopdb.api import *
-import shopdb.models as models
 import shopdb.exceptions as exc
-from sqlalchemy.exc import *
-from time import sleep
-from base import u_emails, u_passwords, u_firstnames, u_lastnames, u_usernames
-from base_api import BaseAPITestCase
+from tests.base_api import BaseAPITestCase
 from flask import json
-import jwt
-from copy import copy
-import pdb
 
 
 class UpdatePurchaseAPITestCase(BaseAPITestCase):
@@ -38,16 +31,6 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.insert_test_purchases()
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
         data = {'id': 2}
-        res = self.put(url='/purchases/1', data=data, role='admin')
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ForbiddenField)
-        self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
-
-    def test_update_unknown_field(self):
-        """Updating a unknwon field should raise an error."""
-        self.insert_test_purchases()
-        self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
-        data = {'foo': 'bar'}
         res = self.put(url='/purchases/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
