@@ -13,10 +13,7 @@ passwords = None
 # Default data for users
 u_firstnames = ['William', 'Mary', 'Bryce', 'Daniel']
 u_lastnames = ['Jones', 'Smith', 'Jones', 'Lee']
-u_usernames = ['alias1', 'alias2', 'alias3', 'alias4']
-u_emails = ['william.jones@test.com', 'mary.smith@example.com',
-            'bryce.jones@example.com', 'daniel.lee@example.com']
-u_passwords = ['secret1', 'secret2', 'secret3', 'secret4']
+u_passwords = ['secret1', 'secret2', None, None]
 
 # Default data for products
 p_names = ['Pizza', 'Coffee', 'Cookie', 'Coke']
@@ -57,7 +54,11 @@ class BaseTestCase(TestCase):
         if passwords is None:
             passwords = [None] * len(pwds)
             for i in range(0, len(pwds)):
-                passwords[i] = self.bcrypt.generate_password_hash(pwds[i])
+                password = pwds[i]
+                if password:
+                    passwords[i] = self.bcrypt.generate_password_hash(password)
+                else:
+                    passwords[i] = None
         return passwords
 
     def insert_default_users(self):
@@ -66,8 +67,6 @@ class BaseTestCase(TestCase):
             user = User(
                 firstname=u_firstnames[i],
                 lastname=u_lastnames[i],
-                username=u_usernames[i],
-                email=u_emails[i],
                 password=hashes[i])
             db.session.add(user)
 

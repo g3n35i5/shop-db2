@@ -11,8 +11,6 @@ class DeleteUserAPITestCase(BaseAPITestCase):
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
-            'username': 'johnny',
-            'email': 'john.doe@test.com',
             'password': 'supersecret',
             'password_repeat': 'supersecret'
         }

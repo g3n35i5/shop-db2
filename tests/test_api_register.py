@@ -1,5 +1,4 @@
 from shopdb.api import *
-from tests.base import u_emails, u_usernames
 from tests.base_api import BaseAPITestCase
 from copy import copy
 
@@ -10,8 +9,6 @@ class RegisterAPITestCase(BaseAPITestCase):
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
-            'username': 'johnny',
-            'email': 'john.doe@test.com',
             'password': 'supersecret',
             'password_repeat': 'supersecret'
         }
@@ -23,43 +20,7 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertTrue(user)
         self.assertEqual(user.firstname, 'John')
         self.assertEqual(user.lastname, 'Doe')
-        self.assertEqual(user.username, 'johnny')
-        self.assertEqual(user.email, 'john.doe@test.com')
         self.assertFalse(user.is_verified)
-
-    def test_register_existing_email(self):
-        """This test should ensure that the correct exception gets returned
-           on creating a user with an email address already taken."""
-        data = {
-            'firstname': 'John',
-            'lastname': 'Doe',
-            'username': 'johnny',
-            'email': u_emails[0],
-            'password': 'supersecret',
-            'password_repeat': 'supersecret'
-        }
-        res = self.post(url='/register', data=data)
-        self.assertException(res, EmailAddressAlreadyTaken)
-
-        users = User.query.all()
-        self.assertEqual(len(users), 4)
-
-    def test_register_existing_username(self):
-        """This test should ensure that the correct exception gets returned
-           on creating a user with an username already taken."""
-        data = {
-            'firstname': 'John',
-            'lastname': 'Doe',
-            'username': u_usernames[0],
-            'email': 'john.doe@test.com',
-            'password': 'supersecret',
-            'password_repeat': 'supersecret'
-        }
-        res = self.post(url='/register', data=data)
-        self.assertException(res, UsernameAlreadyTaken)
-
-        users = User.query.all()
-        self.assertEqual(len(users), 4)
 
     def test_register_password_too_short(self):
         """This test should ensure that the correct exception gets returned
@@ -67,8 +28,6 @@ class RegisterAPITestCase(BaseAPITestCase):
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
-            'username': u_usernames[0],
-            'email': 'john.doe@test.com',
             'password': 'short',
             'password_repeat': 'short'
         }
@@ -83,15 +42,10 @@ class RegisterAPITestCase(BaseAPITestCase):
            on creating a user with missing data."""
         data = {
             'firstname': 'John',
-            'lastname': 'Doe',
-            'username': 'johnny',
-            'email': 'john.doe@test.com',
-            'password': 'supersecret',
-            'password_repeat': 'supersecret'
+            'lastname': 'Doe'
         }
 
-        for item in ['firstname', 'lastname', 'username', 'email',
-                     'password', 'password_repeat']:
+        for item in ['firstname', 'lastname']:
             data_copy = copy(data)
             del data_copy[item]
             res = self.post(url='/register', data=data_copy)
@@ -107,14 +61,11 @@ class RegisterAPITestCase(BaseAPITestCase):
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
-            'username': 'johnny',
-            'email': 'john.doe@test.com',
             'password': 'supersecret',
             'password_repeat': 'supersecret'
         }
 
-        for item in ['firstname', 'lastname', 'username', 'email',
-                     'password', 'password_repeat']:
+        for item in ['firstname', 'lastname', 'password', 'password_repeat']:
             data_copy = copy(data)
             data_copy[item] = 1234
             res = self.post(url='/register', data=data_copy)
@@ -129,8 +80,6 @@ class RegisterAPITestCase(BaseAPITestCase):
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
-            'username': 'johnny',
-            'email': 'john.doe@test.com',
             'password': 'supersecret',
             'password_repeat': 'supersecret_ooops'
         }

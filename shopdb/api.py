@@ -173,55 +173,43 @@ def insert_user(data):
     :raises DataIsMissing:            If not all required data is available.
     :raises WrongType:                If one or more data is of the wrong type.
     :raises PasswordsDoNotMatch:      If the passwords do not match.
-    :raises UsernameAlreadyTaken:     If the username is already taken.
-    :raises EmailAddressAlreadyTaken: If the email address is already taken.
     :raises CouldNotCreateEntry:      If the new user cannot be added to the
                                       database.
     """
-    required = ['firstname', 'lastname', 'username', 'email',
-                'password', 'password_repeat']
 
-    # Check whether all required values are available.
-    if any(item not in data for item in required):
-        raise exc.DataIsMissing()
+    allowed = {'firstname': str, 'lastname': str,
+               'password': str, 'password_repeat': str}
 
-    # Check all values for their type.
-    try:
-        for item in required:
-            assert isinstance(data[item], str)
-    except AssertionError:
-        raise exc.WrongType()
+    required = ['firstname', 'lastname']
 
-    password = data['password'].strip()
-    repeat_password = data['password_repeat'].strip()
+    check_required(data, required)
+    check_allowed_fields_and_types(data, allowed)
 
-    # Check if the passwords match.
-    if password != repeat_password:
-        raise exc.PasswordsDoNotMatch()
+    password = None
 
-    # Check the password length
-    if len(password) < app.config['MINIMUM_PASSWORD_LENGTH']:
-        raise exc.PasswordTooShort()
+    if 'password' in data:
+        if not 'password_repeat' in data:
+            raise exc.DataIsMissing()
 
-    # Convert email address to lowercase.
-    email = data['email'].strip().lower()
+        password = data['password'].strip()
+        repeat_password = data['password_repeat'].strip()
 
-    # Check if the username is already assigned.
-    if User.query.filter_by(username=data['username']).first():
-        raise exc.UsernameAlreadyTaken()
+        # Check if the passwords match.
+        if password != repeat_password:
+            raise exc.PasswordsDoNotMatch()
 
-    # Check if the email address is already assigned.
-    if User.query.filter_by(email=email).first():
-        raise exc.EmailAddressAlreadyTaken()
+        # Check the password length
+        if len(password) < app.config['MINIMUM_PASSWORD_LENGTH']:
+            raise exc.PasswordTooShort()
+
+        password = bcrypt.generate_password_hash(data['password'])
 
     # Try to create the user.
     try:
         user = User(
             firstname=data['firstname'],
             lastname=data['lastname'],
-            username=data['username'],
-            email=email,
-            password=bcrypt.generate_password_hash(data['password']))
+            password=password)
         db.session.add(user)
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
@@ -581,7 +569,7 @@ def login():
         raise exc.InvalidCredentials()
 
     # Create a dictionary object of the user.
-    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit']
+    fields = ['id', 'firstname', 'lastname', 'credit']
     d_user = convert_minimal(user, fields)[0]
 
     # Create a token.
@@ -604,8 +592,6 @@ def register():
     :raises DataIsMissing:            If not all required data is available.
     :raises WrongType:                If one or more data is of the wrong type.
     :raises PasswordsDoNotMatch:      If the passwords do not match.
-    :raises UsernameAlreadyTaken:     If the username is already taken.
-    :raises EmailAddressAlreadyTaken: If the email address is already taken.
     :raises CouldNotCreateEntry:      If the new user cannot be added to the
                                       database.
     """
@@ -632,7 +618,7 @@ def list_pending_validations(admin):
     res = (db.session.query(User)
            .filter(~exists().where(UserVerification.user_id == User.id))
            .all())
-    fields = ['id', 'firstname', 'lastname', 'email']
+    fields = ['id', 'firstname', 'lastname']
     return jsonify({'pending_validations': convert_minimal(res, fields)}), 200
 
 
@@ -688,11 +674,11 @@ def list_users(admin):
     """
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
-        fields = ['id', 'firstname', 'lastname', 'username']
+        fields = ['id', 'firstname', 'lastname']
         return jsonify({'users': convert_minimal(result, fields)}), 200
 
-    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
-              'is_admin', 'creation_date']
+    fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin',
+              'creation_date']
     return jsonify({'users': convert_minimal(result, fields)}), 200
 
 
@@ -788,7 +774,7 @@ def get_user(id):
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
-    fields = ['id', 'firstname', 'lastname', 'username', 'email', 'credit',
+    fields = ['id', 'firstname', 'lastname', 'credit',
               'is_admin', 'creation_date', 'verification_date']
     user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
@@ -832,8 +818,6 @@ def update_user(admin, id):
     allowed = {
         'firstname': str,
         'lastname': str,
-        'username': str,
-        'email': str,
         'password': str,
         'password_repeat': str,
         'is_admin': bool,
@@ -878,7 +862,7 @@ def update_user(admin, id):
         del data['password']
 
     # All other fields
-    updateable = ['firstname', 'lastname', 'username', 'email']
+    updateable = ['firstname', 'lastname']
     check_forbidden(data, updateable, user)
     updated_fields = update_fields(data, user, updated=updated_fields)
 

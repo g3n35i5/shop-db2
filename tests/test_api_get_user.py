@@ -1,5 +1,5 @@
 import shopdb.exceptions as exc
-from tests.base import u_emails, u_firstnames, u_lastnames, u_usernames
+from tests.base import u_firstnames, u_lastnames
 from tests.base_api import BaseAPITestCase
 from flask import json
 
@@ -15,8 +15,6 @@ class GetUserAPITestCase(BaseAPITestCase):
         self.assertEqual(data['user']['id'], 1)
         self.assertEqual(data['user']['firstname'], u_firstnames[0])
         self.assertEqual(data['user']['lastname'], u_lastnames[0])
-        self.assertEqual(data['user']['username'], u_usernames[0])
-        self.assertEqual(data['user']['email'], u_emails[0])
         self.assertEqual(data['user']['credit'], 0)
         self.assertTrue(isinstance(data['user']['creation_date'], str))
         self.assertTrue(isinstance(data['user']['verification_date'], str))
