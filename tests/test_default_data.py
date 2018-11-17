@@ -1,7 +1,6 @@
 from shopdb.api import *
 from tests.base import BaseTestCase
-from tests.base import (u_emails, u_passwords, u_firstnames, u_lastnames,
-                        u_usernames, r_names)
+from tests.base import u_passwords, u_firstnames, u_lastnames, r_names
 
 
 class DefaultDataTest(BaseTestCase):
@@ -14,10 +13,9 @@ class DefaultDataTest(BaseTestCase):
         for i in range(0, len(u_firstnames)):
             self.assertEqual(users[i].firstname, u_firstnames[i])
             self.assertEqual(users[i].lastname, u_lastnames[i])
-            self.assertEqual(users[i].username, u_usernames[i])
-            self.assertEqual(users[i].email, u_emails[i])
-            self.assertTrue(bcrypt.check_password_hash(
-                users[i].password, u_passwords[i]))
+            if u_passwords[i]:
+                self.assertTrue(bcrypt.check_password_hash(
+                    users[i].password, u_passwords[i]))
 
     def test_insert_default_ranks(self):
         """Check if all ranks have been entered correctly"""

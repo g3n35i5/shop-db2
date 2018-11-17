@@ -1,6 +1,5 @@
 import shopdb.exceptions as exc
-from tests.base import (u_emails, u_passwords, u_firstnames, u_lastnames,
-                        u_usernames)
+from tests.base import u_passwords, u_firstnames, u_lastnames
 from tests.base_api import BaseAPITestCase
 from flask import json
 import jwt
@@ -24,8 +23,6 @@ class LoginAPITestCase(BaseAPITestCase):
         self.assertEqual(decode['user']['id'], 1)
         self.assertEqual(decode['user']['firstname'], u_firstnames[0])
         self.assertEqual(decode['user']['lastname'], u_lastnames[0])
-        self.assertEqual(decode['user']['username'], u_usernames[0])
-        self.assertEqual(decode['user']['email'], u_emails[0])
 
     def test_login_non_verified_user(self):
         """If an authentication attempt is made by a non verified user,
@@ -34,8 +31,6 @@ class LoginAPITestCase(BaseAPITestCase):
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
-            'username': 'johnny',
-            'email': 'john.doe@test.com',
             'password': 'supersecret',
             'password_repeat': 'supersecret'
         }

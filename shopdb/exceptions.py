@@ -31,6 +31,13 @@ class UserCanNotBeUpdated(BaseException):
     code = 401
 
 
+class UserNeedsPassword(BaseException):
+    type = 'error'
+    message = 'The user must first set a password before he can become ' \
+              'an administrator.'
+    code = 401
+
+
 class DataIsMissing(BaseException):
     type = 'error'
     message = 'Some or more details are missing.'

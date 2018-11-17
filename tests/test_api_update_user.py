@@ -52,6 +52,14 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
         self.assertTrue(User.query.filter_by(id=1).first().is_admin)
 
+    def test_promote_user_to_admin_without_password(self):
+        """Try to promote a user without password"""
+        self.assertFalse(User.query.filter_by(id=3).first().is_admin)
+        data = {'is_admin': True}
+        res = self.put(url='/users/3', data=data, role='admin')
+        self.assertException(res, exc.UserNeedsPassword)
+        self.assertFalse(User.query.filter_by(id=3).first().is_admin)
+
     def test_make_contender_member(self):
         """Update a contender to a member"""
         self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
