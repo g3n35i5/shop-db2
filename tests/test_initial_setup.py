@@ -69,7 +69,6 @@ class InitialSetupTestCase(TestCase):
     def test_initial_setup(self):
         """Test the initial setup"""
         data = {'user': {'firstname': 'User', 'lastname': 'One',
-                         'username': 'userone', 'email': 'user.one@example.com',
                          'password': 'passwd', 'password_repeat': 'passwd'},
                 'INIT_TOKEN': 'INIT'}
         res = self.post(url='/initial_setup', data=data, role=None)
@@ -79,17 +78,33 @@ class InitialSetupTestCase(TestCase):
                               'shop.db was successfully initialized')
 
     def test_initial_setup_existing_user(self):
-        user = User(firstname='User', lastname='Zero', username='userzero',
-                    email='user.zero@test.com', password='wfhgpiurewqnb')
+        """With an existing user, an error should be raised"""
+        user = User(firstname='User', lastname='Zero', password='wfhgpiurewqnb')
         db.session.add(user)
         db.session.commit()
-        """With an existing user, an error should br raised"""
         data = {'user': {'firstname': 'User', 'lastname': 'One',
-                         'username': 'userone', 'email': 'user.one@example.com',
                          'password': 'passwd', 'password_repeat': 'passwd'},
                 'INIT_TOKEN': 'INIT'}
         res = self.post(url='/initial_setup', data=data, role=None)
         self.assertEqual(res.status_code, 401)
         data = json.loads(res.data)
-        self.assertEqual(data['message'],
-                              'You do not have the authorization to perform this action.')
+        self.assertException(res, exc.UnauthorizedAccess())
+
+    def test_initial_setup_missing_data(self):
+        """With missing data, an error should be raised"""
+        data = {'user': {'firstname': 'User', 'lastname': 'One',
+                         'password': 'passwd', 'password_repeat': 'passwd'}}
+        res = self.post(url='/initial_setup', data=data, role=None)
+        self.assertEqual(res.status_code, 401)
+        data = json.loads(res.data)
+        self.assertException(res, exc.DataIsMissing())
+
+    def test_initial_setup_wrong_token(self):
+        """With wrong init token, an error should be raised"""
+        data = {'user': {'firstname': 'User', 'lastname': 'One',
+                         'password': 'passwd', 'password_repeat': 'passwd'},
+                'INIT_TOKEN': 'foo'}
+        res = self.post(url='/initial_setup', data=data, role=None)
+        self.assertEqual(res.status_code, 401)
+        data = json.loads(res.data)
+        self.assertException(res, exc.UnauthorizedAccess())
