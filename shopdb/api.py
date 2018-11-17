@@ -406,18 +406,41 @@ def initial_setup():
         raise exc.UnauthorizedAccess()
 
     # Check whether all required objects exist in the data.
-    required = ['user', 'init_token']
+    required = ['user', 'INIT_TOKEN']
     try:
         assert (all(x in data for x in required))
     except AssertionError:
         raise exc.DataIsMissing()
 
     # Check the init token.
-    if data['init_token'] != app.config['init_token']:
+    if data['INIT_TOKEN'] != app.config['INIT_TOKEN']:
         raise exc.UnauthorizedAccess()
+
+    #Check if there are any ranks in the databaseself.
+    #If not add the default ranks
+    if not Rank.query.all():
+        rank1 = Rank(name='Member', debt_limit=-2000)
+        rank2 = Rank(name='Alumni', debt_limit=-2000)
+        rank3 = Rank(name='Contender', debt_limit=0)
+        try:
+            for r in (rank1, rank2, rank3):
+                db.session.add(r)
+            db.session.commit()
+        except IntegrityError:
+            exc.CouldNotCreateEntry()
 
     # Handle the user.
     insert_user(data['user'])
+
+    #Get the User
+    user = User.query.filter_by(id=1).first()
+
+    #Add User as Admin (is_admin, admin_id)
+    user.set_admin(True, 1)
+
+    #Verify the user (admin_id, rank_id)
+    user.verify(1, 1)
+
 
     return jsonify({'message': 'shop.db was successfully initialized'}), 200
 
