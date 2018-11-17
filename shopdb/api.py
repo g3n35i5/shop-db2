@@ -389,14 +389,11 @@ def initial_setup():
         raise exc.UnauthorizedAccess()
 
     # Check whether all required objects exist in the data.
-    required = ['user', 'init_token']
-    try:
-        assert (all(x in data for x in required))
-    except AssertionError:
-        raise exc.DataIsMissing()
+    required = ['user', 'INIT_TOKEN']
+    check_required(data, required)
 
     # Check the init token.
-    if data['init_token'] != app.config['init_token']:
+    if data['INIT_TOKEN'] != app.config['INIT_TOKEN']:
         raise exc.UnauthorizedAccess()
 
     #Check if there are any ranks in the databaseself.
