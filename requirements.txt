@@ -8,4 +8,3 @@ sqlalchemy >= 1.2.12
 coverage >= 4.5.1
 PyJWT >= 1.6.4
 Pillow >= 5.2.0
-email_validator >= 1.0.2
