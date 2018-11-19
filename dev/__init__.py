@@ -1,65 +1,99 @@
 from shopdb.models import *
 from shopdb.api import bcrypt
-import random
 
 
 def insert_dev_data(db):
+    # Insert default ranks
+    ranks = [
+        {'name': 'Contender', 'debt_limit': 0},
+        {'name': 'Member', 'debt_limit': -2000},
+        {'name': 'Alumni', 'debt_limit': -1000}
+    ]
+    for rank in ranks:
+        rank = Rank(name=rank['name'], debt_limit=rank['debt_limit'])
+        db.session.add(rank)
+    db.session.commit()
+
     # Insert admin
     user = User(
         firstname='John',
         lastname='Doe',
-        username='admin',
-        email='john.doe@example.com',
         password=bcrypt.generate_password_hash('1234'))
     db.session.add(user)
     au = AdminUpdate(user_id=1, admin_id=1, is_admin=True)
     db.session.add(au)
-    user.verify(admin_id=1)
+    user.verify(admin_id=1, rank_id=2)
     db.session.add(user)
 
-    # Insert all random users
-    usernames = open('./dev/usernames.txt', 'r').read().splitlines()
-    for index, name in enumerate(usernames):
-        firstname = name.split(',')[1]
-        lastname = name.split(',')[0]
-        username = 'random_{0:02d}'.format(index + 2)
-        email = firstname.lower() + '.' + lastname.lower() + '@example.com'
-        password = b'1234'
+    # Insert all default users. Two of them have a password defined.
+    usernames = [
+        {'firstname': 'Andree', 'lastname': 'Owings', 'password': '1234'},
+        {'firstname': 'Milan', 'lastname': 'Glazier', 'password': '1234'},
+        {'firstname': 'Hiroko', 'lastname': 'Trinh'},
+        {'firstname': 'Malia', 'lastname': 'Constance'},
+        {'firstname': 'Rob', 'lastname': 'Hydrick'}
+    ]
+    for index, user in enumerate(usernames):
+        firstname = user['firstname']
+        lastname = user['lastname']
+        password = None
+        if 'password' in user:
+            password = user['password']
         user = User(
             firstname=firstname,
             lastname=lastname,
-            username=username,
-            email=email,
             password=password)
         db.session.add(user)
 
     db.session.commit()
 
-    # Verify all users except id 1, 3, 5 and 7
-    ids = range(1, 51)
-    ids = [i for i in ids if i not in [1, 3, 5, 7]]
-    for id in ids:
-        user = User.query.filter_by(id=id).first()
-        user.verify(admin_id=1)
+    # Verify the first three users
+    verifications = [
+        {'user_id': 2, 'rank_id': 1},
+        {'user_id': 3, 'rank_id': 2},
+        {'user_id': 4, 'rank_id': 3}
+    ]
+    for verification in verifications:
+        user = User.query.filter_by(id=verification['user_id']).first()
+        user.verify(admin_id=1, rank_id=verification['rank_id'])
 
     db.session.commit()
 
     # Insert default products
-    products = open('./dev/products.txt', 'r').read().splitlines()
+    products = [
+        {'name': 'Water', 'price': 100},
+        {'name': 'Pizza', 'price': 300},
+        {'name': 'Coca Cola', 'price': 150},
+        {'name': 'Cookies', 'price': 50},
+        {'name': 'Tea', 'price': 20},
+        {'name': 'Coffee', 'price': 25}
+    ]
     for item in products:
-        product = Product(name=item.split(',')[0], created_by=1)
+        product = Product(name=item['name'], created_by=1)
         db.session.add(product)
         db.session.flush()  # This is needed so that the product has its id
-        product.set_price(price=int(item.split(',')[1]), admin_id=1)
+        product.set_price(price=int(item['price']), admin_id=1)
 
     db.session.commit()
     # Insert default purchases
-    ids = open('./dev/purchases.txt', 'r').read().splitlines()
-    for user_id in ids:
+    purchases = [
+        {'user_id': 1, 'product_id': 3, 'amount': 12},
+        {'user_id': 2, 'product_id': 5, 'amount': 13},
+        {'user_id': 3, 'product_id': 3, 'amount': 15},
+        {'user_id': 4, 'product_id': 2, 'amount': 1},
+        {'user_id': 4, 'product_id': 1, 'amount': 6},
+        {'user_id': 3, 'product_id': 2, 'amount': 3},
+        {'user_id': 1, 'product_id': 2, 'amount': 9},
+        {'user_id': 2, 'product_id': 4, 'amount': 7},
+        {'user_id': 3, 'product_id': 6, 'amount': 1},
+        {'user_id': 4, 'product_id': 6, 'amount': 2}
+    ]
+
+    for purchase in purchases:
         purchase = Purchase(
-            user_id=int(user_id),
-            product_id=random.randint(1, 6),
-            amount=random.randint(1, 10))
+            user_id=purchase['user_id'],
+            product_id=purchase['product_id'],
+            amount=purchase['amount'])
         db.session.add(purchase)
 
     db.session.commit()
