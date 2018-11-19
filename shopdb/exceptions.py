@@ -74,18 +74,6 @@ class CouldNotUpdateEntry(BaseException):
     code = 401
 
 
-class UsernameAlreadyTaken(BaseException):
-    type = 'error'
-    message = 'This username is already taken.'
-    code = 401
-
-
-class EmailAddressAlreadyTaken(BaseException):
-    type = 'error'
-    message = 'This email address is already taken.'
-    code = 401
-
-
 class UserIsNotVerified(BaseException):
     type = 'error'
     message = 'This user has not been verified yet.'
@@ -155,12 +143,6 @@ class ProductAlreadyExists(BaseException):
 class ImageNotFound(BaseException):
     type = 'error'
     message = 'There is no image file with this name.'
-    code = 401
-
-
-class InvalidEmailAddress(BaseException):
-    type = 'error'
-    message = 'The email address entered is not valid.'
     code = 401
 
 
