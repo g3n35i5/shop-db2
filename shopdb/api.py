@@ -137,15 +137,15 @@ def update_fields(data, row, updated=None):
     be transferred with the "updated" list. All updated fields are added to
     this list.
 
-    :param data:                The dictionary with all entries to be updated.
-    :param row:                 The database object to be updated.
-    :param updated:             A list of all fields that have already been
-                                updated.
+    :param data:               The dictionary with all entries to be updated.
+    :param row:                The database object to be updated.
+    :param updated:            A list of all fields that have already been
+                               updated.
 
-    :return:                    A list with all already updated fields and
-                                those that have been added.
+    :return:                   A list with all already updated fields and
+                               those that have been added.
 
-    :raises: NothingHasChanged: If no fields were changed during the update.
+    :raises NothingHasChanged: If no fields were changed during the update.
     """
     for item in data:
         if not getattr(row, item) == data[item]:
@@ -377,6 +377,11 @@ def json_body():
 
 @app.route('/', methods=['GET'])
 def index():
+    """
+    A route that simply returns that the backend is online.
+
+    :return: A message which says that the backend is online.
+    """
     return jsonify({'message': 'Backend is online.'})
 
 
@@ -539,9 +544,9 @@ def login():
                                 to identify themselves when making requests to
                                 the API.
 
-    :raises: DataIsMissing:     If the id or password (or both) is not included
+    :raises DataIsMissing:      If the id or password (or both) is not included
                                 in the request.
-    :raises: UnknownField:      If an unknown parameter exists in the request
+    :raises UnknownField:       If an unknown parameter exists in the request
                                 data.
     :raises InvalidType:        If one or more parameters have an invalid type.
     :raises InvalidCredentials: If no user can be found with the given data.
@@ -635,12 +640,14 @@ def verify_user(admin, id):
     :return:                      A message that the verification was
                                   successful.
 
-    :raises: UserAlreadyVerified: If the user already has been verified.
-    :raises: DataIsMissing:       If the rank_id is not included in the request.
-    :raises: UnknownField:        If an unknown parameter exists in the request
+    :raises UserAlreadyVerified:  If the user already has been verified.
+    :raises DataIsMissing:        If the rank_id is not included in the request.
+    :raises UnknownField:         If an unknown parameter exists in the request
                                   data.
     :raises InvalidType:          If one or more parameters have an invalid
                                   type.
+    :raises RankNotFound:         If the rank to be assigned to the user does
+                                  not exist.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
@@ -654,7 +661,12 @@ def verify_user(admin, id):
     check_required(data, allowed)
     check_allowed_fields_and_types(data, allowed)
 
-    user.verify(admin_id=admin.id, rank_id=data['rank_id'])
+    rank_id = data['rank_id']
+    rank = Rank.query.filter_by(id=rank_id).first()
+    if not rank:
+        raise exc.RankNotFound()
+
+    user.verify(admin_id=admin.id, rank_id=rank_id)
     db.session.commit()
     return jsonify({'message': 'Verified user.'}), 201
 
@@ -912,6 +924,19 @@ def delete_user(admin, id):
         raise UserCanNotBeDeleted()
 
     return jsonify({'message': 'User deleted.'}), 200
+
+
+# Rank routes #############################################################
+@app.route('/ranks', methods=['GET'])
+def list_ranks():
+    """
+    Returns a list of all ranks.
+
+    :return: A list of all ranks.
+    """
+    result = Rank.query.all()
+    ranks = convert_minimal(result, ['id', 'name', 'debt_limit'])
+    return jsonify({'ranks': ranks}), 200
 
 
 # Product routes #############################################################

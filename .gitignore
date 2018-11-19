@@ -2,10 +2,10 @@
 *.db
 configuration.py
 .idea
-shopdb/uploads
+shopdb/uploads/*
 !shopdb/uploads/valid*
 !shopdb/uploads/broken*
-
+!shopdb/uploads/non_quadratic.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
