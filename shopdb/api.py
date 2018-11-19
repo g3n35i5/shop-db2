@@ -955,6 +955,114 @@ def list_ranks():
     return jsonify({'ranks': ranks}), 200
 
 
+# Tag routes #############################################################
+@app.route('/tags', methods=['GET'])
+def list_tags():
+    """
+    Returns a list of all tags.
+
+    :return: A list of all tags.
+    """
+    result = Tag.query.all()
+    tags = convert_minimal(result, ['id', 'name', 'created_by'])
+    return jsonify({'tags': tags}), 200
+
+
+@app.route('/tags', methods=['POST'])
+@adminRequired
+def create_tag(admin):
+    """
+    Route to create a new tag.
+
+    :param admin:                 Is the administrator user, determined by
+                                  @adminRequired.
+
+    :return:                      A message that the creation was successful.
+
+    :raises DataIsMissing:        If one or more fields are missing to create
+                                  the tag.
+    :raises UnknownField:         If an unknown parameter exists in the request
+                                  data.
+    :raises InvalidType:          If one or more parameters have an invalid
+                                  type.
+    :raises TagAlreadyExists:     If a tag with this name already exists.
+    :raises CouldNotCreateEntry:  If the new tag cannot be added to the
+                                  database.
+
+    """
+    data = json_body()
+    required = ['name']
+    createable = {'name': str}
+
+    # Check all required fields
+    check_required(data, required)
+
+    # Check if a product with this name already exists
+    if Tag.query.filter_by(name=data['name']).first():
+        raise exc.TagAlreadyExists()
+
+    # Check the given dataset
+    check_allowed_fields_and_types(data, createable)
+
+    try:
+        tag = Tag(**data)
+        tag.created_by = admin.id
+        db.session.add(tag)
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created Tag.'}), 201
+
+
+@app.route('/tags/<int:id>', methods=['PUT'])
+@adminRequired
+def update_tag(admin, id):
+    """
+    Update the tag with the given id.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the tag id.
+
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
+
+    :raises TagNotFound:         If the tag with this ID does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
+    data = json_body()
+
+    # Check, if the product exists.
+    tag = Tag.query.filter_by(id=id).first()
+    if not tag:
+        raise exc.TagNotFound()
+
+    updateable = {'name': str}
+
+    # Check forbidden fields
+    check_forbidden(data, updateable, tag)
+    # Check types
+    check_allowed_fields_and_types(data, updateable)
+
+    updated_fields = update_fields(data, tag)
+    tag.created_by = admin.id
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated tag.',
+        'updated_fields': updated_fields
+    }), 201
+
+
 # Product routes #############################################################
 @app.route('/products', methods=['GET'])
 @adminOptional

@@ -151,6 +151,18 @@ class ProductAlreadyExists(BaseException):
     code = 401
 
 
+class TagAlreadyExists(BaseException):
+    type = 'error'
+    message = 'This tag already exists.'
+    code = 401
+
+
+class TagNotFound(BaseException):
+    type = 'error'
+    message = 'There is no tag with this id.'
+    code = 401
+
+
 class ImageNotFound(BaseException):
     type = 'error'
     message = 'There is no image file with this name.'

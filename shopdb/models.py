@@ -10,6 +10,13 @@ from email_validator import validate_email, EmailNotValidError
 
 db = SQLAlchemy()
 
+product_tag_assignments = db.Table('product_tag_assignments',
+                                   db.Column('product_id', db.Integer,
+                                             db.ForeignKey('products.id')),
+                                   db.Column('tag_id', db.Integer,
+                                             db.ForeignKey('tags.id'))
+                                   )
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -232,6 +239,8 @@ class Product(db.Model):
     revokeable = db.Column(db.Boolean, nullable=False, default=True)
     image_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
                          nullable=True)
+    tags = db.relationship('Tag', secondary=product_tag_assignments,
+                           backref=db.backref('products', lazy='dynamic'))
 
     @validates('created_by')
     def validate_admin(self, key, created_by):
@@ -298,6 +307,17 @@ class ProductPrice(db.Model):
             raise UnauthorizedAccess()
 
         return admin_id
+
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(24), unique=True, nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'),
+                           nullable=False)
+
+    def __repr__(self):
+        return f'<Tag {self.name}>'
 
 
 class Purchase(db.Model):

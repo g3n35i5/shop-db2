@@ -26,6 +26,9 @@ p_prices = [300, 50, 100, 200]
 r_names = ['Contender', 'Member', 'Alumni']
 r_limits = [0, -2000, -2000]
 
+# Default data for product tags
+t_names = ['Food', 'Sweets', 'Drinks', 'Coffee']
+
 
 class BaseTestCase(TestCase):
     def create_app(self):
@@ -44,6 +47,7 @@ class BaseTestCase(TestCase):
         self.insert_first_admin()
         self.verify_all_users_except_last()
         self.insert_default_ranks()
+        self.insert_default_tags()
         self.insert_default_products()
 
     def tearDown(self):
@@ -99,4 +103,10 @@ class BaseTestCase(TestCase):
         users[1].verify(admin_id=1, rank_id=3)
         users[2].verify(admin_id=1, rank_id=1)
 
+        db.session.commit()
+
+    def insert_default_tags(self):
+        for name in t_names:
+            tag = Tag(name=name, created_by=1)
+            db.session.add(tag)
         db.session.commit()
