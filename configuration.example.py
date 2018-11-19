@@ -15,6 +15,7 @@ class BaseConfig(object):
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
     VALID_EXTENSIONS = ['png']
     MINIMUM_PASSWORD_LENGTH = 6
+    INIT_TOKEN = 'INIT'
 
 
 class ProductiveConfig(BaseConfig):
