@@ -1088,7 +1088,11 @@ def list_products(admin):
         result = Product.query.order_by(Product.name).all()
     products = convert_minimal(result, ['id', 'name', 'price', 'barcode',
                                         'active', 'countable', 'revokeable',
-                                        'imagename'])
+                                        'imagename', 'tags'])
+
+    tag_fields = ['id', 'name']
+    for product in products:
+        product['tags'] = convert_minimal(product['tags'], tag_fields)
     return jsonify({'products': products}), 200
 
 

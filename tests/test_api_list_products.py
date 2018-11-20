@@ -37,7 +37,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
         self.assertEqual(len(products), 4)
         for product in products:
             for item in ['id', 'name', 'price', 'barcode', 'active',
-                         'countable', 'revokeable', 'imagename']:
+                         'countable', 'revokeable', 'imagename', 'tags']:
                 assert item in product
         self.assertFalse(products[1]['active'])
         self.assertEqual(len(Product.query.all()), 4)
