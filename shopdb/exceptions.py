@@ -31,6 +31,13 @@ class UserCanNotBeUpdated(BaseException):
     code = 401
 
 
+class UserNeedsPassword(BaseException):
+    type = 'error'
+    message = 'The user must first set a password before he can become ' \
+              'an administrator.'
+    code = 401
+
+
 class DataIsMissing(BaseException):
     type = 'error'
     message = 'Some or more details are missing.'
@@ -64,18 +71,6 @@ class CouldNotCreateEntry(BaseException):
 class CouldNotUpdateEntry(BaseException):
     type = 'error'
     message = 'Could not update entry.'
-    code = 401
-
-
-class UsernameAlreadyTaken(BaseException):
-    type = 'error'
-    message = 'This username is already taken.'
-    code = 401
-
-
-class EmailAddressAlreadyTaken(BaseException):
-    type = 'error'
-    message = 'This email address is already taken.'
     code = 401
 
 
@@ -166,12 +161,6 @@ class TagNotFound(BaseException):
 class ImageNotFound(BaseException):
     type = 'error'
     message = 'There is no image file with this name.'
-    code = 401
-
-
-class InvalidEmailAddress(BaseException):
-    type = 'error'
-    message = 'The email address entered is not valid.'
     code = 401
 
 

@@ -38,18 +38,6 @@ class UserModelTestCase(BaseTestCase):
         check = self.bcrypt.check_password_hash(user.password, 'test_password')
         self.assertTrue(check)
 
-    def test_insert_invalid_email(self):
-        """Test the regex match of the user email"""
-        user = User.query.filter_by(id=1).first()
-        backup_email = copy(user.email)
-        for mail in ['test', 'test@test', '@test', 'test@test-com',
-                     't@me.com.', None, 2]:
-            with self.assertRaises(exc.InvalidEmailAddress):
-                user.email = mail
-            db.session.rollback()
-        user = User.query.filter_by(id=1).first()
-        self.assertEqual(user.email, backup_email)
-
     def test_verify_user_twice(self):
         """Users cant be verified twice"""
         user = User.query.filter_by(id=1).first()
@@ -105,22 +93,6 @@ class UserModelTestCase(BaseTestCase):
         db.session.commit()
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.lastname, 'Updated_Lastname')
-
-    def test_duplicate_username(self):
-        """It should be ensured that the username is unique"""
-        user1 = User.query.filter_by(id=1).first()
-        user2 = User.query.filter_by(id=2).first()
-        user2.username = user1.username
-        with self.assertRaises(IntegrityError):
-            db.session.commit()
-
-    def test_duplicate_email(self):
-        """It should be ensured that the users email is unique"""
-        user1 = User.query.filter_by(id=1).first()
-        user2 = User.query.filter_by(id=2).first()
-        user2.email = user1.email
-        with self.assertRaises(IntegrityError):
-            db.session.commit()
 
     def test_insert_purchase_as_non_verified_user(self):
         """It must be ensured that non-verified users cannot make purchases."""

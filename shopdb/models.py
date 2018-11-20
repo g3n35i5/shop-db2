@@ -6,7 +6,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
-from email_validator import validate_email, EmailNotValidError
 
 db = SQLAlchemy()
 
@@ -24,37 +23,12 @@ class User(db.Model):
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
     firstname = db.Column(db.String(32), unique=False, nullable=False)
     lastname = db.Column(db.String(32), unique=False, nullable=False)
-    username = db.Column(db.String(32), unique=True, nullable=False)
-    email = db.Column(db.String(64), unique=True, nullable=False)
-    password = db.Column(db.String(256), unique=False, nullable=False)
+    password = db.Column(db.String(256), unique=False, nullable=True)
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
     purchases = db.relationship('Purchase', lazy='dynamic',
                                 foreign_keys='Purchase.user_id')
     deposits = db.relationship('Deposit', lazy='dynamic',
                                foreign_keys='Deposit.user_id')
-
-    @validates('email')
-    def validate_email(self, key, email):
-        # Check email is None
-        if not email:
-            raise InvalidEmailAddress
-
-        # Check email has invalid type
-        if not isinstance(email, str):
-            raise InvalidEmailAddress
-
-        # Check email length
-        if len(email) not in range(6, 257):
-            raise InvalidEmailAddress
-
-        # Check email regex
-        try:
-            validated = validate_email(email, check_deliverability=False)
-            email = validated['email']
-        except EmailNotValidError:
-            raise InvalidEmailAddress
-
-        return email
 
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
@@ -80,6 +54,8 @@ class User(db.Model):
 
     @hybrid_method
     def set_admin(self, is_admin, admin_id):
+        if is_admin and self.password is None:
+            raise UserNeedsPassword()
         if self.is_admin == is_admin:
             raise NothingHasChanged()
         au = AdminUpdate(is_admin=is_admin, admin_id=admin_id, user_id=self.id)
