@@ -7,6 +7,7 @@ import configuration as config
 from flask import json
 import sys
 
+
 class InitialSetupTestCase(TestCase):
     def create_app(self):
         app.config.from_object(config.UnittestConfig)
@@ -60,6 +61,12 @@ class InitialSetupTestCase(TestCase):
         return self._request(type='POST', url=url, data=data, role=role,
                              content_type=content_type)
 
+    def get(self, url, data=None, role=None,
+            content_type='application/json'):
+        """Helper function to perform a GET request to the API"""
+        return self._request(type='GET', url=url, data=data, role=role,
+                             content_type=content_type)
+
     def login(self, id, password):
         """Helper function to perform a login"""
         data = {'id': id, 'password': password}
@@ -76,6 +83,10 @@ class InitialSetupTestCase(TestCase):
         data = json.loads(res.data)
         self.assertEqual(data['message'],
                               'shop.db was successfully initialized')
+        res = self.get(url='/users/1')
+        data = json.loads(res.data)
+        self.assertEqual(data['user']['is_admin'], True)
+        assert 'verification_date' in data['user']
 
     def test_initial_setup_existing_user(self):
         """With an existing user, an error should be raised"""

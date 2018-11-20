@@ -188,7 +188,7 @@ def insert_user(data):
     password = None
 
     if 'password' in data:
-        if not 'password_repeat' in data:
+        if 'password_repeat' not in data:
             raise exc.DataIsMissing()
 
         password = data['password'].strip()
@@ -401,8 +401,8 @@ def initial_setup():
     if data['INIT_TOKEN'] != app.config['INIT_TOKEN']:
         raise exc.UnauthorizedAccess()
 
-    #Check if there are any ranks in the databaseself.
-    #If not add the default ranks
+    # Check if there are any ranks in the databaseself.
+    # If not add the default ranks
     if not Rank.query.all():
         rank1 = Rank(name='Member', debt_limit=-2000)
         rank2 = Rank(name='Alumni', debt_limit=-2000)
@@ -417,13 +417,13 @@ def initial_setup():
     # Handle the user.
     insert_user(data['user'])
 
-    #Get the User
+    # Get the User
     user = User.query.filter_by(id=1).first()
 
-    #Add User as Admin (is_admin, admin_id)
+    # Add User as Admin (is_admin, admin_id)
     user.set_admin(True, 1)
 
-    #Verify the user (admin_id, rank_id)
+    # Verify the user (admin_id, rank_id)
     user.verify(1, 1)
 
     return jsonify({'message': 'shop.db was successfully initialized'}), 200
