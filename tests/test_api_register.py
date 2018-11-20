@@ -88,3 +88,16 @@ class RegisterAPITestCase(BaseAPITestCase):
 
         users = User.query.all()
         self.assertEqual(len(users), 4)
+
+    def test_register_passwords_repeat_is_missing(self):
+        """This test should ensure that the correct exception gets returned
+           on creating a user when the password_repeat field is missing."""
+        data = {
+            'firstname': 'John',
+            'lastname': 'Doe',
+            'password': 'supersecret'
+        }
+        res = self.post(url='/register', data=data)
+        self.assertException(res, DataIsMissing)
+        users = User.query.all()
+        self.assertEqual(len(users), 4)
