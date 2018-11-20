@@ -7,7 +7,7 @@ class TagModelTestCase(BaseTestCase):
     def test_insert_tag(self):
         """ Insert a tag should work. """
         self.assertEqual(len(Tag.query.all()), 4)
-        db.session.add(Tag(name='Foo'))
+        db.session.add(Tag(name='Foo', created_by=1))
         db.session.commit()
         self.assertEqual(len(Tag.query.all()), 5)
 
