@@ -1106,7 +1106,7 @@ def change_product_tag_assignment(admin):
     # Check if the tag exists.
     tag = Tag.query.filter_by(id=data['tag_id']).first()
     if not tag:
-        exc.TagNotFound()
+        raise exc.TagNotFound()
 
     if request.method == 'POST':
         if tag in product.tags:
