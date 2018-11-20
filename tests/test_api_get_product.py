@@ -47,3 +47,17 @@ class GetProductAPITestCase(BaseAPITestCase):
         res = self.get(url='/products/6')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ProductNotFound)
+
+    def test_get_product_with_single_tag(self):
+        product = Product.query.filter_by(id=1).first()
+        tag = Tag.query.filter_by(id=1).first()
+        tag.products.append(product)
+        db.session.commit()
+        res = self.get(url='/products/1')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'product' in data
+        product = data['product']
+        assert 'tags' in product
+        self.assertEqual(1, len(product['tags']))
+        self.assertEqual('Food', product['tags'][0]['name'])

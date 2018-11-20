@@ -1170,8 +1170,16 @@ def get_product(admin, id):
         raise exc.UnauthorizedAccess()
 
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-              'revokeable', 'imagename', 'pricehistory']
-    return jsonify({'product': convert_minimal(product, fields)[0]}), 200
+              'revokeable', 'imagename', 'pricehistory', 'tags']
+
+    # Convert the product to a dictionary
+    product = convert_minimal(product, fields)[0]
+
+    # Convert the product tags
+    tag_fields = ['id', 'name']
+    product['tags'] = convert_minimal(product['tags'], tag_fields)
+
+    return jsonify({'product': product}), 200
 
 
 @app.route('/products/<int:id>', methods=['PUT'])
