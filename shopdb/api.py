@@ -1090,9 +1090,8 @@ def list_products(admin):
                                         'active', 'countable', 'revokeable',
                                         'imagename', 'tags'])
 
-    tag_fields = ['id', 'name']
     for product in products:
-        product['tags'] = convert_minimal(product['tags'], tag_fields)
+        product['tags'] = [t.id for t in product['tags']]
     return jsonify({'products': products}), 200
 
 
@@ -1180,8 +1179,7 @@ def get_product(admin, id):
     product = convert_minimal(product, fields)[0]
 
     # Convert the product tags
-    tag_fields = ['id', 'name']
-    product['tags'] = convert_minimal(product['tags'], tag_fields)
+    product['tags'] = [t.id for t in product['tags']]
 
     return jsonify({'product': product}), 200
 

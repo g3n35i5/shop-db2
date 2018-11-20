@@ -60,4 +60,4 @@ class GetProductAPITestCase(BaseAPITestCase):
         product = data['product']
         assert 'tags' in product
         self.assertEqual(1, len(product['tags']))
-        self.assertEqual('Food', product['tags'][0]['name'])
+        self.assertEqual(1, product['tags'][0])
