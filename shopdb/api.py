@@ -1066,6 +1066,72 @@ def update_tag(admin, id):
     }), 201
 
 
+# Tag assignment routes ######################################################
+@app.route('/tagassignment', methods=['DELETE', 'POST'])
+@adminRequired
+def change_product_tag_assignment(admin):
+    """
+    Under this route, a tag can be added to a product or removed.
+
+    :param admin:              Is the administrator user, determined by
+                               @adminRequired.
+
+    :return:                   A message that the assignment has been added or
+                               removed.
+
+    :raises ForbiddenField:    If a forbidden field is in the request data.
+    :raises UnknownField:      If an unknown parameter exists in the request
+                               data.
+    :raises InvalidType:       If one or more parameters have an invalid type.
+    :raises ProductNotFound    If the product with the specified ID does not
+                               exist.
+    :raises TagNotFound:       If the tag with the specified ID does not exist.
+    :raises NothingHasChanged: If no change occurred after the update or removal.
+    """
+
+    data = json_body()
+    required = {'product_id': int, 'tag_id': int}
+
+    # Check all required fields
+    check_required(data, required)
+
+    # Check the given dataset
+    check_allowed_fields_and_types(data, required)
+
+    # Check if the product exists.
+    product = Product.query.filter_by(id=data['product_id']).first()
+    if not product:
+        raise exc.ProductNotFound()
+
+    # Check if the tag exists.
+    tag = Tag.query.filter_by(id=data['tag_id']).first()
+    if not tag:
+        exc.TagNotFound()
+
+    if request.method == 'POST':
+        if tag in product.tags:
+            raise exc.NothingHasChanged()
+
+        try:
+            product.tags.append(tag)
+            db.session.commit()
+        except IntegrityError:
+            raise exc.CouldNotUpdateEntry()
+
+        return jsonify({'message': 'Tag assignment has been added.'}), 201
+    else:
+        if tag not in product.tags:
+            raise exc.NothingHasChanged()
+
+        try:
+            product.tags.remove(tag)
+            db.session.commit()
+        except IntegrityError:
+            raise exc.CouldNotUpdateEntry()
+
+        return jsonify({'message': 'Tag assignment has been removed.'}), 201
+
+
 # Product routes #############################################################
 @app.route('/products', methods=['GET'])
 @adminOptional
