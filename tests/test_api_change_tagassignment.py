@@ -54,6 +54,20 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
+    def test_assign_tag_invalid_product(self):
+        """Assign a tag with an invalid product id."""
+        data = {'product_id': 5, 'tag_id': 1}
+        res = self.post(url='/tagassignment', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.ProductNotFound)
+
+    def test_assign_tag_invalid_tag(self):
+        """Assign a tag with an invalid tag id."""
+        data = {'product_id': 1, 'tag_id': 5}
+        res = self.post(url='/tagassignment', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.TagNotFound)
+
     def test_assign_tag_twice(self):
         """Assign a tag which has already been assigned"""
         product = Product.query.filter_by(id=1).first()
@@ -62,6 +76,13 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         db.session.commit()
         data = {'product_id': 1, 'tag_id': 1}
         res = self.post(url='/tagassignment', role='admin', data=data)
+        self.assertEqual(res.status_code, 200)
+        self.assertException(res, exc.NothingHasChanged)
+
+    def test_remove_tag_twice(self):
+        """Remove a tag which has already been removed"""
+        data = {'product_id': 1, 'tag_id': 1}
+        res = self.delete(url='/tagassignment', role='admin', data=data)
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
