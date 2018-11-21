@@ -6,7 +6,8 @@ This is the documentation for shop-db.
 1.  [About shop.db](#about-shopdb)
 2.  [Dependencies](#dependencies)
 3.  [Getting started](#getting-started)
-4.  [Unittests](#unittests)
+4.  [Development](#development)
+5.  [Unittests](#unittests)
 
 
 ### About shop.db
@@ -33,9 +34,10 @@ In order to use shop-db, you need to install the following main dependencies:
   2. Python 3 Virtual Environment
   3. pip3
   4. git
+  5. nginx
 
 ```bash
-$ sudo apt install python3 python3-venv python3-pip git
+$ sudo apt install python3 python3-venv python3-pip git nginx
 ```
 
 ### Getting started
@@ -99,11 +101,47 @@ If you are satisfied with them, you can now initialize the database:
 (shop-db) $ ./setupdb.py
 ```
 
-Ready? Almost. To start the Webapi and use the shop-db2 backend, you only have
-to start shop-db:
+Now the Nginx server must be configured. Make sure you replace all the
+variables from the next section with the correct parameters.
+
+```nginx
+server {
+    # listen on port 80 (http)
+    listen 80;
+    server_name shopdb;
+    location / {
+        # redirect any requests to the same URL but on https
+        return 301 https://$host$request_uri;
+    }
+}
+server {
+    # listen on port 443 (https)
+    listen 443 ssl;
+    server_name shopdb;
+
+    # location of the SSL certificates
+    ssl_certificate <PATH_TO_THE_CERTS>/cert.pem;
+    ssl_certificate_key <PATH_TO_THE_CERTS>/key.pem;
+
+    # write access and error logs to /var/log
+    access_log /var/log/shop-db_access.log;
+    error_log /var/log/shop-db_error.log;
+
+    location / {
+        # forward application requests to the gunicorn server
+        proxy_pass http://localhost:<THE_PORT_IN_THE_CONFIGURATION>;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+Ready? Almost. To start shop-db, you only have to type:
 
 ```bash
-(shop-db) $ ./shopdb.py
+(shop-db) $ ./wsgi.py
 ```
 
 However, so that the backend does not have to be started manually every time, it
@@ -124,7 +162,7 @@ After=network-online.target
 [Service]
 Type=simple
 User=%i
-ExecStart=/srv/shop-db2/bin/python3 /srv/shop-db2/shopdb.py
+ExecStart=/srv/shop-db2/bin/python3 /srv/shop-db2/wsgi.py
 
 [Install]
 WantedBy=multi-user.target
@@ -154,6 +192,19 @@ To start shop-db now, use this command:
 $ sudo systemctl start shop-db@shopdb_user
 ```
 
+
+### Development
+You want to start shop-db in developer mode and participate in the project?
+Great! The command
+
+```bash
+$ ./shopdb.py --mode development
+```
+
+starts shop-db for you in developer mode. This means that a temporary database
+is created in memory with default data defined in the dev folder. Your
+production database will not be used in this mode, but you should make sure
+you have a backup in case something goes wrong.
 
 ### Unittests
 Currently, most of the core features of shop-db are covered with the
