@@ -10,7 +10,7 @@ import pdb
 
 
 def create_database():
-    app.config.from_object(config.ProductiveConfig)
+    set_app(config.ProductiveConfig)
     app.app_context().push()
     db.create_all()
     db.session.commit()
@@ -37,6 +37,7 @@ def create_database():
 
     # Verify the user (admin_id, rank_id)
     user.verify(1, 1)
+    db.session.commit()
 
 
 if __name__ == '__main__':
