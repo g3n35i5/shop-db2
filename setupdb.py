@@ -2,11 +2,10 @@
 
 import sys
 import os
-import sqlalchemy
-from shopdb.models import *
-from shopdb.api import *
+from sqlalchemy.exc import IntegrityError
+from shopdb.models import User, Rank
+from shopdb.api import app, db, set_app, insert_user
 import configuration as config
-import pdb
 
 
 def create_database():
@@ -25,9 +24,9 @@ def create_database():
         sys.exit('ERROR: Could not create database!')
 
     # Handle the user.
-    userone = {'firstname': 'User', 'lastname': 'One',
-               'password': 'passwd', 'password_repeat': 'passwd'}
-    insert_user(userone)
+    user_one = {'firstname': 'First', 'lastname': 'User',
+                'password': 'my_password', 'password_repeat': 'my_password'}
+    insert_user(user_one)
 
     # Get the User
     user = User.query.filter_by(id=1).first()
@@ -41,11 +40,8 @@ def create_database():
 
 
 if __name__ == '__main__':
-    # path = shodb/shop.# DEBUG:
-    database = os.path.isfile(config.ProductiveConfig.DATABASE_PATH)
-    if not database:
-        create_database()
-    else:
-        os.remove(config.ProductiveConfig.DATABASE_PATH)
-        create_database()
-        # sys.exit('ERROR: The database allready exists!')
+    db_exists = os.path.isfile(config.ProductiveConfig.DATABASE_PATH)
+    if db_exists:
+        sys.exit('ERROR: The database already exists!')
+
+    create_database()
