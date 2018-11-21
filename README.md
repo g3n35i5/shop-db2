@@ -88,13 +88,12 @@ normal text editor or with the command `sed`:
 (shop-db) $ sed -i 's/YouWillNeverGuess/YOURBETTERSUPERSECRETKEY/g' configuration.py
 ```
 
-The first user and the default ranks are created using the `setupdb.py` script.
-Please look at the file and change the name of the first user, who will
-automatically become an administrator, to your liking. The names of the ranks
-as well as their number and debt limits can also be changed.
+The first user (and at the same time the first administrator) as well as the
+default ranks are created using the `setupdb.py` script. Please look at the
+file and check whether the default settings for the ranks meet your
+requirements.
 
-If you are satisfied with your settings, you can now initialize the
-database:
+If you are satisfied with them, you can now initialize the database:
 
 ```bash
 (shop-db) $ ./setupdb.py
