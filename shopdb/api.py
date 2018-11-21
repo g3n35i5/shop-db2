@@ -385,50 +385,6 @@ def index():
     return jsonify({'message': 'Backend is online.'})
 
 
-@app.route('/initial_setup', methods=['POST'])
-def initial_setup():
-    data = json_body()
-    # Check whether there are already users in the database.
-    # If this is the case, the request must be aborted immediately.
-    if User.query.all():
-        raise exc.UnauthorizedAccess()
-
-    # Check whether all required objects exist in the data.
-    required = ['user', 'INIT_TOKEN']
-    check_required(data, required)
-
-    # Check the init token.
-    if data['INIT_TOKEN'] != app.config['INIT_TOKEN']:
-        raise exc.UnauthorizedAccess()
-
-    # Check if there are any ranks in the databaseself.
-    # If not add the default ranks
-    if not Rank.query.all():
-        rank1 = Rank(name='Member', debt_limit=-2000)
-        rank2 = Rank(name='Alumni', debt_limit=-2000)
-        rank3 = Rank(name='Contender', debt_limit=0)
-        try:
-            for r in (rank1, rank2, rank3):
-                db.session.add(r)
-            db.session.commit()
-        except IntegrityError:
-            exc.CouldNotCreateEntry()
-
-    # Handle the user.
-    insert_user(data['user'])
-
-    # Get the User
-    user = User.query.filter_by(id=1).first()
-
-    # Add User as Admin (is_admin, admin_id)
-    user.set_admin(True, 1)
-
-    # Verify the user (admin_id, rank_id)
-    user.verify(1, 1)
-
-    return jsonify({'message': 'shop.db was successfully initialized'}), 200
-
-
 @app.route('/images/', methods=['GET'], defaults={'imagename': None})
 @app.route('/images/<imagename>', methods=['GET'])
 def get_image(imagename):
