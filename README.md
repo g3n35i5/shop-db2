@@ -59,6 +59,50 @@ $ sudo git clone <GIT_URL_TO_SHOPDB>
 $ sudo chown -R shopdb_user:shopdb_user shop-db2
 ```
 
+Now the Nginx server must be configured. Nginx installs a test site in this
+location that we wont't need, so let's remove it:
+
+```bash
+$ sudo rm /etc/nginx/sites-enabled/default
+```
+
+Below you can see the Nginx configuration file for shop-db, which goes in
+/etc/nginx/sites-enabled/shop-db:
+
+```nginx
+server {
+    # listen on port 80 (http)
+    listen 80;
+    server_name shopdb;
+    location / {
+        # redirect any requests to the same URL but on https
+        return 301 https://$host$request_uri;
+    }
+}
+server {
+    # listen on port 443 (https)
+    listen 443 ssl;
+    server_name shopdb;
+
+    # location of the SSL certificates
+    ssl_certificate <PATH_TO_THE_CERTS>/cert.pem;
+    ssl_certificate_key <PATH_TO_THE_CERTS>/key.pem;
+
+    # write access and error logs to /var/log
+    access_log /var/log/shop-db_access.log;
+    error_log /var/log/shop-db_error.log;
+
+    location / {
+        # forward application requests to the gunicorn server
+        proxy_pass http://localhost:<THE_PORT_IN_THE_CONFIGURATION>;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
 Next up is to create and change to a virtual environment for shop-db. This
 will be done as the shopdb_user account:
 ```bash
@@ -98,50 +142,13 @@ requirements.
 If you are satisfied with them, you can now initialize the database:
 
 ```bash
-(shop-db) $ ./setupdb.py
-```
-
-Now the Nginx server must be configured. Make sure you replace all the
-variables from the next section with the correct parameters.
-
-```nginx
-server {
-    # listen on port 80 (http)
-    listen 80;
-    server_name shopdb;
-    location / {
-        # redirect any requests to the same URL but on https
-        return 301 https://$host$request_uri;
-    }
-}
-server {
-    # listen on port 443 (https)
-    listen 443 ssl;
-    server_name shopdb;
-
-    # location of the SSL certificates
-    ssl_certificate <PATH_TO_THE_CERTS>/cert.pem;
-    ssl_certificate_key <PATH_TO_THE_CERTS>/key.pem;
-
-    # write access and error logs to /var/log
-    access_log /var/log/shop-db_access.log;
-    error_log /var/log/shop-db_error.log;
-
-    location / {
-        # forward application requests to the gunicorn server
-        proxy_pass http://localhost:<THE_PORT_IN_THE_CONFIGURATION>;
-        proxy_redirect off;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
+(shop-db) $ python3 ./setupdb.py
 ```
 
 Ready? Almost. To start shop-db, you only have to type:
 
 ```bash
-(shop-db) $ ./wsgi.py
+(shop-db) $ python3 ./wsgi.py
 ```
 
 However, so that the backend does not have to be started manually every time, it
@@ -198,7 +205,7 @@ You want to start shop-db in developer mode and participate in the project?
 Great! The command
 
 ```bash
-$ ./shopdb.py --mode development
+$ python3 ./shopdb.py --mode development
 ```
 
 starts shop-db for you in developer mode. This means that a temporary database
@@ -211,18 +218,18 @@ Currently, most of the core features of shop-db are covered with the
 corresponding unittests. In order to execute them you can use the command
 
 ```bash
-$ python -m coverage run test.py
+$ python3 -m coverage run test.py
 ```
 
 If you want to check the test coverage, type
 
 ```bash
-$ python -m coverage html
+$ python3 -m coverage html
 ```
 to generate the html preview and open a web server in the newly created
 directory `htmlcov`
 
 ```bash
 $ cd htmlcov
-$ python -m http.server
+$ python3 -m http.server
 ```
