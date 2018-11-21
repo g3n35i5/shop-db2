@@ -18,7 +18,6 @@ class BaseConfig(object):
 
 
 class ProductiveConfig(BaseConfig):
-    SECRET_KEY = 'YourSuperSecretKey'
     DEBUG = False
     TEST = False
     ENV = 'productive'
