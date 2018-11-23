@@ -967,6 +967,7 @@ def create_tag(admin):
         tag = Tag(**data)
         tag.created_by = admin.id
         db.session.add(tag)
+        db.session.commit()
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
