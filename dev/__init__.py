@@ -97,3 +97,11 @@ def insert_dev_data(db):
         db.session.add(purchase)
 
     db.session.commit()
+
+
+    # Insert default tags
+    tags = ['Food', 'Drinks', 'Sweets', 'Coffee']
+    for name in tags:
+        tag = Tag(name=name, created_by=1)
+        db.session.add(tag)
+    db.session.commit()
