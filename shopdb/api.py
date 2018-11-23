@@ -661,11 +661,11 @@ def list_users(admin):
     """
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
-        fields = ['id', 'firstname', 'lastname']
+        fields = ['id', 'firstname', 'lastname', 'rank_id']
         return jsonify({'users': convert_minimal(result, fields)}), 200
 
     fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin',
-              'creation_date']
+              'creation_date', 'rank_id']
     return jsonify({'users': convert_minimal(result, fields)}), 200
 
 

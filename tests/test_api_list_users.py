@@ -13,8 +13,8 @@ class ListUsersAPITestCase(BaseAPITestCase):
             users = data['users']
             self.assertEqual(len(users), 3)
             for user in users:
-                self.assertEqual(len(user), 3)
-                for item in ['id', 'firstname', 'lastname']:
+                self.assertEqual(len(user), 4)
+                for item in ['id', 'firstname', 'lastname', 'rank_id']:
                     assert item in user
 
     def test_list_users_with_token(self):
@@ -28,7 +28,7 @@ class ListUsersAPITestCase(BaseAPITestCase):
         users = data['users']
         self.assertEqual(len(users), 3)
         for user in users:
-            self.assertEqual(len(user), 6)
+            self.assertEqual(len(user), 7)
             for item in ['id', 'firstname', 'lastname', 'creation_date',
-                         'credit', 'is_admin']:
+                         'credit', 'is_admin', 'rank_id']:
                 assert item in user
