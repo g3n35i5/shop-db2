@@ -31,6 +31,7 @@ if __name__ == '__main__':
                 continue
             else:
                 list_tests.append(file)
+        list_tests = sorted(list_tests)
 
         print('Please select the tests you want to run. [Default=all]')
         print('all: All tests')
