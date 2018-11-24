@@ -20,12 +20,12 @@ class UpdateProductAPITestCase(BaseAPITestCase):
 
     def test_update_forbidden_field(self):
         """Updating a forbidden field should raise an error."""
-        self.assertTrue(Product.query.filter_by(id=1).first().countable)
-        data = {'countable': False}
+        self.assertTrue(Product.query.filter_by(id=1).first().creation_date)
+        data = {'creation_date': '01.01.1970'}
         res = self.put(url='/products/2', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
-        self.assertTrue(Product.query.filter_by(id=1).first().countable)
+        self.assertTrue(Product.query.filter_by(id=1).first().creation_date)
 
     def test_update_non_existing_product(self):
         """Updating a non existing product should raise an error."""

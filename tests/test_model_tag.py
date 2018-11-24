@@ -37,8 +37,6 @@ class TagModelTestCase(BaseTestCase):
         db.session.commit()
         product = Product.query.filter_by(id=2).first()
         self.assertEqual(len(product.tags), 2)
-        self.assertEqual(product.tags[0], tag1)
-        self.assertEqual(product.tags[1], tag2)
 
     def test_remove_tag_from_product(self):
         """ Remove a tag from a product. """
