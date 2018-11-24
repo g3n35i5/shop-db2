@@ -1200,6 +1200,11 @@ def create_product(admin):
     if Product.query.filter_by(name=data['name']).first():
         raise exc.ProductAlreadyExists()
 
+    # Check if a product with this barcode already exists
+    if 'barcode' in data:
+        if Product.query.filter_by(barcode=data['barcode']).first():
+            raise exc.BarcodeAlreadyExists()
+
     # Check the given dataset
     check_allowed_fields_and_types(data, createable)
 
@@ -1213,6 +1218,7 @@ def create_product(admin):
         db.session.add(product)
         db.session.flush()
         product.set_price(price=price, admin_id=admin.id)
+        db.session.commit()
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 

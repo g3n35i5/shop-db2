@@ -152,6 +152,12 @@ class ProductAlreadyExists(BaseException):
     code = 401
 
 
+class BarcodeAlreadyExists(BaseException):
+    type = 'error'
+    message = 'A product with this barcode already exists.'
+    code = 401
+
+
 class TagAlreadyExists(BaseException):
     type = 'error'
     message = 'This tag already exists.'
