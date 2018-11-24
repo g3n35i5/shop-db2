@@ -6,6 +6,7 @@ from flask import json
 
 
 class UpdateUserAPITestCase(BaseAPITestCase):
+
     def test_update_authorization(self):
         """This route should only be available for administrators"""
         res = self.put(url='/users/2', data={})
@@ -169,3 +170,28 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(data['updated_fields'], ['firstname'])
         user = User.query.filter(User.id == 2).first()
         self.assertEqual(user.firstname, 'New-Mary')
+
+    def test_remove_last_admin_privileges(self):
+        """Removing admin privileges from the only admin raises an error."""
+        data = {'is_admin': False}
+        res = self.put(url='/users/1', data=data, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.NoRemainingAdmin)
+
+    def test_remove_admin_privileges(self):
+        """Removing admin privileges from the only admin raises an error."""
+        data = {'is_admin': True}
+        res = self.put(url='/users/2', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        self.assertEqual(data['message'], 'Updated user.')
+        self.assertEqual(data['updated_fields'], ['is_admin'])
+        user2 = User.query.filter_by(id=2).first()
+        self.assertTrue(user2.is_admin)
+        data = {'is_admin': False}
+        res = self.put(url='/users/2', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        self.assertEqual(data['message'], 'Updated user.')
+        self.assertEqual(data['updated_fields'], ['is_admin'])
+        self.assertFalse(user2.is_admin)

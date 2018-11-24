@@ -31,6 +31,13 @@ class UserCanNotBeUpdated(BaseException):
     code = 401
 
 
+class NoRemainingAdmin(BaseException):
+    type = 'error'
+    message = 'There always has to be at least one admin. You cant remove' \
+              'your admin privileges'
+    code = 401
+
+
 class UserNeedsPassword(BaseException):
     type = 'error'
     message = 'The user must first set a password before he can become ' \

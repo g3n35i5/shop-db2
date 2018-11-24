@@ -820,6 +820,12 @@ def update_user(admin, id):
     # Update admin role
     if 'is_admin' in data:
         user.set_admin(is_admin=data['is_admin'], admin_id=admin.id)
+        if not user.is_admin:
+            users = User.query.all()
+            admins = list(filter(lambda x: x.is_admin, users))
+            if not admins:
+                raise exc.NoRemainingAdmin()
+
         updated_fields.append('is_admin')
         del data['is_admin']
 
