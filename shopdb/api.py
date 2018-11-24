@@ -927,6 +927,25 @@ def list_tags():
     return jsonify({'tags': tags}), 200
 
 
+@app.route('/tags/<int:id>', methods=['GET'])
+def get_tag(id):
+    """
+    Returns the tag with the requested id.
+
+    :param id:             Is the tag id.
+
+    :return:               The requested tag as JSON object.
+
+    :raises TagNotFound:   If the tag with this ID does not exist.
+    """
+    result = Tag.query.filter_by(id=id).first()
+    if not result:
+        raise exc.TagNotFound()
+
+    tag = convert_minimal(result, ['id', 'name', 'created_by'])[0]
+    return jsonify({'tag': tag}), 200
+
+
 @app.route('/tags', methods=['POST'])
 @adminRequired
 def create_tag(admin):
