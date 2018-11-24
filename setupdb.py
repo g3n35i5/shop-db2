@@ -6,6 +6,7 @@ import getpass
 from sqlalchemy.exc import IntegrityError
 from shopdb.models import User, Rank
 from shopdb.api import app, db, set_app, insert_user
+import shopdb.exceptions as exc
 import configuration as config
 
 
@@ -72,7 +73,12 @@ def create_database():
         'firstname': firstname, 'lastname': lastname,
         'password': password, 'password_repeat': password
     }
-    insert_user(user)
+    try:
+        insert_user(user)
+    except exc.PasswordTooShort():
+        os.remove(config.ProductiveConfig.DATABASE_PATH)
+        sys.exit('ERROR: Password to short. Needs at least {} characters'
+                 .format(config.BaseConfig.MINIMUM_PASSWORD_LENGTH))
 
     # Get the User
     user = User.query.filter_by(id=1).first()
