@@ -6,6 +6,7 @@ import getpass
 from sqlalchemy.exc import IntegrityError
 from shopdb.models import User, Rank
 from shopdb.api import app, db, set_app, insert_user
+import shopdb.exceptions as exc
 import configuration as config
 
 
@@ -64,6 +65,7 @@ def create_database():
             db.session.add(r)
         db.session.commit()
     except IntegrityError:
+        os.remove(config.ProductiveConfig.DATABASE_PATH)
         sys.exit('ERROR: Could not create database!')
 
     # Handle the user.
@@ -72,7 +74,13 @@ def create_database():
         'firstname': firstname, 'lastname': lastname,
         'password': password, 'password_repeat': password
     }
-    insert_user(user)
+    try:
+        insert_user(user)
+    except exc.PasswordTooShort:
+        os.remove(config.ProductiveConfig.DATABASE_PATH)
+        sys.exit(('ERROR: Password to short. Needs at least {} characters.' +
+                 ' Aborting setup.')
+                 .format(config.BaseConfig.MINIMUM_PASSWORD_LENGTH))
 
     # Get the User
     user = User.query.filter_by(id=1).first()
@@ -89,5 +97,8 @@ if __name__ == '__main__':
     db_exists = os.path.isfile(config.ProductiveConfig.DATABASE_PATH)
     if db_exists:
         sys.exit('ERROR: The database already exists!')
-
-    create_database()
+    try:
+        create_database()
+    except KeyboardInterrupt:
+        print("\n")
+        os.remove(config.ProductiveConfig.DATABASE_PATH)
