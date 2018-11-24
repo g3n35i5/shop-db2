@@ -65,6 +65,7 @@ def create_database():
             db.session.add(r)
         db.session.commit()
     except IntegrityError:
+        os.remove(config.ProductiveConfig.DATABASE_PATH)
         sys.exit('ERROR: Could not create database!')
 
     # Handle the user.
@@ -75,9 +76,10 @@ def create_database():
     }
     try:
         insert_user(user)
-    except exc.PasswordTooShort():
+    except exc.PasswordTooShort:
         os.remove(config.ProductiveConfig.DATABASE_PATH)
-        sys.exit('ERROR: Password to short. Needs at least {} characters'
+        sys.exit(('ERROR: Password to short. Needs at least {} characters.' +
+                 ' Aborting setup.')
                  .format(config.BaseConfig.MINIMUM_PASSWORD_LENGTH))
 
     # Get the User
@@ -95,5 +97,8 @@ if __name__ == '__main__':
     db_exists = os.path.isfile(config.ProductiveConfig.DATABASE_PATH)
     if db_exists:
         sys.exit('ERROR: The database already exists!')
-
-    create_database()
+    try:
+        create_database()
+    except KeyboardInterrupt:
+        print("\n")
+        os.remove(config.ProductiveConfig.DATABASE_PATH)
