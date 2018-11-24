@@ -1291,7 +1291,7 @@ def update_product(admin, id):
 
     updateable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
-        'imagename': str
+        'imagename': str, 'countable': bool, 'revokeable': bool
     }
 
     # Check forbidden fields
