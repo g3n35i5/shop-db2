@@ -946,6 +946,34 @@ def get_tag(id):
     return jsonify({'tag': tag}), 200
 
 
+@app.route('/tags/<int:id>', methods=['DELETE'])
+@adminRequired
+def delete_tag(admin, id):
+    """
+    Delete a tag.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the tag id.
+
+    :return:                     A message that the deletion was successful.
+
+    :raises TagNotFound:        If the user with this ID does not exist.
+    """
+    tag = Tag.query.filter_by(id=id).first()
+    if not tag:
+        raise exc.TagNotFound()
+
+    # Delete the tag.
+    try:
+        db.session.delete(tag)
+        db.session.commit()
+    except IntegrityError:
+        raise exc.TagCanNotBeDeleted()
+
+    return jsonify({'message': 'Tag deleted.'}), 200
+
+
 @app.route('/tags', methods=['POST'])
 @adminRequired
 def create_tag(admin):
