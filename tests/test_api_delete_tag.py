@@ -46,6 +46,6 @@ class DeleteTagAPITestCase(BaseAPITestCase):
 
     def test_delete_non_existing_tag(self):
         """Delete a non existing tag."""
-        res = self.delete(url='/tags/4', role='admin')
+        res = self.delete(url='/tags/5', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.TagNotFound)
