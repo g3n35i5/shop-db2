@@ -4,7 +4,7 @@ from tests.base_api import BaseAPITestCase
 from flask import json
 
 
-class DeleteReplenishmentAPITestCase(BaseAPITestCase):
+class DeleteReplenishmentCollectionAPITestCase(BaseAPITestCase):
     def _insert_testdata(self):
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
@@ -24,41 +24,33 @@ class DeleteReplenishmentAPITestCase(BaseAPITestCase):
             db.session.add(r)
         db.session.commit()
 
-    def test_delete_replenishment_as_admin_I(self):
-        """Deleting a single replenishment as admin"""
+    def test_delete_replenishmentcolletion_as_admin(self):
+        """Deleting a single replenishmentcollection as admin"""
         self._insert_testdata()
-        res = self.delete(url='/replenishments/1', role='admin')
+        res = self.delete(url='/replenishmentcollections/1', role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Deleted Replenishment.')
-        repl = Replenishment.query.filter_by(id=1).first()
-        self.assertEqual(repl, None)
-
-    def test_delete_replenishment_as_admin_II(self):
-        """Deleting a single replenishment leding to deletion of replcoll"""
-        self._insert_testdata()
-        res = self.delete(url='/replenishments/3', role='admin')
-        self.assertEqual(res.status_code, 201)
-        data = json.loads(res.data)
-        assert 'message' in data
-        self.assertEqual(data['message'], 'Deleted Replenishment. Deleted'
-                                          + ' ReplenishmentCollection ID: 2')
-        repl = Replenishment.query.filter_by(id=3).first()
-        self.assertEqual(repl, None)
-        replcoll = ReplenishmentCollection.query.filter_by(id=2).first()
+        assert 'Deleted ReplenishmentCollection.' in data['message']
+        assert 'Deleted Replenishment ID 1.' in data['message']
+        assert 'Deleted Replenishment ID 2.' in data['message']
+        replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll, None)
+        repl1 = Replenishment.query.filter_by(id=1).first()
+        self.assertEqual(repl1, None)
+        repl2 = Replenishment.query.filter_by(id=2).first()
+        self.assertEqual(repl2, None)
 
-    def test_delete_replenishment_as_user(self):
-        """Trying to delete a single replenishment as user"""
+    def test_delete_replenishmentcollection_as_user(self):
+        """Deleting a replenishmentcollection as user should raise an error"""
         self._insert_testdata()
-        res = self.delete(url='/replenishments/1', role='user')
+        res = self.delete(url='/replenishmentcollections/1', role='user')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_delete_replenishment_with_invalid_id(self):
+    def test_delete_replenishmentcollection_with_invalid_id(self):
         """Trying to delete a single replenishment with invalid id"""
         self._insert_testdata()
-        res = self.delete(url='/replenishments/4', role='admin')
+        res = self.delete(url='/replenishmentcollections/3', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ReplenishmentNotFound)
+        self.assertException(res, exc.ReplenishmentCollectionNotFound)

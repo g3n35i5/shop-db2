@@ -1842,6 +1842,53 @@ def update_replenishment(admin, id):
     }), 201
 
 
+@app.route('/replenishmentcollections/<int:id>', methods=['DELETE'])
+@adminRequired
+def delete_replenishmentcollection(admin, id):
+    """
+    Delete the replenishmentcollection with the given id. The replenishments
+    belonging to this replenishmentcollection are also deleted.
+
+    :param admin:                                Is the administrator user,
+                                                 determined by @adminRequired.
+    :param id:                                   Is the replenishmentcollection
+                                                 id.
+
+    :return:                                     A message that the deletion
+                                                 was successful.
+
+    :raises ReplenishmentCollectionNotFound:     If the replenishmentcollection
+                                                 with this ID does not exist.
+    :raises CouldNotUpdateEntry:                 If any other error occurs.
+    :raises ReplenishmentCollCanNotBeDeleted:    If the replenishmentcollection
+                                                 can not be deleted.
+    """
+    # Check ReplenishmentCollection
+    replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
+    if not replcoll:
+        raise exc.ReplenishmentCollectionNotFound()
+
+    repls = Replenishment.query.filter_by(replcoll_id=id).all()
+
+    message = ''
+
+    for repl in repls:
+        db.session.delete(repl)
+        message += 'Deleted Replenishment ID {}. '.format(repl.id)
+
+    db.session.delete(replcoll)
+    message = 'Deleted ReplenishmentCollection. ' + message
+
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.ReplenishmentCollCanNotBeDeleted()
+
+    return jsonify({'message': message}), 201
+
+
 @app.route('/replenishments/<int:id>', methods=['DELETE'])
 @adminRequired
 def delete_replenishment(admin, id):
