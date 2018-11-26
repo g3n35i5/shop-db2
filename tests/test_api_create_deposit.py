@@ -82,7 +82,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserNotFound)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_purchase_invalid_amount(self):
+    def test_create_deposit_invalid_amount(self):
         """Create a purchase with an invalid amount."""
         data = {'user_id': 2, 'amount': 0, 'comment': 'Test deposit'}
         res = self.post(url='/deposits', role='admin', data=data)

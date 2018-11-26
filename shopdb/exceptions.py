@@ -111,6 +111,12 @@ class DepositNotFound(BaseException):
     code = 401
 
 
+class RefundNotFound(BaseException):
+    type = 'error'
+    message = 'There is no refund with this id.'
+    code = 401
+
+
 class RankNotFound(BaseException):
     type = 'error'
     message = 'There is no rank with this id.'

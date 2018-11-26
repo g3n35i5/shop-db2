@@ -106,7 +106,12 @@ class User(db.Model):
                     .filter(Deposit.revoked.is_(False))
                     .scalar()) or 0
 
-        return d_amount - p_amount
+        r_amount = (db.session.query(func.sum(Refund.total_price))
+                    .filter(Refund.user_id == self.id)
+                    .filter(Refund.revoked.is_(False))
+                    .scalar()) or 0
+
+        return d_amount + r_amount - p_amount
 
     @hybrid_property
     def favorites(self):
@@ -478,6 +483,58 @@ class DepositRevoke(db.Model):
     revoked = db.Column(db.Boolean, nullable=False)
     deposit_id = db.Column(db.Integer, db.ForeignKey('deposits.id'),
                            nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
+
+
+class Refund(db.Model):
+    __tablename__ = 'refunds'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    comment = db.Column(db.String(64), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
+    total_price = db.Column(db.Integer, nullable=False)
+
+    @hybrid_method
+    def toggle_revoke(self, revoked, admin_id):
+        if self.revoked == revoked:
+            raise NothingHasChanged
+        rr = RefundRevoke(revoked=revoked, admin_id=admin_id,
+                          refund_id=self.id)
+        self.revoked = revoked
+        db.session.add(rr)
+
+    @hybrid_property
+    def revokehistory(self):
+        res = (RefundRevoke.query
+               .filter(RefundRevoke.refund_id == self.id)
+               .all())
+        revokehistory = []
+        for revoke in res:
+            revokehistory.append({
+                'id': revoke.id,
+                'timestamp': revoke.timestamp,
+                'revoked': revoke.revoked
+            })
+        return revokehistory
+
+
+class RefundRevoke(db.Model):
+    __tablename__ = 'refundrevokes'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False)
+    refund_id = db.Column(db.Integer, db.ForeignKey('refunds.id'),
+                          nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     @validates('admin_id')
