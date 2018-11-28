@@ -546,12 +546,20 @@ def get_financial_overview(admin):
     sum_ref = sum(list(map(lambda x: x.total_price, refunds)))
     sum_rep = sum(list(map(lambda x: x.price, replcolls)))
 
-    # Purchases are included positively in the total balance, deposits, refunds
-    # and replenishmentcollections negative.
-    total_balance = sum([sum_pur, -sum_dep, -sum_ref, -sum_rep])
+    # The financial income is limited only to the income from purchases.
+    incomes = sum([sum_pur])
+
+    # The financial expenses result from deposits, refunds and
+    # replenishmentcollections.
+    expenses = sum([sum_dep, sum_ref, sum_rep])
+
+    # The total balance is calculated as incomes minus expenses.
+    total_balance = incomes - expenses
 
     financial_overview = {
         'total_balance': total_balance,
+        'incomes': incomes,
+        'expenses': expenses,
         'sum_purchases': sum_pur,
         'sum_deposits': sum_dep,
         'sum_refunds': sum_ref,

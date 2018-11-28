@@ -81,8 +81,10 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         rcsum = rc.price
         self.assertEqual(3500, rcsum)
 
-        # Calculate the total balance.
-        total_balance = sum([psum, -dsum, -rsum, -rcsum])
+        # Calculate the total balance, incomes and expenses.
+        incomes = psum
+        expenses = sum([dsum, rsum, rcsum])
+        total_balance = incomes - expenses
 
         res = self.get(url='/financial_overview', role='admin')
         self.assertEqual(res.status_code, 200)
@@ -90,6 +92,8 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         assert 'financial_overview' in data
         overview = data['financial_overview']
         self.assertEqual(overview['total_balance'], total_balance)
+        self.assertEqual(overview['incomes'], incomes)
+        self.assertEqual(overview['expenses'], expenses)
         self.assertEqual(overview['sum_purchases'], psum)
         self.assertEqual(overview['sum_deposits'], dsum)
         self.assertEqual(overview['sum_refunds'], rsum)
