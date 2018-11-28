@@ -509,6 +509,57 @@ def upload(admin):
         'filename': filename}), 200
 
 
+# Financial overview route ###################################################
+@app.route('/financial_overview', methods=['GET'])
+@adminRequired
+def get_financial_overview(admin):
+    """
+    The financial status of the entire project can be retrieved via this route.
+    All purchases, deposits, payoffs, refunds and replenishmentcollections are
+    used for this purpose. The items are cleared once to a number indicating
+    whether the community has debt or surplus money. In addition, the
+    individual items are returned separately in order to get a better
+    breakdown of the items.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A dictionary with the individually calculated values.
+    """
+
+    # Query all purchases,
+    purchases = Purchase.query.filter(Purchase.revoked.is_(False)).all()
+
+    # Query all deposits.
+    deposits = Deposit.query.filter(Deposit.revoked.is_(False)).all()
+
+    # Query all refunds.
+    refunds = Refund.query.filter(Refund.revoked.is_(False)).all()
+
+    # Query all replenishment collections.
+    replcolls = (ReplenishmentCollection
+                 .query
+                 .filter(ReplenishmentCollection.revoked.is_(False))
+                 .all())
+
+    sum_pur = sum(list(map(lambda x: x.price, purchases)))
+    sum_dep = sum(list(map(lambda x: x.amount, deposits)))
+    sum_ref = sum(list(map(lambda x: x.total_price, refunds)))
+    sum_rep = sum(list(map(lambda x: x.price, replcolls)))
+
+    # Purchases are included positively in the total balance, deposits, refunds
+    # and replenishmentcollections negative.
+    total_balance = sum([sum_pur, -sum_dep, -sum_ref, -sum_rep])
+
+    financial_overview = {
+        'total_balance': total_balance,
+        'sum_purchases': sum_pur,
+        'sum_deposits': sum_dep,
+        'sum_refunds': sum_ref,
+        'sum_replenishmentcollections': sum_rep
+    }
+    return jsonify({'financial_overview': financial_overview}), 200
+
+
 # Login route ################################################################
 @app.route('/login', methods=['POST'])
 def login():
