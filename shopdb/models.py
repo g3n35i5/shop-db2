@@ -29,6 +29,8 @@ class User(db.Model):
                                 foreign_keys='Purchase.user_id')
     deposits = db.relationship('Deposit', lazy='dynamic',
                                foreign_keys='Deposit.user_id')
+    refunds = db.relationship('Refund', lazy='dynamic',
+                              foreign_keys='Refund.user_id')
 
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'

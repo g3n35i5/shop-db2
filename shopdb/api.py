@@ -717,6 +717,32 @@ def get_user_deposits(id):
     return jsonify({'deposits': new_deposits}), 200
 
 
+@app.route('/users/<int:id>/refunds', methods=['GET'])
+def get_user_refunds(id):
+    """
+    Returns a list with all refunds of a user.
+
+    :param id:                 Is the user id.
+
+    :return:                   A list with all refunds of the user.
+
+    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises UserIsNotVerified: If the user has not yet been verified.
+    """
+    user = User.query.filter_by(id=id).first()
+    if not user:
+        raise exc.UserNotFound()
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+    result = user.refunds.all()
+
+    fields = ['id', 'timestamp', 'admin_id', 'total_price', 'revoked',
+              'comment']
+    refunds = convert_minimal(result, fields)
+
+    return jsonify({'refunds': refunds}), 200
+
+
 @app.route('/users/<int:id>/purchases', methods=['GET'])
 def get_user_purchases(id):
     """
