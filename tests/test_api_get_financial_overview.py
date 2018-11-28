@@ -92,10 +92,13 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         assert 'financial_overview' in data
         overview = data['financial_overview']
         self.assertEqual(overview['total_balance'], total_balance)
-        self.assertEqual(overview['incomes'], incomes)
-        self.assertEqual(overview['expenses'], expenses)
-        self.assertEqual(overview['sum_purchases'], psum)
-        self.assertEqual(overview['sum_deposits'], dsum)
-        self.assertEqual(overview['sum_refunds'], rsum)
-        self.assertEqual(overview['sum_replenishmentcollections'], rcsum)
+        self.assertEqual(overview['incomes']['amount'], incomes)
+        self.assertEqual(overview['expenses']['amount'], expenses)
+        self.assertEqual(overview['expenses']['items'][0]['name'], 'Deposits')
+        self.assertEqual(overview['expenses']['items'][0]['amount'], dsum)
+        self.assertEqual(overview['expenses']['items'][1]['name'], 'Refunds')
+        self.assertEqual(overview['expenses']['items'][1]['amount'], rsum)
+        self.assertEqual(overview['expenses']['items'][2]['name'],
+                         'Replenishments')
+        self.assertEqual(overview['expenses']['items'][2]['amount'], rcsum)
 

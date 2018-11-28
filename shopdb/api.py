@@ -547,23 +547,33 @@ def get_financial_overview(admin):
     sum_rep = sum(list(map(lambda x: x.price, replcolls)))
 
     # The financial income is limited only to the income from purchases.
-    incomes = sum([sum_pur])
+    sum_incomes = sum([sum_pur])
+    incomes = {
+        'amount': sum_incomes,
+        'items': [
+            {'name': 'Purchases', 'amount': sum_pur}
+        ]
+    }
 
     # The financial expenses result from deposits, refunds and
     # replenishmentcollections.
-    expenses = sum([sum_dep, sum_ref, sum_rep])
+    sum_expenses = sum([sum_dep, sum_ref, sum_rep])
+    expenses = {
+        'amount': sum_expenses,
+        'items': [
+            {'name': 'Deposits', 'amount': sum_dep},
+            {'name': 'Refunds', 'amount': sum_ref},
+            {'name': 'Replenishments', 'amount': sum_rep}
+        ]
+    }
 
     # The total balance is calculated as incomes minus expenses.
-    total_balance = incomes - expenses
+    total_balance = sum_incomes - sum_expenses
 
     financial_overview = {
         'total_balance': total_balance,
         'incomes': incomes,
-        'expenses': expenses,
-        'sum_purchases': sum_pur,
-        'sum_deposits': sum_dep,
-        'sum_refunds': sum_ref,
-        'sum_replenishmentcollections': sum_rep
+        'expenses': expenses
     }
     return jsonify({'financial_overview': financial_overview}), 200
 
