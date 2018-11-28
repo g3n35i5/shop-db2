@@ -8,6 +8,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_revoke_replenishmentcollection(self):
         """Revoke a replenishmentcollection"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': True}, role='admin')
         self.assertEqual(res.status_code, 201)
@@ -22,6 +23,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_revoke_replenishmentcollection_multiple_times(self):
         """Revoke a replenishmentcollection multiple times"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': True}, role='admin')
         self.assertEqual(res.status_code, 201)
@@ -41,6 +43,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_update_replenishmentcollection_comment(self):
         """Update the comment of a replenishmentcollection"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={'comment': 'FooBar'}, role='admin')
         self.assertEqual(res.status_code, 201)
@@ -59,6 +62,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_update_replenishmentcollection_no_changes(self):
         """Revoking a replenishmentcollection with no changes"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': False}, role='admin')
         self.assertEqual(res.status_code, 200)
@@ -66,6 +70,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_update_non_existing_replenishmentcollection(self):
         """Revoking a replenishmentcollection that doesnt exist"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/4',
                        data={'revoked': True}, role='admin')
         self.assertEqual(res.status_code, 401)
@@ -73,6 +78,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_update_replenishmentcollection_forbidden_field(self):
         """Updating forbidden fields of a replenishmentcollection"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': True, 'timestamp': ''}, role='admin')
         self.assertEqual(res.status_code, 401)
@@ -80,6 +86,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_update_replenishmentcollection_unknown_field(self):
         """Update non existing fields of a replenishmentcollection"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={'Nonsense': ''}, role='admin')
         self.assertEqual(res.status_code, 401)
@@ -87,6 +94,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_update_replenishmentcollection_wrong_type(self):
         """Update fields of a replenishmentcollection with wrong types"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={'revoked': 'yes'}, role='admin')
         self.assertEqual(res.status_code, 401)
@@ -94,6 +102,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_update_replenishmentcollection_with_no_data(self):
         """Update a replenishmentcollection with no data"""
+        self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
                        data={}, role='admin')
         self.assertEqual(res.status_code, 200)

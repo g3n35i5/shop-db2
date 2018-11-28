@@ -8,6 +8,7 @@ class DeleteReplenishmentAPITestCase(BaseAPITestCase):
 
     def test_delete_replenishment_as_admin_I(self):
         """Deleting a single replenishment as admin"""
+        self.insert_default_replenishmentcollections()
         res = self.delete(url='/replenishments/1', role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
@@ -21,6 +22,7 @@ class DeleteReplenishmentAPITestCase(BaseAPITestCase):
         If the last member of a replenishmentcollection is deleted, it should
         also be deleted itself.
         """
+        self.insert_default_replenishmentcollections()
         self.delete(url='/replenishments/3', role='admin')
         res = self.delete(url='/replenishments/4', role='admin')
         self.assertEqual(res.status_code, 201)

@@ -46,7 +46,6 @@ class BaseTestCase(TestCase):
         self.insert_default_ranks()
         self.insert_default_tags()
         self.insert_default_products()
-        self.insert_default_replenishmentcollections()
 
     def tearDown(self):
         db.session.remove()

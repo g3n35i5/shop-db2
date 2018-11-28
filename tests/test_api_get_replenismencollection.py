@@ -8,6 +8,7 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
 
     def test_get_replenishmentcollection_as_admin(self):
         """Getting a single replenishmentcollection as admin"""
+        self.insert_default_replenishmentcollections()
         res = self.get(url='/replenishmentcollections/1', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
@@ -33,6 +34,7 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         This test ensures that an exception is raised if the requested
         replenishmentcollection does not exist.
         """
+        self.insert_default_replenishmentcollections()
         res = self.get(url='/replenishmentcollections/5', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ReplenishmentCollectionNotFound)

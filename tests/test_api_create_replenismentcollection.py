@@ -8,6 +8,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_create_replenishment_collection_as_admin(self):
         """Creating a ReplenishmentCollection as admin"""
+        self.insert_default_replenishmentcollections()
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
         data = {'replenishments': replenishments, 'comment': 'My test comment'}

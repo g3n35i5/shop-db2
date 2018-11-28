@@ -8,6 +8,7 @@ class ListReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_list_replenishment_collections_as_admin(self):
         """Getting a list of all ReplenishmentCollections as admin"""
+        self.insert_default_replenishmentcollections()
         res = self.get(url='/replenishmentcollections', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)

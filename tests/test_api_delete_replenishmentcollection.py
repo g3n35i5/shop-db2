@@ -8,6 +8,7 @@ class DeleteReplenishmentCollectionAPITestCase(BaseAPITestCase):
 
     def test_delete_replenishmentcolletion_as_admin(self):
         """Deleting a single replenishmentcollection as admin"""
+        self.insert_default_replenishmentcollections()
         res = self.delete(url='/replenishmentcollections/1', role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
