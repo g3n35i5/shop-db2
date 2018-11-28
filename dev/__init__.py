@@ -75,6 +75,7 @@ def insert_dev_data(db):
         product.set_price(price=int(item['price']), admin_id=1)
 
     db.session.commit()
+
     # Insert default purchases
     purchases = [
         {'user_id': 1, 'product_id': 3, 'amount': 12},
@@ -98,10 +99,30 @@ def insert_dev_data(db):
 
     db.session.commit()
 
-
     # Insert default tags
     tags = ['Food', 'Drinks', 'Sweets', 'Coffee']
     for name in tags:
         tag = Tag(name=name, created_by=1)
         db.session.add(tag)
+    db.session.commit()
+
+    # Insert default replenishmentcollections
+    product1 = Product.query.filter_by(id=1).first()
+    product2 = Product.query.filter_by(id=2).first()
+    product3 = Product.query.filter_by(id=3).first()
+    rc1 = ReplenishmentCollection(admin_id=1, revoked=False, comment='Foo')
+    rc2 = ReplenishmentCollection(admin_id=2, revoked=False, comment='Foo')
+    for r in [rc1, rc2]:
+        db.session.add(r)
+    db.session.flush()
+    rep1 = Replenishment(replcoll_id=rc1.id, product_id=product1.id,
+                         amount=10, total_price=10 * product1.price)
+    rep2 = Replenishment(replcoll_id=rc1.id, product_id=product2.id,
+                         amount=20, total_price=20 * product2.price)
+    rep3 = Replenishment(replcoll_id=rc2.id, product_id=product3.id,
+                         amount=5, total_price=5 * product3.price)
+    rep4 = Replenishment(replcoll_id=rc2.id, product_id=product1.id,
+                         amount=10, total_price=10 * product1.price)
+    for r in [rep1, rep2, rep3, rep4]:
+        db.session.add(r)
     db.session.commit()
