@@ -1894,15 +1894,10 @@ def delete_replenishmentcollection(admin, id):
 
     repls = Replenishment.query.filter_by(replcoll_id=id).all()
 
-    message = ''
-
     for repl in repls:
         db.session.delete(repl)
-        message += 'Deleted Replenishment ID {}. '.format(repl.id)
 
     db.session.delete(replcoll)
-    message = 'Deleted ReplenishmentCollection. ' + message
-
 
     # Apply changes
     try:
@@ -1910,7 +1905,7 @@ def delete_replenishmentcollection(admin, id):
     except IntegrityError:
         raise exc.ReplenishmentCollCanNotBeDeleted()
 
-    return jsonify({'message': message}), 201
+    return jsonify({'message': 'Deleted ReplenishmentCollection.'}), 201
 
 
 @app.route('/replenishments/<int:id>', methods=['DELETE'])

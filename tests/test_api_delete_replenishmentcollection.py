@@ -12,9 +12,7 @@ class DeleteReplenishmentCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        assert 'Deleted ReplenishmentCollection.' in data['message']
-        assert 'Deleted Replenishment ID 1.' in data['message']
-        assert 'Deleted Replenishment ID 2.' in data['message']
+        self.assertEqual(data['message'], 'Deleted ReplenishmentCollection.')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll, None)
         repl1 = Replenishment.query.filter_by(id=1).first()
