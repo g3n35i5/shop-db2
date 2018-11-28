@@ -371,6 +371,7 @@ class ReplenishmentCollection(db.Model):
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False, default=False)
+    comment = db.Column(db.String(64), nullable=False)
     replenishments = db.relationship('Replenishment', lazy='dynamic',
                                      foreign_keys='Replenishment.replcoll_id')
 

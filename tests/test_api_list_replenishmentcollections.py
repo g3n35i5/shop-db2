@@ -13,7 +13,8 @@ class ListReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert 'replenishmentcollections' in data
         replcolls = data['replenishmentcollections']
-        required = ['id', 'timestamp', 'admin_id', 'price', 'revoked']
+        required = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
+                    'comment']
         for replcoll in replcolls:
             assert all(x in replcoll for x in required)
 

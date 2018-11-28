@@ -1650,7 +1650,7 @@ def list_replenishmentcollections(admin):
     :return:      A list of all replenishmentcollections.
     """
     data = ReplenishmentCollection.query.all()
-    fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked']
+    fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked', 'comment']
     response = convert_minimal(data, fields)
     return jsonify({'replenishmentcollections': response}), 200
 
@@ -1680,7 +1680,7 @@ def get_replenishmentcollection(admin, id):
         raise exc.ReplenishmentCollectionNotFound()
 
     fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
-                       'revokehistory']
+                       'revokehistory', 'comment']
     fields_repl = ['id', 'replcoll_id', 'product_id', 'amount', 'total_price']
     repls = replcoll.replenishments.all()
 
@@ -1710,7 +1710,7 @@ def create_replenishmentcollection(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required_data = {'admin_id': int, 'replenishments': list}
+    required_data = {'replenishments': list, 'comment': str}
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
 
     # Check all required fields
@@ -1735,7 +1735,8 @@ def create_replenishmentcollection(admin):
 
     # Create and insert replenishmentcollection
     try:
-        replcoll = ReplenishmentCollection(admin_id=data['admin_id'],
+        replcoll = ReplenishmentCollection(admin_id=admin.id,
+                                           comment=data['comment'],
                                            revoked=False)
         db.session.add(replcoll)
         db.session.flush()
@@ -1787,14 +1788,22 @@ def update_replenishmentcollection(admin, id):
     if data == {}:
         raise exc.NothingHasChanged()
 
-    updateable = {'revoked': bool}
+    updateable = {'revoked': bool, 'comment': str}
     check_forbidden(data, updateable, replcoll)
     check_allowed_fields_and_types(data, updateable)
 
+    updated_fields = []
+
     # Handle deposit revoke
-    if replcoll.revoked == data['revoked']:
-        raise exc.NothingHasChanged()
-    replcoll.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+    if 'revoked' in data:
+        if replcoll.revoked == data['revoked']:
+            raise exc.NothingHasChanged()
+        replcoll.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+        del data['revoked']
+        updated_fields.append('revoked')
+
+    # Handle all other fields
+    updated_fields = update_fields(data, replcoll, updated_fields)
 
     # Apply changes
     try:
@@ -1802,7 +1811,10 @@ def update_replenishmentcollection(admin, id):
     except IntegrityError:
         raise exc.CouldNotUpdateEntry()
 
-    return jsonify({'message': 'Updated replenishmentcollection.'}), 201
+    return jsonify({
+        'message': 'Updated replenishmentcollection.',
+        'updated_fields': updated_fields
+    }), 201
 
 
 @app.route('/replenishments/<int:id>', methods=['PUT'])

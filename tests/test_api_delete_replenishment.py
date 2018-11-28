@@ -17,8 +17,12 @@ class DeleteReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(repl, None)
 
     def test_delete_replenishment_as_admin_II(self):
-        """Deleting a single replenishment leding to deletion of replcoll"""
-        res = self.delete(url='/replenishments/3', role='admin')
+        """
+        If the last member of a replenishmentcollection is deleted, it should
+        also be deleted itself.
+        """
+        self.delete(url='/replenishments/3', role='admin')
+        res = self.delete(url='/replenishments/4', role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
@@ -37,6 +41,6 @@ class DeleteReplenishmentAPITestCase(BaseAPITestCase):
 
     def test_delete_replenishment_with_invalid_id(self):
         """Trying to delete a single replenishment with invalid id"""
-        res = self.delete(url='/replenishments/4', role='admin')
+        res = self.delete(url='/replenishments/5', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ReplenishmentNotFound)

@@ -6,14 +6,14 @@ from flask import json
 
 class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
 
-    def test_get_replenishment_collection_as_admin(self):
-        """Getting a single ReplenishmentCollection as admin"""
+    def test_get_replenishmentcollection_as_admin(self):
+        """Getting a single replenishmentcollection as admin"""
         res = self.get(url='/replenishmentcollections/1', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
         assert 'replenishmentcollection' in data
         replcoll = data['replenishmentcollection']
-        required_replcoll = ['id', 'timestamp', 'admin_id', 'price',
+        required_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'comment',
                              'replenishments', 'revoked', 'revokehistory']
         required_repl = ['id', 'replcoll_id', 'product_id', 'amount',
                          'total_price']
@@ -22,8 +22,8 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         for repl in repls:
             assert all(x in repl for x in required_repl)
 
-    def test_get_replenishment_collection_as_user(self):
-        """Trying to get a single ReplenishmentCollection as user"""
+    def test_get_replenishmentcollection_as_user(self):
+        """Trying to get a single replenishmentcollection as user"""
         res = self.get(url='/replenishmentcollections/2', role='user')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)

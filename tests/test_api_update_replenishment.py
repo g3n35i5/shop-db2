@@ -36,7 +36,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
     def test_update_replenishment_with_invalid_id(self):
         """Updating a single replenishment that does not exist"""
         data = {'amount': 0, 'total_price': 0}
-        res = self.put(url='/replenishments/4', data=data, role='admin')
+        res = self.put(url='/replenishments/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ReplenishmentNotFound)
 
