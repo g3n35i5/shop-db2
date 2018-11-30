@@ -2126,7 +2126,7 @@ def create_refund(admin):
         raise exc.UserIsNotVerified()
 
     # Check amount
-    if data['total_price'] == 0:
+    if data['total_price'] <= 0:
         raise exc.InvalidAmount()
 
     # Create and insert refund

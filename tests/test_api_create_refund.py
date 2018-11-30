@@ -21,20 +21,13 @@ class CreateRefundAPITestCase(BaseAPITestCase):
         self.assertEqual(refunds[0].comment, 'Test refund')
         self.assertFalse(refunds[0].revoked)
 
-    def test_create_refund_negative_amount(self):
-        """Create a refund with a negative amount."""
-        data = {'user_id': 2, 'total_price': -1000, 'comment': 'Test refund'}
-        res = self.post(url='/refunds', data=data, role='admin')
-        self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'message' in data
-        self.assertEqual(data['message'], 'Created refund.')
-        refunds = Refund.query.all()
-        self.assertEqual(len(refunds), 1)
-        self.assertEqual(refunds[0].user_id, 2)
-        self.assertEqual(refunds[0].total_price, -1000)
-        self.assertEqual(refunds[0].comment, 'Test refund')
-        self.assertFalse(refunds[0].revoked)
+    def test_create_refund_invalid_amount(self):
+        """Create a refund with an invalid amount."""
+        for amount in [-1000, 0]:
+            data = {'user_id': 2, 'total_price': amount, 'comment': 'Foo'}
+            res = self.post(url='/refunds', data=data, role='admin')
+            self.assertEqual(res.status_code, 401)
+            self.assertException(res, exc.InvalidAmount)
 
     def test_create_refund_wrong_type(self):
         """Create a refund with wrong type(s)."""
