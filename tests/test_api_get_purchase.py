@@ -5,21 +5,11 @@ from flask import json
 
 
 class GetPurchaseAPITestCase(BaseAPITestCase):
-    def insert_test_purchases(self):
-        """Helper function to insert some test purchases"""
-        p1 = Purchase(user_id=1, product_id=1, amount=1)
-        p2 = Purchase(user_id=2, product_id=3, amount=2)
-        p3 = Purchase(user_id=2, product_id=2, amount=4)
-        p4 = Purchase(user_id=3, product_id=1, amount=6)
-        p5 = Purchase(user_id=1, product_id=3, amount=8)
-        for p in [p1, p2, p3, p4, p5]:
-            db.session.add(p)
-        db.session.commit()
 
     def test_get_single_purchase(self):
         """Test for getting a single purchase"""
         # Insert test purchases
-        self.insert_test_purchases()
+        self.insert_default_purchases()
         res = self.get(url='/purchases/3')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)

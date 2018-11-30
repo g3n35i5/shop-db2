@@ -4,20 +4,10 @@ from flask import json
 
 
 class GetUserPurchasesAPITestCase(BaseAPITestCase):
-    def _insert_test_purchases(self):
-        """Helper function to insert some test purchases"""
-        p1 = Purchase(user_id=1, product_id=1, amount=1)
-        p2 = Purchase(user_id=2, product_id=3, amount=2)
-        p3 = Purchase(user_id=2, product_id=2, amount=4)
-        p4 = Purchase(user_id=3, product_id=1, amount=6)
-        p5 = Purchase(user_id=1, product_id=3, amount=8)
-        for p in [p1, p2, p3, p4, p5]:
-            db.session.add(p)
-        db.session.commit()
 
     def test_get_user_purchases(self):
         """This test ensures that all purchases made by a user are listed."""
-        self._insert_test_purchases()
+        self.insert_default_purchases()
         res = self.get(url='/users/2/purchases')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
@@ -32,7 +22,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         """
         This test ensures that an exception is made if the user does not exist.
         """
-        self._insert_test_purchases()
+        self.insert_default_purchases()
         res = self.get(url='/users/5/purchases')
         self.assertException(res, UserNotFound)
 
@@ -41,7 +31,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         This test ensures that an exception is made if the user has not been
         verified yet.
         """
-        self._insert_test_purchases()
+        self.insert_default_purchases()
         res = self.get(url='/users/4/purchases')
         self.assertException(res, UserIsNotVerified)
 

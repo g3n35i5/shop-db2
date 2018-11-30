@@ -4,21 +4,11 @@ from flask import json
 
 
 class ListPurchasesAPITestCase(BaseAPITestCase):
-    def insert_test_purchases(self):
-        """Helper function to insert some test purchases"""
-        p1 = Purchase(user_id=1, product_id=1, amount=1)
-        p2 = Purchase(user_id=2, product_id=3, amount=2)
-        p3 = Purchase(user_id=2, product_id=2, amount=4)
-        p4 = Purchase(user_id=3, product_id=1, amount=6)
-        p5 = Purchase(user_id=1, product_id=3, amount=8)
-        for p in [p1, p2, p3, p4, p5]:
-            db.session.add(p)
-        db.session.commit()
 
     def test_list_purchases_as_admin(self):
         """Test for listing all purchases as admin"""
         # Do 5 purchases
-        self.insert_test_purchases()
+        self.insert_default_purchases()
         res = self.get(url='/purchases', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
@@ -40,7 +30,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         """Test for listing all purchases without token. Revoked purchases
            should not be listed."""
         # Do 5 purchases
-        self.insert_test_purchases()
+        self.insert_default_purchases()
         # Revoke the third purchase
         purchase = Purchase.query.filter_by(id=3).first()
         purchase.toggle_revoke(revoked=True)

@@ -5,21 +5,11 @@ from flask import json
 
 
 class ListDepositsAPITestCase(BaseAPITestCase):
-    def insert_test_deposits(self):
-        """Helper function to insert some test deposits"""
-        d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
-        d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
-        d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
-        d4 = Deposit(user_id=3, amount=300, admin_id=1, comment='Test deposit')
-        d5 = Deposit(user_id=1, amount=600, admin_id=1, comment='Test deposit')
-        for d in [d1, d2, d3, d4, d5]:
-            db.session.add(d)
-        db.session.commit()
 
     def test_list_deposits_as_admin(self):
         """Test for listing all deposits as admin"""
         # Do 5 deposits
-        self.insert_test_deposits()
+        self.insert_default_deposits()
         res = self.get(url='/deposits', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
