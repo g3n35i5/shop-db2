@@ -2078,11 +2078,11 @@ def get_refund(id):
     """
     Returns the refund with the requested id.
 
-    :param id:                 Is the refund id.
+    :param id:              Is the refund id.
 
-    :return:                   The requested refund as JSON object.
+    :return:                The requested refund as JSON object.
 
-    :raises RefundNotFound:   If the refund with this ID does not exist.
+    :raises RefundNotFound: If the refund with this ID does not exist.
     """
     # Query the refund
     res = Refund.query.filter_by(id=id).first()
