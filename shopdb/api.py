@@ -532,6 +532,9 @@ def get_financial_overview(admin):
     # Query all deposits.
     deposits = Deposit.query.filter(Deposit.revoked.is_(False)).all()
 
+    # Query all payoffs.
+    payoffs = Payoff.query.filter(Payoff.revoked.is_(False)).all()
+
     # Query all refunds.
     refunds = Refund.query.filter(Refund.revoked.is_(False)).all()
 
@@ -543,6 +546,7 @@ def get_financial_overview(admin):
 
     sum_pur = sum(list(map(lambda x: x.price, purchases)))
     sum_dep = sum(list(map(lambda x: x.amount, deposits)))
+    sum_pay = sum(list(map(lambda x: x.amount, payoffs)))
     sum_ref = sum(list(map(lambda x: x.total_price, refunds)))
     sum_rep = sum(list(map(lambda x: x.price, replcolls)))
 
@@ -555,13 +559,14 @@ def get_financial_overview(admin):
         ]
     }
 
-    # The financial expenses result from deposits, refunds and
+    # The financial expenses result from deposits, payoffs, refunds and
     # replenishmentcollections.
-    sum_expenses = sum([sum_dep, sum_ref, sum_rep])
+    sum_expenses = sum([sum_dep, sum_pay, sum_ref, sum_rep])
     expenses = {
         'amount': sum_expenses,
         'items': [
             {'name': 'Deposits', 'amount': sum_dep},
+            {'name': 'Payoffs', 'amount': sum_pay},
             {'name': 'Refunds', 'amount': sum_ref},
             {'name': 'Replenishments', 'amount': sum_rep}
         ]
@@ -2186,4 +2191,135 @@ def update_refund(admin, id):
 
     return jsonify({
         'message': 'Updated refund.',
+    }), 201
+
+
+# Payoff routes ##############################################################
+@app.route('/payoffs', methods=['GET'])
+@adminRequired
+def list_payoffs(admin):
+    """
+    Returns a list of all payoffs.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A list of all payoffs.
+    """
+    payoffs = Payoff.query.all()
+    fields = ['id', 'timestamp', 'amount', 'comment', 'revoked', 'admin_id']
+    return jsonify({'payoffs': convert_minimal(payoffs, fields)}), 200
+
+
+@app.route('/payoffs/<int:id>', methods=['GET'])
+@adminRequired
+def get_payoff(admin, id):
+    """
+    Returns the payoff with the requested id.
+
+    :param admin:           Is the administrator user, determined by
+                            @adminRequired.
+    :param id:              Is the payoff id.
+
+    :return:                The requested payoff as JSON object.
+
+    :raises PayoffNotFound: If the payoff with this ID does not exist.
+    """
+    # Query the payoff
+    res = Payoff.query.filter_by(id=id).first()
+    # If it not exists, return an error
+    if not res:
+        raise exc.PayoffNotFound()
+    # Convert the payoff to a JSON friendly format
+    fields = ['id', 'timestamp', 'amount', 'comment', 'revoked',
+              'revokehistory']
+    return jsonify({'payoff': convert_minimal(res, fields)[0]}), 200
+
+
+@app.route('/payoffs', methods=['POST'])
+@adminRequired
+def create_payoff(admin):
+    """
+    Insert a new payoff.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+
+    :return:                     A message that the creation was successful.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises InvalidAmount:       If amount is equal to zero.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
+    data = json_body()
+    required = {'amount': int, 'comment': str}
+    check_required(data, required)
+    check_allowed_fields_and_types(data, required)
+
+    # Check amount
+    if data['amount'] <= 0:
+        raise exc.InvalidAmount()
+
+    # Create and insert payoff
+    try:
+        payoff = Payoff(**data)
+        payoff.admin_id = admin.id
+        db.session.add(payoff)
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created payoff.'}), 200
+
+
+@app.route('/payoffs/<int:id>', methods=['PUT'])
+@adminRequired
+def update_payoff(admin, id):
+    """
+    Update the payoff with the given id.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the payoff id.
+
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
+
+    :raises PayoffNotFound:      If the payoff with this ID does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid
+                                 type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
+    # Check payoff
+    payoff = Payoff.query.filter_by(id=id).first()
+    if not payoff:
+        raise exc.PayoffNotFound()
+
+    data = json_body()
+
+    if not data:
+        raise exc.NothingHasChanged()
+
+    updateable = {'revoked': bool}
+    check_forbidden(data, updateable, payoff)
+    check_allowed_fields_and_types(data, updateable)
+
+    # Handle payoff revoke
+    if 'revoked' in data:
+        if payoff.revoked == data['revoked']:
+            raise exc.NothingHasChanged()
+        payoff.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated payoff.',
     }), 201

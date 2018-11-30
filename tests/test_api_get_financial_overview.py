@@ -81,9 +81,18 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         rcsum = rc.price
         self.assertEqual(3500, rcsum)
 
+        # Insert the payoffs and revoke the first one.
+        self.insert_default_payoffs()
+        po = Payoff.query.filter_by(id=1).first()
+        po.toggle_revoke(admin_id=1, revoked=True)
+        db.session.commit()
+        po = Payoff.query.filter_by(id=2).first()
+        posum = po.amount
+        self.assertEqual(200, posum)
+
         # Calculate the total balance, incomes and expenses.
         incomes = psum
-        expenses = sum([dsum, rsum, rcsum])
+        expenses = sum([dsum, rsum, rcsum, posum])
         total_balance = incomes - expenses
 
         res = self.get(url='/financial_overview', role='admin')
@@ -96,9 +105,11 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(overview['expenses']['amount'], expenses)
         self.assertEqual(overview['expenses']['items'][0]['name'], 'Deposits')
         self.assertEqual(overview['expenses']['items'][0]['amount'], dsum)
-        self.assertEqual(overview['expenses']['items'][1]['name'], 'Refunds')
-        self.assertEqual(overview['expenses']['items'][1]['amount'], rsum)
-        self.assertEqual(overview['expenses']['items'][2]['name'],
+        self.assertEqual(overview['expenses']['items'][1]['name'], 'Payoffs')
+        self.assertEqual(overview['expenses']['items'][1]['amount'], posum)
+        self.assertEqual(overview['expenses']['items'][2]['name'], 'Refunds')
+        self.assertEqual(overview['expenses']['items'][2]['amount'], rsum)
+        self.assertEqual(overview['expenses']['items'][3]['name'],
                          'Replenishments')
-        self.assertEqual(overview['expenses']['items'][2]['amount'], rcsum)
+        self.assertEqual(overview['expenses']['items'][3]['amount'], rcsum)
 

@@ -117,6 +117,12 @@ class RefundNotFound(BaseException):
     code = 401
 
 
+class PayoffNotFound(BaseException):
+    type = 'error'
+    message = 'There is no payoff with this id.'
+    code = 401
+
+
 class RankNotFound(BaseException):
     type = 'error'
     message = 'There is no rank with this id.'

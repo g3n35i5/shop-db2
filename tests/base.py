@@ -130,3 +130,10 @@ class BaseTestCase(TestCase):
         for r in [rep1, rep2, rep3, rep4]:
             db.session.add(r)
         db.session.commit()
+
+    def insert_default_payoffs(self):
+        p1 = Payoff(amount=100, admin_id=1, comment='Test payoff 1')
+        p2 = Payoff(amount=200, admin_id=1, comment='Test payoff 2')
+        for p in [p1, p2]:
+            db.session.add(p)
+        db.session.commit()
