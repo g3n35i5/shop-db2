@@ -8,6 +8,7 @@ This is the documentation for shop-db.
 3.  [Getting started](#getting-started)
 4.  [Development](#development)
 5.  [Unittests](#unittests)
+6.  [Models](#models)
 
 
 ### About shop.db
@@ -233,3 +234,72 @@ directory `htmlcov`
 $ cd htmlcov
 $ python3 -m http.server
 ```
+
+### Models
+This section covers the models used in shodb. They are defined in
+.shopdb/models.py
+
+
+###users########################################################################
+id:                 The users id is unique and is used to identify the user. It
+                    is created automatically with the a new user.
+
+creation_date:      This is the date and time the user was created. It is
+                    created automatically with the new user. It is not modified
+                    when user properties are updated.
+
+firstname:          This is the users firstname. It is used to identify the
+                    user in the frontend. It does not have to be unique. It can
+                    be updated and changed after the users creation.
+
+lastname:           This is the users lastname. It is used to identify the
+                    user in the frontend. It does not have to be unique. It can
+                    be updated and changed after the users creation.
+
+password:           This is the passwordhash which is used to verify the users
+                    password when he logs in. It is automatically created from
+                    the password passed when creating or updating the user.
+                    Accordingly, it can be update after the users creation. The
+                    password itself is not stored in the database.
+
+is_verified:        Anyone who can reach the shopd application can create a
+                    user account. To prevent unauthorized access, each user
+                    has to be verified from an admin before he can carry out
+                    further actions. This column states wether the user is
+                    verified.
+
+purchases:          This represents all the purchases the user has made. It is
+                    references all purchases strored in the table purchases with
+                    the users own id.
+
+deposits:           A positiv deposit increases a users credit. Therefor, he has
+                    to transfer money to the community and a in return an admin
+                    creates a deposit in his name. A negativ deposit is created
+                    when the users withdraws money from his credit. It
+                    references all deposits stored in the table deposits with
+                    the users own id.
+
+refunds:            A refund increases a users credit. It is created by an admin
+                    as compensation when the user spends money on things the
+                    community needs like dishwasher tabs. It references all
+                    refunds stored in the table refunds with the users own id.
+
+is_admin:           Every admin is also a user. This column states wether the
+                    user is also an admin. The value of this column is fetched
+                    from the table adminupdates, which logs all changes from
+                    user to admin and admin to user.
+
+verification_date:  This is the date and time the user was verified. The value
+                    of this column is fetched from the table userverifications,
+                    which logs all userverifications.
+
+rank_id:            This describes the user rank, for example if he is an active
+                    member or just a contender. This influences rights in the
+                    application, for example who much negativ credit he is
+                    allowed to have.
+
+rank:               This is the rank name to the corresponding rank_id.
+
+credit:             This is the users credit. It is calculated by adding all
+                    deposits, refunds and payoffs refering to the user and
+                    subtract the price of all purchases refering to him.
