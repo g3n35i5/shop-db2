@@ -180,7 +180,7 @@ def insert_user(data):
     allowed = {'firstname': str, 'lastname': str,
                'password': str, 'password_repeat': str}
 
-    required = ['firstname', 'lastname']
+    required = ['lastname']
 
     check_required(data, required)
     check_allowed_fields_and_types(data, allowed)
@@ -205,9 +205,13 @@ def insert_user(data):
         password = bcrypt.generate_password_hash(data['password'])
 
     # Try to create the user.
+    if 'firstname' in data:
+        firstname = data['firstname']
+    else:
+        firstname = None
     try:
         user = User(
-            firstname=data['firstname'],
+            firstname=firstname,
             lastname=data['lastname'],
             password=password)
         db.session.add(user)
