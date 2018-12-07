@@ -622,6 +622,10 @@ def login():
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
+    # Check if the user has set a password.
+    if not user.password:
+        raise exc.InvalidCredentials()
+
     # Check if the password matches the user's password.
     if not bcrypt.check_password_hash(user.password, str(data['password'])):
         raise exc.InvalidCredentials()
