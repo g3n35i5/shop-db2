@@ -57,7 +57,7 @@ class LoginAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert 'token' not in data
 
-    def test_login_missing_idl(self):
+    def test_login_missing_id(self):
         """If an authentication attempt is made without an id,
         the correct error message must be returned."""
         data = {
