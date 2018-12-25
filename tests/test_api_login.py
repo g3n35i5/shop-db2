@@ -57,7 +57,7 @@ class LoginAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert 'token' not in data
 
-    def test_login_missing_idl(self):
+    def test_login_missing_id(self):
         """If an authentication attempt is made without an id,
         the correct error message must be returned."""
         data = {
@@ -76,6 +76,17 @@ class LoginAPITestCase(BaseAPITestCase):
             'id': 42,
             'password': u_passwords[0]
         }
+        res = self.post(url='/login', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.InvalidCredentials)
+        data = json.loads(res.data)
+        assert 'token' not in data
+
+    def test_login_user_without_password(self):
+        """If an authentication attempt is made by a user who has not set
+        a password yet, the correct error message must be returned."""
+
+        data = {'id': 3, 'password': 'DontCare'}
         res = self.post(url='/login', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidCredentials)

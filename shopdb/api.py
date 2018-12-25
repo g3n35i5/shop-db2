@@ -180,7 +180,7 @@ def insert_user(data):
     allowed = {'firstname': str, 'lastname': str,
                'password': str, 'password_repeat': str}
 
-    required = ['firstname', 'lastname']
+    required = ['lastname']
 
     check_required(data, required)
     check_allowed_fields_and_types(data, allowed)
@@ -205,9 +205,13 @@ def insert_user(data):
         password = bcrypt.generate_password_hash(data['password'])
 
     # Try to create the user.
+    if 'firstname' in data:
+        firstname = data['firstname']
+    else:
+        firstname = None
     try:
         user = User(
-            firstname=data['firstname'],
+            firstname=firstname,
             lastname=data['lastname'],
             password=password)
         db.session.add(user)
@@ -617,6 +621,10 @@ def login():
     # Check if the user has already been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user has set a password.
+    if not user.password:
+        raise exc.InvalidCredentials()
 
     # Check if the password matches the user's password.
     if not bcrypt.check_password_hash(user.password, str(data['password'])):
@@ -1177,9 +1185,9 @@ def update_tag(admin, id):
 
 
 # Tag assignment routes ######################################################
-@app.route('/tagassignment', methods=['DELETE', 'POST'])
+@app.route('/tagassignment/<command>', methods=['POST'])
 @adminRequired
-def change_product_tag_assignment(admin):
+def change_product_tag_assignment(admin, command):
     """
     Under this route, a tag can be added to a product or removed.
 
@@ -1198,6 +1206,9 @@ def change_product_tag_assignment(admin):
     :raises TagNotFound:       If the tag with the specified ID does not exist.
     :raises NothingHasChanged: If no change occurred after the update or removal.
     """
+
+    if command not in ['add', 'remove']:
+        raise exc.UnauthorizedAccess()
 
     data = json_body()
     required = {'product_id': int, 'tag_id': int}
@@ -1218,7 +1229,7 @@ def change_product_tag_assignment(admin):
     if not tag:
         raise exc.TagNotFound()
 
-    if request.method == 'POST':
+    if command == 'add':
         if tag in product.tags:
             raise exc.NothingHasChanged()
 

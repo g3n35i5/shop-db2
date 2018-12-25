@@ -21,7 +21,7 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
-    firstname = db.Column(db.String(32), unique=False, nullable=False)
+    firstname = db.Column(db.String(32), unique=False, nullable=True)
     lastname = db.Column(db.String(32), unique=False, nullable=False)
     password = db.Column(db.String(256), unique=False, nullable=True)
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
