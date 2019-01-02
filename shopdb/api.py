@@ -1117,7 +1117,7 @@ def create_tag(admin):
     # Check all required fields
     check_required(data, required)
 
-    # Check if a product with this name already exists
+    # Check if a tag with this name already exists
     if Tag.query.filter_by(name=data['name']).first():
         raise exc.TagAlreadyExists()
 
