@@ -239,67 +239,327 @@ $ python3 -m http.server
 This section covers the models used in shodb. They are defined in
 .shopdb/models.py
 
+#### User
 
-###users########################################################################
-id:                 The users id is unique and is used to identify the user. It
-                    is created automatically with the a new user.
+In order to interact with the database one needs some sort of user account
+which stores personal data, privileges and that can be referenced by other
+parts of the application. Therefor we use the User table. Anyone who can reach
+the shopdb application can create a user. After creating User through
+registering, one has to be verified by an admin to be able to use ones account.
+This prevents unauthorized use of the application. In addition a user can be an
+admin, has a rank, a credit to buy products and a list of favorite products.
 
-creation_date:      This is the date and time the user was created. It is
-                    created automatically with the new user. It is not modified
-                    when user properties are updated.
+| NAME | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The user id is unique and is used to identify the user in the application. It is created automatically with the a new user.
+| creation_date | *DateTime* | This is the date and time the user was created. It is created automatically with the new user. It is not modified when user properties are updated.
+| firstname | *String(32)* | This is the users firstname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.
+| lastname | *String(32)* | This is the users lastname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.
+| password | *String(256)* | This is the passwordhash which is used to verify the users password when he logs in. It is automatically created from the password passed when creating or updating the user. The password itself is not stored in the database.
+| is_verified | *Boolean* | To prevent unauthorized access, each user has to be verified from an admin before he can carry out further actions. This column states wether the user is verified (True) or not (False).
+| purchases | *relationship* | This represents all the purchases the user has made.
 
-firstname:          This is the users firstname. It is used to identify the
-                    user in the frontend. It does not have to be unique. It can
-                    be updated and changed after the users creation.
+#### UserVerification
 
-lastname:           This is the users lastname. It is used to identify the
-                    user in the frontend. It does not have to be unique. It can
-                    be updated and changed after the users creation.
+When a user is verified, a UserVerification entry is made. It is used to
+separate information about the verification from the user. As a result a user
+cant be verified twice and the verification date of a user can be called. A
+UserVerification can only be made by an admin.
 
-password:           This is the passwordhash which is used to verify the users
-                    password when he logs in. It is automatically created from
-                    the password passed when creating or updating the user.
-                    Accordingly, it can be update after the users creation. The
-                    password itself is not stored in the database.
+| NAME | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The UserVerification id is unique and is used for identification in the application. It is created automatically with a new UserVerification.
+| timestamp | *DateTime* | This is the date and time the UserVerification was created. It is created automatically with the new UserVerification. It is not modified when updated.
+| admin_id | *Integer* | This is the id of the admin who made this UserVerification.
+| user_id | *Integer* | This is the id of the user the admin made this UserVerification for.
 
-is_verified:        Anyone who can reach the shopd application can create a
-                    user account. To prevent unauthorized access, each user
-                    has to be verified from an admin before he can carry out
-                    further actions. This column states wether the user is
-                    verified.
+#### AdminUpdate
 
-purchases:          This represents all the purchases the user has made. It is
-                    references all purchases strored in the table purchases with
-                    the users own id.
+A lot of functionalities in the application require a user with admin rights.
+The first user in database can make himself an admin. Every other user has to
+be made admin by another admin. The admin rights can also be revoked. For every
+change in a users admin rights, an AdminUpdate entry is made. The Admin update
+table is used to verify whether the user is an admin by checking the is_admin
+field in the latest entry related to the user.
 
-deposits:           A positiv deposit increases a users credit. Therefor, he has
-                    to transfer money to the community and a in return an admin
-                    creates a deposit in his name. A negativ deposit is created
-                    when the users withdraws money from his credit. It
-                    references all deposits stored in the table deposits with
-                    the users own id.
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The AdminUpdate id is unique and is used for identification in the application. It is created automatically with a new AdminUpdate.
+| timestamp | *DateTime* | This is the date and time the AdminUpdate was created. It is created automatically with the new AdminUpdate.
+| user_id | *Integer* | This is the id of the user whose admin status was updated.
+| admin_id | *Integer* | This is the id of the admin who performed the update.
+| is_admin | *Boolean* | Specifies whether the corresponding user is an admin (True) after the update or not (False).
 
-refunds:            A refund increases a users credit. It is created by an admin
-                    as compensation when the user spends money on things the
-                    community needs like dishwasher tabs. It references all
-                    refunds stored in the table refunds with the users own id.
+#### Uploads
 
-is_admin:           Every admin is also a user. This column states wether the
-                    user is also an admin. The value of this column is fetched
-                    from the table adminupdates, which logs all changes from
-                    user to admin and admin to user.
+An admin can upload a picture of a product to the application which is then
+shown in the frontend. The UPLOAD_FOLDER can be set in configuration.py. To
+correlate a picture to a product ???
 
-verification_date:  This is the date and time the user was verified. The value
-                    of this column is fetched from the table userverifications,
-                    which logs all userverifications.
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Upload id is unique and is used for identification in the application. It is created automatically with a new Upload.
+| timestamp | *DateTime* | This is the date and time the Upload was created. It is created automatically with the new Upload.
+| admin_id | *Integer* | This is the id of the admin who performed the Upload.
+| filename | *String(64)* | This is the filename of the image that has been uploaded.
 
-rank_id:            This describes the user rank, for example if he is an active
-                    member or just a contender. This influences rights in the
-                    application, for example who much negativ credit he is
-                    allowed to have.
+#### Rank
 
-rank:               This is the rank name to the corresponding rank_id.
+Depending on the rank, a User has can have different dept limits to his credit.
 
-credit:             This is the users credit. It is calculated by adding all
-                    deposits, refunds and payoffs refering to the user and
-                    subtract the price of all purchases refering to him.
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Rank id is unique and is used for Identification in the application. It is created automatically with a new Rank.
+| name | *String(32)* | The Rank name is unique and is used for identification in the frontend.
+| dept_limit | *Integer* | This specifies the dept limit a user with given Rank can have in his credit.
+
+### RankUpdate
+
+When a user is verified, he has to be assigned a rank. Afterwards, the rank can
+always be updated by an admin. Each time a users rank is set or changed, a
+RankUpdate entry is made. To determine a users current rank, the rank_id field
+is checked for the latest entry related to the user.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The RankUpdate id is unique and is used for identification in the application. It is created automatically with a new RankUpdate.
+| timestamp | *DateTime* | This is the date and time the RankUpdate was created. It is created automatically with the new RankUpdate.
+| user_id | *Integer* | This is the id of the user whose rank was updated.
+| admin_id | *Integer* | This is the id of the who performed the update.
+| rank_id | *Integer* | This is the id of the rank the user was updated to.
+
+#### Product
+
+Each item that can be sold through the application has to be a product. A product can only be created by an admin. A product can have an image which is
+shown in the frontend to identify it. In addition, each product has a price and
+a pricehistory. Furthermore tags are used to group products into categories.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Product id is unique and is used for identification in the application. It is created automatically with a new Product.
+| creation_date | *DateTime* | This is the date and time the Product was created. It is created automatically with the new Product.
+| created_by | *Integer* | This is the id of the admin who created the product.
+| name | *String(64)* | This is the name of the product used to identify it in the frontend. It has to be unique.
+| barcode | *String(32)* | This saves the data represented by the products barcode. This entry is optional, but it has to be unique.
+| active | *Boolean* | This indicates whether the product is active (True) and therefor available in the frontend or not (False). If not specified further, it will automatically be set to True.
+| countable | *Boolean* | This indicates whether the product is countable (True) like a chocolate bar or not countable (False) like coffee powder. If not specified further, it will automatically be set to True.
+| revokeable | *Boolean* | This indicates whether the product is revokeable (True) or not (False). If not specified further, it will automatically be set to True.
+| image_id | *Integer* | This is the id of the Upload with the products picture. This entry is optional.
+
+#### ProductPrice
+
+After a product was created, an admin has to set the products price, which he
+can always update. Therefor, a ProductPrice entry is made. The products price
+can then be determined by checking the price field of the latest entry related
+to the product. In Addition, a pricehistory can be determined by listing the
+id, timestamp and price of all entries related to the product.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The ProductPrice id is unique and is used for identification in the application. It is created automatically with a new ProductPrice.
+| timestamp | *DateTime* | This is the date and time the Product was created. It is created automatically with the new Product.
+| product_id | *Integer* | This is the id of the product whose price was set/changed.
+| admin_id | *Integer* | This is the id of the admin who made this change in the products price.
+| price | *Integer* | This is what the product price was set to.
+
+#### Tag
+
+A Tag can be assigned to each product. They help to sort products into
+categories in the frontend. All products with the same tag are listed in the
+same category.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Tag id is unique and is used for identification in the application. It is created automatically with a new Tag.
+| created_by | *Integer* | This is the id of the admin who created the Tag.
+| name | *String(24)* | This is the name of the Tag used to identify it in the frontend. It has to be unique.
+
+#### product_tag_assignments
+
+If a tag is added or removed from the product, a product_tag_assignments entry
+is made or the corresponding entry is deleted. A product can have more than one
+tag. The products tags can be determined by listing all tags from all entries
+related to the product.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| product_id | *Integer* | The id of the product the tag was assigned to.
+| tag_id | *Integer* | The id of the tag that was assigned to the product.
+
+
+#### Purchase
+
+When a user buys a product, a Purchase entry is made. The user has to be
+verified and the product has to be active. If the purchased product is
+revokeable, the purchase can be revoked, even more than once. So in addition, a
+revokehistory for the purchase can be called. The price of the purchase is
+calculated by multiplying the amount with the productprice. All prices of
+purchases the user has made, which are not revoked, are added and withdrawn
+from the users credit. Through adding the amounts a user has bought a specific
+product, a list of the users favorite products can be created.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Purchase id is unique and is used for identification in the application. It is created automatically with a new Purchase.
+| timestamp | *DateTime* | This is the date and time the Product was created. It is created automatically with the new Product.
+| user_id | *Integer* | This is the id of the user who made the purchase. The user has to be verified.
+| product_id | *Integer* | This is the id of the product that has been purchased. The product has to be active
+| productprice | *Integer* | This is the productprice when the purchase was made. It is determined automatically from the ProductPrice table when the purchase is created.
+| amount | *Integer* | This describes the quantity in which the product was purchased. Even products which are not countable are sold in discreet amounts.
+| revoked | *Boolean* | This indicates whether the Purchase is revoked (True) or not (False). If not specified further, it will automatically be set to False. The product has to be revokeable.
+
+#### PurchaseRevoke
+
+If a purchase is revoked or rerevoked, a PurchaseRevoke entry is made. It is
+used to determine the revokehistory of a purchase by listing the id, timestamp
+and revoked field of each entry related to the purchase.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The PurchaseRevoke id is unique and is used for identification in the application. It is created automatically with a new PurchaseRevoke.
+| timestamp | *DateTime* | This is the date and time the PurchaseRevoke was created. It is created automatically with the new PurchaseRevoke.
+| purchase_id | *Integer* |This is the id of the purchase the revoke was changed for.
+| revoked | *Boolean* | This indicates whether the Purchase is revoked (True) or not (False). The product has to be revokeable.
+
+#### ReplenishmentCollection
+
+When an admin fills up the products by buying them at an external supplier with the communities money, he creates a ReplenishmentCollection entry. A
+replenishmentcollection can be revoked, even more than once. So in addition, a
+revokehistory for the replenishmentcollection can be called. When creating, the
+admin has to pass a list of all single replenishments the
+replenishmentcollection consists of. The price of a replenishmentcollection is
+the sum of the total_price of all related replenishments. This price can be
+used to give an overview of the communities finances.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The ReplenishmentCollection id is unique and is used for identification in the application. It is created automatically with a new ReplenishmentCollection.
+| timestamp | *DateTime* | This is the date and time the ReplenishmentCollection was created. It is created automatically with the new ReplenishmentCollection.
+| admin_id | *Integer* | This is the id of the admin who made the ReplenishmentCollection.
+| revoked | *Boolean* | This indicates whether the ReplenishmentCollection is revoked (True) or not (False). If not specified further, it will automatically be set to False.
+| comment | *String(64)* | This is a short comment where the admin explains what he bought and why.
+
+#### ReplenishmentCollectionRevoke
+
+If a replenishmentcollection is revoked or rerevoked by an admin, a
+ReplenishmentCollectionRevoke entry is made. It is used to determine the
+revokehistory of a replenishmentcollection by listing the id, timestamp and
+revoked field of each entry related to the replenishmentcollection.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The ReplenishmentCollectionRevoke id is unique and is used for identification in the application. It is created automatically with a new ReplenishmentCollectionRevoke.
+| timestamp | *DateTime* | This is the date and time the ReplenishmentCollectionRevoke was created. It is created automatically with the new ReplenishmentCollectionRevoke.
+| admin_id | *Integer* | This is the id of the admin who changed the revoke status.
+| replcoll_id | *Integer* | This is the id of the replenishmentcollection where the revoked status has been changed.
+| revoked | *Boolean* | This indicates whether the ReplenishmentCollection is revoked (True) or not (False).
+
+#### Replenishment
+
+A replenishment is a fill up of a single product and always has to be part of a
+replenishmentcollection. Its total_price is added to the price of the related
+replenishmentcollection.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Replenishment id is unique and is used for identification in the application. It is created automatically with a new Replenishment.
+| replcoll_id | *Integer* | This is the id of the replenishmentcollection this replenishment belongs to.
+| product_id | *Integer* | This is the id of the product which is being refilled with this replenishment.
+| amount | *Integer* | This describes the quantity in which the product is refilled.
+| total_price | *Integer* |This is the price paid by the admin to an external seller, such as a supermarket, for this replenishment.
+
+#### Deposit
+
+If a user transfers money to the community, an admin has to create a deposit
+for him. A deposit can be revoked, even more than once. So in addition, a
+revokehistory for the deposit can be called. The amounts of all deposits
+related to the user, which are not revoked, are added to the users credit.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Deposit id is unique and is used for identification in the application. It is created automatically with a new Deposit.
+| timestamp | *DateTime* | This is the date and time the Deposit was created. It is created automatically with the new Deposit.
+| user_id | *Integer* | This is the id of the user the deposit was made for.
+| admin_id | *Integer* | This is the id of the admin who made the deposit.
+| amount | *Integer* | This describes the amount (in cents) of the deposit. This is the money the user transferred to the community.
+| comment | *String(64)* | This is a short comment where the admin explains what he did and why.
+| revoked | *Boolean* | This indicates whether the Deposit is revoked (True) or not (False). If not specified further, it will automatically be set to False.
+
+#### DepositRevoke
+
+When an admin revokes or rerevokes a deposit, a DepositRevoke entry is made. It
+is used to determine the revokehistory of a deposit by listing the id, timestamp
+and revoked field of each entry related to the purchase.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The DepositRevoke id is unique and is used for identification in the application. It is created automatically with a new DepositRevoke.
+| timestamp | *DateTime* | This is the date and time the DepositRevoke was created. It is created automatically with the new DepositRevoke.
+| admin_id | *Integer* | This is the id of the admin who changed the revoke status.
+| deposit_id | *Integer* | This is the id of the deposit where the revoked status has been changed.
+| revoked | *Boolean* | This indicates whether the Deposit is revoked (True) or not (False).
+
+#### Refunds
+
+When a user buys things for the community with his own money, which can not
+directly be linked to a product and no replenishment can be made, an admin has
+to make a refund for him. An example would be cleaning agent. A refund
+can be revoked, even more than once. So in addition, a revokehistory for the
+refund can be called. The total_price of all refunds related to the user, which
+are not revoked, are added to the users credit.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Refund id is unique and is used for identification in the application. It is created automatically with a new Refund.
+| timestamp | *DateTime* | This is the date and time the Refund was created. It is created automatically with the new Refund.
+| user_id | *Integer* | This is the id of the user the Refund was made for.
+| admin_id | *Integer* | This is the id of the admin who made the Refund.
+| total_price | *Integer* | This describes the amount (in cents) of the refund.
+| comment | *String(64)* | This is a short comment where the admin explains what he did and why.
+| revoked | *Boolean* | This indicates whether the Refund is revoked (True) or not (False). If not specified further, it will automatically be set to False.
+
+#### RefundRevoke
+
+When an admin revokes or rerevokes a refund, a RefundRevoke entry is made. It
+is used to determine the revokehistory of a refund by listing the id, timestamp
+and revoked field of each entry related to the refund.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The RefundsRevoke id is unique and is used for identification in the application. It is created automatically with a new RefundsRevoke.
+| timestamp | *DateTime* | This is the date and time the RefundsRevoke was created. It is created automatically with the new RefundsRevoke.
+| admin_id | *Integer* | This is the id of the admin who changed the revoke status.
+| refund_id | *Integer* | This is the id of the refund where the revoked status has been changed.
+| revoked | *Boolean* | This indicates whether the Refund is revoked (True) or not (False).
+
+#### Payoff
+
+When an admin buys things for the community with the communities money and the
+products can not directly be linked to a product like coffee beans, he has to
+make a payoff. A payoff can be revoked, even more than once. So in addition, a
+revokehistory for the payoff can be called. The total_price can be used to
+give an overview of the communities finances.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The Payoff id is unique and is used for identification in the application. It is created automatically with a new Payoff.
+| timestamp | *DateTime* | This is the date and time the Payoff was created. It is created automatically with the new Payoff.
+| user_id | *Integer* | This is the id of the user the Payoff was made for.
+| admin_id | *Integer* | This is the id of the admin who made the Payoff.
+| total_price | *Integer* | This describes the amount (in cents) of the Payoff.
+| comment | *String(64)* | This is a short comment where the admin explains what he did and why.
+| revoked | *Boolean* | This indicates whether the Payoff is revoked (True) or not (False). If not specified further, it will automatically be set to False.
+
+#### PayoffRevoke
+
+When an admin revokes or rerevokes a payoff, a PayoffRevoke entry is made. It
+is used to determine the revokehistory of a deposit by listing the id, timestamp
+and revoked field of each entry related to the payoff.
+
+| Name | TYPE | Explanation
+| --- | --- | --- |
+| id | *Integer* | The PayoffRevoke id is unique and is used for identification in the application. It is created automatically with a new PayoffRevoke.
+| timestamp | *DateTime* | This is the date and time the PayoffRevoke was created. It is created automatically with the new PayoffRevoke.
+| admin_id | *Integer* | This is the id of the admin who changed the revoke status.
+| refund_id | *Integer* | This is the id of the refund where the revoked status has been changed.
+| revoked | *Boolean* | This indicates whether the PayoffRevoke is revoked (True) or not (False).
