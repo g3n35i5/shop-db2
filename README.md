@@ -236,7 +236,7 @@ $ python3 -m http.server
 ```
 
 ### Models
-This section covers the models used in shodb. They are defined in
+This section covers the models used in shop-db. They are defined in
 .shopdb/models.py
 
 #### User
@@ -244,7 +244,7 @@ This section covers the models used in shodb. They are defined in
 In order to interact with the database one needs some sort of user account
 which stores personal data, privileges and that can be referenced by other
 parts of the application. Therefor we use the User table. Anyone who can reach
-the shopdb application can create a user. After creating User through
+the shop-db application can create a user. After creating User through
 registering, one has to be verified by an admin to be able to use ones account.
 This prevents unauthorized use of the application. In addition a user can be an
 admin, has a rank, a credit to buy products and a list of favorite products.
@@ -255,8 +255,8 @@ admin, has a rank, a credit to buy products and a list of favorite products.
 | creation_date | *DateTime* | This is the date and time the user was created. It is created automatically with the new user. It is not modified when user properties are updated.
 | firstname | *String(32)* | This is the users firstname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.
 | lastname | *String(32)* | This is the users lastname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.
-| password | *String(256)* | This is the passwordhash which is used to verify the users password when he logs in. It is automatically created from the password passed when creating or updating the user. The password itself is not stored in the database.
-| is_verified | *Boolean* | To prevent unauthorized access, each user has to be verified from an admin before he can carry out further actions. This column states wether the user is verified (True) or not (False).
+| password | *String(256)* | This is the password hash which is used to verify the users password when he logs in. It is automatically created from the password passed when creating or updating the user. The password itself is not stored in the database.
+| is_verified | *Boolean* | To prevent unauthorized access, each user has to be verified from an admin before he can carry out further actions. This column states whether the user is verified (True) or not (False).
 | purchases | *relationship* | This represents all the purchases the user has made.
 
 #### UserVerification
@@ -343,7 +343,7 @@ a pricehistory. Furthermore tags are used to group products into categories.
 | barcode | *String(32)* | This saves the data represented by the products barcode. This entry is optional, but it has to be unique.
 | active | *Boolean* | This indicates whether the product is active (True) and therefor available in the frontend or not (False). If not specified further, it will automatically be set to True.
 | countable | *Boolean* | This indicates whether the product is countable (True) like a chocolate bar or not countable (False) like coffee powder. If not specified further, it will automatically be set to True.
-| revokeable | *Boolean* | This indicates whether the product is revokeable (True) or not (False). If not specified further, it will automatically be set to True.
+| revocable | *Boolean* | This indicates whether the product is revocable (True) or not (False). If not specified further, it will automatically be set to True.
 | image_id | *Integer* | This is the id of the Upload with the products picture. This entry is optional.
 
 #### ProductPrice
@@ -391,7 +391,7 @@ related to the product.
 
 When a user buys a product, a Purchase entry is made. The user has to be
 verified and the product has to be active. If the purchased product is
-revokeable, the purchase can be revoked, even more than once. So in addition, a
+revocable, the purchase can be revoked, even more than once. So in addition, a
 revokehistory for the purchase can be called. The price of the purchase is
 calculated by multiplying the amount with the productprice. All prices of
 purchases the user has made, which are not revoked, are added and withdrawn
@@ -406,11 +406,11 @@ product, a list of the users favorite products can be created.
 | product_id | *Integer* | This is the id of the product that has been purchased. The product has to be active
 | productprice | *Integer* | This is the productprice when the purchase was made. It is determined automatically from the ProductPrice table when the purchase is created.
 | amount | *Integer* | This describes the quantity in which the product was purchased. Even products which are not countable are sold in discreet amounts.
-| revoked | *Boolean* | This indicates whether the Purchase is revoked (True) or not (False). If not specified further, it will automatically be set to False. The product has to be revokeable.
+| revoked | *Boolean* | This indicates whether the Purchase is revoked (True) or not (False). If not specified further, it will automatically be set to False. The product has to be revocable.
 
 #### PurchaseRevoke
 
-If a purchase is revoked or rerevoked, a PurchaseRevoke entry is made. It is
+If a purchase is revoked or re-revoked, a PurchaseRevoke entry is made. It is
 used to determine the revokehistory of a purchase by listing the id, timestamp
 and revoked field of each entry related to the purchase.
 
@@ -419,7 +419,7 @@ and revoked field of each entry related to the purchase.
 | id | *Integer* | The PurchaseRevoke id is unique and is used for identification in the application. It is created automatically with a new PurchaseRevoke.
 | timestamp | *DateTime* | This is the date and time the PurchaseRevoke was created. It is created automatically with the new PurchaseRevoke.
 | purchase_id | *Integer* |This is the id of the purchase the revoke was changed for.
-| revoked | *Boolean* | This indicates whether the Purchase is revoked (True) or not (False). The product has to be revokeable.
+| revoked | *Boolean* | This indicates whether the Purchase is revoked (True) or not (False). The product has to be revocable.
 
 #### ReplenishmentCollection
 
@@ -441,7 +441,7 @@ used to give an overview of the communities finances.
 
 #### ReplenishmentCollectionRevoke
 
-If a replenishmentcollection is revoked or rerevoked by an admin, a
+If a replenishmentcollection is revoked or re-revoked by an admin, a
 ReplenishmentCollectionRevoke entry is made. It is used to determine the
 revokehistory of a replenishmentcollection by listing the id, timestamp and
 revoked field of each entry related to the replenishmentcollection.
@@ -487,7 +487,7 @@ related to the user, which are not revoked, are added to the users credit.
 
 #### DepositRevoke
 
-When an admin revokes or rerevokes a deposit, a DepositRevoke entry is made. It
+When an admin revokes or re-revokes a deposit, a DepositRevoke entry is made. It
 is used to determine the revokehistory of a deposit by listing the id, timestamp
 and revoked field of each entry related to the purchase.
 
@@ -520,7 +520,7 @@ are not revoked, are added to the users credit.
 
 #### RefundRevoke
 
-When an admin revokes or rerevokes a refund, a RefundRevoke entry is made. It
+When an admin revokes or re-revokes a refund, a RefundRevoke entry is made. It
 is used to determine the revokehistory of a refund by listing the id, timestamp
 and revoked field of each entry related to the refund.
 
@@ -552,7 +552,7 @@ give an overview of the communities finances.
 
 #### PayoffRevoke
 
-When an admin revokes or rerevokes a payoff, a PayoffRevoke entry is made. It
+When an admin revokes or re-revokes a payoff, a PayoffRevoke entry is made. It
 is used to determine the revokehistory of a deposit by listing the id, timestamp
 and revoked field of each entry related to the payoff.
 
