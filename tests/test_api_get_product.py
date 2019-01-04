@@ -13,7 +13,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         assert 'product' in data
         product = data['product']
         required = ['id', 'name', 'price', 'barcode', 'active',
-                    'countable', 'revokeable', 'imagename', 'tags']
+                    'countable', 'revocable', 'imagename', 'tags']
         assert all(x in product for x in required)
 
     def test_list_nonactive_product_without_token(self):
@@ -39,7 +39,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         assert 'product' in data
         product = data['product']
         required = ['id', 'name', 'price', 'barcode', 'active',
-                    'countable', 'revokeable', 'imagename', 'tags']
+                    'countable', 'revocable', 'imagename', 'tags']
         assert all(x in product for x in required)
 
     def test_list_non_existing_product(self):

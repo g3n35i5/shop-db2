@@ -1274,7 +1274,7 @@ def list_products(admin):
     else:
         result = Product.query.order_by(Product.name).all()
     products = convert_minimal(result, ['id', 'name', 'price', 'barcode',
-                                        'active', 'countable', 'revokeable',
+                                        'active', 'countable', 'revocable',
                                         'imagename', 'tags'])
 
     for product in products:
@@ -1307,7 +1307,7 @@ def create_product(admin):
     required = ['name', 'price']
     createable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
-        'countable': bool, 'revokeable': bool, 'imagename': str
+        'countable': bool, 'revocable': bool, 'imagename': str
     }
 
     # Check all required fields
@@ -1366,7 +1366,7 @@ def get_product(admin, id):
         raise exc.UnauthorizedAccess()
 
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-              'revokeable', 'imagename', 'pricehistory', 'tags']
+              'revocable', 'imagename', 'pricehistory', 'tags']
 
     # Convert the product to a dictionary
     product = convert_minimal(product, fields)[0]
@@ -1408,7 +1408,7 @@ def update_product(admin, id):
 
     updateable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
-        'imagename': str, 'countable': bool, 'revokeable': bool
+        'imagename': str, 'countable': bool, 'revocable': bool
     }
 
     # Check forbidden fields
@@ -1598,7 +1598,7 @@ def update_purchase(id):
     # Handle purchase revoke
     if 'revoked' in data:
         # In case that the product is not revocable, an exception must be made.
-        if not product.revokeable:
+        if not product.revocable:
             raise exc.PurchaseNotRevocable()
         if purchase.revoked == data['revoked']:
             raise exc.NothingHasChanged()

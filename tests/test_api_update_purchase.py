@@ -84,7 +84,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         """
         # Make sure, that product 1 is not revocable.
         product = Product.query.filter_by(id=1).first()
-        product.revokeable = False
+        product.revocable = False
         db.session.commit()
 
         self.insert_default_purchases()

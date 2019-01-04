@@ -219,7 +219,7 @@ class Product(db.Model):
     barcode = db.Column(db.String(32), unique=True, nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
     countable = db.Column(db.Boolean, nullable=False, default=True)
-    revokeable = db.Column(db.Boolean, nullable=False, default=True)
+    revocable = db.Column(db.Boolean, nullable=False, default=True)
     image_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
                          nullable=True)
     tags = db.relationship('Tag', secondary=product_tag_assignments,
