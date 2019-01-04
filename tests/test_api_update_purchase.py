@@ -78,6 +78,23 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(data['updated_fields'][0], 'revoked')
         self.assertTrue(Purchase.query.filter_by(id=1).first().revoked)
 
+    def test_update_non_revocable_purchase_revoke(self):
+        """
+        In case that the product is not revocable, an exception must be made.
+        """
+        # Make sure, that product 1 is not revocable.
+        product = Product.query.filter_by(id=1).first()
+        product.revokeable = False
+        db.session.commit()
+
+        self.insert_default_purchases()
+        self.assertFalse(Purchase.query.filter_by(id=1).first().revoked)
+        data = {'revoked': True}
+        res = self.put(url='/purchases/1', data=data, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.PurchaseNotRevocable)
+        self.assertFalse(Purchase.query.filter_by(id=1).first().revoked)
+
     def test_update_purchase_amount(self):
         """Update product price"""
         self.insert_default_purchases()

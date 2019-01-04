@@ -105,6 +105,12 @@ class PurchaseNotFound(BaseException):
     code = 401
 
 
+class PurchaseNotRevocable(BaseException):
+    type = 'error'
+    message = 'This purchase cannot be revoked.'
+    code = 401
+
+
 class DepositNotFound(BaseException):
     type = 'error'
     message = 'There is no deposit with this id.'

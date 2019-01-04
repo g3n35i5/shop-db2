@@ -1564,23 +1564,29 @@ def update_purchase(id):
     """
     Update the purchase with the given id.
 
-    :param id:                   Is the purchase id.
+    :param id:                    Is the purchase id.
 
-    :return:                     A message that the update was
-                                 successful and a list of all updated fields.
+    :return:                      A message that the update was
+                                  successful and a list of all updated fields.
 
-    :raises PurchaseNotFound:    If the purchase with this ID does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request
-                                 data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises NothingHasChanged:   If no change occurred after the update.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :raises PurchaseNotFound:     If the purchase with this ID does not exist.
+    :raises PurchaseNotRevocable: An attempt is made to revoked a purchase
+                                  whose product is not revocable.
+    :raises ForbiddenField:       If a forbidden field is in the request data.
+    :raises UnknownField:         If an unknown parameter exists in the request
+                                  data.
+    :raises InvalidType:          If one or more parameters have an invalid
+                                  type.
+    :raises NothingHasChanged:    If no change occurred after the update.
+    :raises CouldNotUpdateEntry:  If any other error occurs.
     """
     # Check purchase
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
         raise exc.PurchaseNotFound()
+
+    # Query the product
+    product = Product.query.filter_by(id=purchase.product_id).first()
 
     data = json_body()
     updateable = {'revoked': bool, 'amount': int}
@@ -1591,6 +1597,9 @@ def update_purchase(id):
 
     # Handle purchase revoke
     if 'revoked' in data:
+        # In case that the product is not revocable, an exception must be made.
+        if not product.revokeable:
+            raise exc.PurchaseNotRevocable()
         if purchase.revoked == data['revoked']:
             raise exc.NothingHasChanged()
         purchase.toggle_revoke(revoked=data['revoked'])
