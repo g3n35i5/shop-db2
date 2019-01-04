@@ -29,10 +29,10 @@ class DeleteUserAPITestCase(BaseAPITestCase):
         """Deleting a user that has been verified should raise an error."""
         res = self.delete(url='/users/2', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserCanNotBeDeleted)
+        self.assertException(res, exc.EntryCanNotBeDeleted)
 
     def test_delete_non_existing_user(self):
         """Deleting a user that has been verified should raise an error."""
         res = self.delete(url='/users/5', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserNotFound)
+        self.assertException(res, exc.EntryNotFound)

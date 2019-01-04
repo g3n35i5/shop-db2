@@ -2,284 +2,231 @@
 
 from sqlalchemy.exc import DontWrapMixin
 
+"""
+Base exception for all exceptions (needed for instance check)
+"""
 
-class BaseException(Exception, DontWrapMixin):
+
+class ShopdbException(Exception, DontWrapMixin):
     pass
 
 
-class NothingHasChanged(BaseException):
+"""
+Data related exceptions.
+
+These exceptions handle all errors that occur when incorrect and/or incomplete
+or unauthorized data is transferred.
+"""
+
+
+class DataIsMissing(ShopdbException):
+    type = 'error'
+    message = 'Some or more details are missing.'
+    code = 401
+
+
+class ForbiddenField(ShopdbException):
+    type = 'error'
+    message = 'One or more fields are forbidden.'
+    code = 401
+
+
+class WrongType(ShopdbException):
+    type = 'error'
+    message = 'The data entered is of the wrong type.'
+    code = 401
+
+
+class UnknownField(ShopdbException):
+    type = 'error'
+    message = 'Unknown field.'
+    code = 401
+
+
+class InvalidJSON(ShopdbException):
+    type = 'error'
+    message = 'The JSON data is corrupt.'
+    code = 401
+
+
+class NoFileIncluded(ShopdbException):
+    type = 'error'
+    message = 'No file could be found in the request.'
+    code = 401
+
+
+class InvalidFilename(ShopdbException):
+    type = 'error'
+    message = 'The file is invalid.'
+    code = 401
+
+
+class BrokenImage(ShopdbException):
+    type = 'error'
+    message = 'The image file is broken.'
+    code = 401
+
+
+class ImageMustBeQuadratic(ShopdbException):
+    type = 'error'
+    message = 'The image must be quadratic.'
+    code = 401
+
+
+class InvalidFileType(ShopdbException):
+    type = 'error'
+    message = 'The file is of the wrong type.'
+    code = 401
+
+
+class FileTooLarge(ShopdbException):
+    type = 'error'
+    message = 'The file is too large.'
+    code = 401
+
+
+class InvalidAmount(ShopdbException):
+    type = 'error'
+    message = 'The quantity to be purchased is not permitted.'
+    code = 401
+
+
+"""
+Entry related exceptions.
+
+These exceptions handle all errors related to entries. This can be, for
+example, that an entry already exists or cannot be updated or deleted. 
+"""
+
+
+class NothingHasChanged(ShopdbException):
     type = 'info'
     message = 'Nothing has changed.'
     code = 200
 
 
-class UserAlreadyVerified(BaseException):
+class CouldNotCreateEntry(ShopdbException):
+    type = 'error'
+    message = 'Could not create entry.'
+    code = 401
+
+
+class CouldNotUpdateEntry(ShopdbException):
+    type = 'error'
+    message = 'Could not update entry.'
+    code = 401
+
+
+class EntryNotFound(ShopdbException):
+    type = 'error'
+    message = 'There is no entry with this id.'
+    code = 401
+
+
+class EntryCanNotBeDeleted(ShopdbException):
+    type = 'error'
+    message = 'The entry can not be deleted.'
+    code = 401
+
+
+class EntryIsInactive(ShopdbException):
+    type = 'error'
+    message = 'This entry is inactive.'
+    code = 401
+
+
+class EntryAlreadyExists(ShopdbException):
+    type = 'error'
+    message = 'This entry already exists.'
+    code = 401
+
+
+class EntryNotRevocable(ShopdbException):
+    type = 'error'
+    message = 'This entry cannot be revoked.'
+    code = 401
+
+
+"""
+User related exceptions.
+
+These exceptions handle all errors related to users.
+"""
+
+
+class UserIsNotVerified(ShopdbException):
+    type = 'error'
+    message = 'This user has not been verified yet.'
+    code = 401
+
+
+class InsufficientCredit(ShopdbException):
+    type = 'error'
+    message = 'You do not have enough credit for this purchase'
+    code = 401
+
+
+class UserAlreadyVerified(ShopdbException):
     type = 'error'
     message = 'This user has already been verified.'
     code = 401
 
 
-class UserCanNotBeDeleted(BaseException):
-    type = 'error'
-    message = 'This user can not be deleted.'
-    code = 401
-
-
-class UserCanNotBeUpdated(BaseException):
-    type = 'error'
-    message = 'This user can not be updated.'
-    code = 401
-
-
-class NoRemainingAdmin(BaseException):
-    type = 'error'
-    message = 'There always has to be at least one admin. You cant remove' \
-              'your admin privileges'
-    code = 401
-
-
-class UserNeedsPassword(BaseException):
+class UserNeedsPassword(ShopdbException):
     type = 'error'
     message = 'The user must first set a password before he can become ' \
               'an administrator.'
     code = 401
 
 
-class DataIsMissing(BaseException):
-    type = 'error'
-    message = 'Some or more details are missing.'
-    code = 401
+"""
+Credential related exceptions.
+
+These exceptions handle all errors related to permissions. This can be, for
+example, that a user wants to perform an action for which he does not have the
+authorization or that the session has expired, i.e. the token has become
+invalid.
+"""
 
 
-class ForbiddenField(BaseException):
-    type = 'error'
-    message = 'One or more fields are forbidden.'
-    code = 401
-
-
-class WrongType(BaseException):
-    type = 'error'
-    message = 'The data entered is of the wrong type.'
-    code = 401
-
-
-class UnknownField(BaseException):
-    type = 'error'
-    message = 'Unknown field.'
-    code = 401
-
-
-class CouldNotCreateEntry(BaseException):
-    type = 'error'
-    message = 'Could not create entry.'
-    code = 401
-
-
-class CouldNotUpdateEntry(BaseException):
-    type = 'error'
-    message = 'Could not update entry.'
-    code = 401
-
-
-class UserIsNotVerified(BaseException):
-    type = 'error'
-    message = 'This user has not been verified yet.'
-    code = 401
-
-
-class UserNotFound(BaseException):
-    type = 'error'
-    message = 'There is no user with this id.'
-    code = 401
-
-
-class InvalidAmount(BaseException):
-    type = 'error'
-    message = 'The quantity to be purchased is not permitted.'
-    code = 401
-
-
-class PurchaseNotFound(BaseException):
-    type = 'error'
-    message = 'There is no purchase with this id.'
-    code = 401
-
-
-class PurchaseNotRevocable(BaseException):
-    type = 'error'
-    message = 'This purchase cannot be revoked.'
-    code = 401
-
-
-class DepositNotFound(BaseException):
-    type = 'error'
-    message = 'There is no deposit with this id.'
-    code = 401
-
-
-class RefundNotFound(BaseException):
-    type = 'error'
-    message = 'There is no refund with this id.'
-    code = 401
-
-
-class PayoffNotFound(BaseException):
-    type = 'error'
-    message = 'There is no payoff with this id.'
-    code = 401
-
-
-class RankNotFound(BaseException):
-    type = 'error'
-    message = 'There is no rank with this id.'
-    code = 401
-
-
-class ReplenishmentNotFound(BaseException):
-    type = 'error'
-    message = 'There is no Replenishment with this id.'
-    code = 401
-
-
-class ReplenishmentCanNotBeDeleted(BaseException):
-    type = 'error'
-    message = 'The replenishment can not be deleted.'
-    code = 401
-
-
-class ReplenishmentCollCanNotBeDeleted(BaseException):
-    type = 'error'
-    message = 'The replenishmentcollection can not be deleted.'
-    code = 401
-
-
-class ReplenishmentCollectionNotFound(BaseException):
-    type = 'error'
-    message = 'There is no ReplenishmentCollection with this id.'
-    code = 401
-
-
-class ProductNotFound(BaseException):
-    type = 'error'
-    message = 'There is no product with this id.'
-    code = 401
-
-
-class ProductIsInactive(BaseException):
-    type = 'error'
-    message = 'This product is inactive and cannot be purchased.'
-    code = 401
-
-
-class ProductAlreadyExists(BaseException):
-    type = 'error'
-    message = 'This product already exists.'
-    code = 401
-
-
-class BarcodeAlreadyExists(BaseException):
-    type = 'error'
-    message = 'A product with this barcode already exists.'
-    code = 401
-
-
-class TagAlreadyExists(BaseException):
-    type = 'error'
-    message = 'This tag already exists.'
-    code = 401
-
-
-class TagNotFound(BaseException):
-    type = 'error'
-    message = 'There is no tag with this id.'
-    code = 401
-
-
-class ImageNotFound(BaseException):
-    type = 'error'
-    message = 'There is no image file with this name.'
-    code = 401
-
-
-class PasswordsDoNotMatch(BaseException):
+class PasswordsDoNotMatch(ShopdbException):
     type = 'error'
     message = 'Password does not match the confirm password.'
     code = 401
 
 
-class PasswordTooShort(BaseException):
+class PasswordTooShort(ShopdbException):
     type = 'error'
     message = 'The password is too short.'
     code = 401
 
 
-class InvalidCredentials(BaseException):
+class InvalidCredentials(ShopdbException):
     type = 'error'
     message = 'A user with this access data was not found.'
     code = 401
 
 
-class UnauthorizedAccess(BaseException):
+class UnauthorizedAccess(ShopdbException):
     type = 'error'
     message = 'You do not have the authorization to perform this action.'
     code = 401
 
 
-class TokenIsInvalid(BaseException):
+class TokenIsInvalid(ShopdbException):
     type = 'error'
     message = 'Your token is invalid.'
     code = 401
 
 
-class TokenHasExpired(BaseException):
+class TokenHasExpired(ShopdbException):
     type = 'error'
     message = 'Your Token has been expired.'
     code = 401
 
 
-class InvalidJSON(BaseException):
+class NoRemainingAdmin(ShopdbException):
     type = 'error'
-    message = 'The JSON data is corrupt.'
-    code = 401
-
-
-class NoFileIncluded(BaseException):
-    type = 'error'
-    message = 'No file could be found in the request.'
-    code = 401
-
-
-class InvalidFilename(BaseException):
-    type = 'error'
-    message = 'The file is invalid.'
-    code = 401
-
-
-class BrokenImage(BaseException):
-    type = 'error'
-    message = 'The image file is broken.'
-    code = 401
-
-
-class ImageMustBeQuadratic(BaseException):
-    type = 'error'
-    message = 'The image must be quadratic.'
-    code = 401
-
-
-class InvalidFileType(BaseException):
-    type = 'error'
-    message = 'The file is of the wrong type.'
-    code = 401
-
-
-class FileTooLarge(BaseException):
-    type = 'error'
-    message = 'The file is too large.'
-    code = 401
-
-
-class InsufficientCredit(BaseException):
-    type = 'error'
-    message = 'You do not have enough credit for this purchase'
+    message = 'There always has to be at least one admin. You cant remove' \
+              'your admin privileges'
     code = 401

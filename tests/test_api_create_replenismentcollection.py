@@ -131,4 +131,4 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ProductNotFound)
+        self.assertException(res, exc.EntryNotFound)

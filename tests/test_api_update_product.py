@@ -32,7 +32,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         data = {'name': 'Bread'}
         res = self.put(url='/products/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ProductNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_wrong_type(self):
         """A wrong field type should raise an error"""
@@ -115,4 +115,4 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         data = {'imagename': 'test.png'}
         res = self.put(url='/products/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ImageNotFound)
+        self.assertException(res, exc.EntryNotFound)

@@ -38,4 +38,4 @@ class GetPayoffAPITestCase(BaseAPITestCase):
         self.insert_default_payoffs()
         res = self.get(url='/payoffs/3', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.PayoffNotFound)
+        self.assertException(res, exc.EntryNotFound)

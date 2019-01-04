@@ -74,7 +74,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         res = self.put(url='/replenishmentcollections/4',
                        data={'revoked': True}, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ReplenishmentCollectionNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_replenishmentcollection_forbidden_field(self):
         """Updating forbidden fields of a replenishmentcollection"""

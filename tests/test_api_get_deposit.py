@@ -24,7 +24,7 @@ class GetDepositAPITestCase(BaseAPITestCase):
         """Getting a non existing deposit should raise an error."""
         res = self.get(url='/deposits/6')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.DepositNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_get_deposit_revokehistory(self):
         """Getting the revokehistory of a single deposit"""

@@ -28,4 +28,4 @@ class GetRefundsAPITestCase(BaseAPITestCase):
         self.insert_default_refunds()
         res = self.get(url='/refunds/6', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.RefundNotFound)
+        self.assertException(res, exc.EntryNotFound)

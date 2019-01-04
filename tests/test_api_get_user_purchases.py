@@ -24,7 +24,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         """
         self.insert_default_purchases()
         res = self.get(url='/users/5/purchases')
-        self.assertException(res, UserNotFound)
+        self.assertException(res, EntryNotFound)
 
     def test_get_user_purchases_non_verified_user(self):
         """

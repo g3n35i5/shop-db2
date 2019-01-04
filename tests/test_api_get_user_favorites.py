@@ -50,7 +50,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         """
         res = self.get(url='/users/5/favorites')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_get_user_favorites_non_verified_user(self):
         """

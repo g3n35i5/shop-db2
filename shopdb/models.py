@@ -336,7 +336,7 @@ class Purchase(db.Model):
         """Make sure that the product is active"""
         product = Product.query.filter(Product.id == product_id).first()
         if not product or not product.active:
-            raise ProductIsInactive()
+            raise EntryIsInactive()
 
         return product_id
 

@@ -23,7 +23,7 @@ class GetUserAPITestCase(BaseAPITestCase):
         """Getting a non existing user should raise an error."""
         res = self.get(url='/users/5')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_get_non_verified_user(self):
         """Getting a non verified user should raise an error."""

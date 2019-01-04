@@ -14,7 +14,7 @@ class PurchaseModelTestCase(BaseTestCase):
         db.session.commit()
         product = Product.query.filter_by(id=1).first()
         self.assertFalse(product.active)
-        with self.assertRaises(exc.ProductIsInactive):
+        with self.assertRaises(exc.EntryIsInactive):
             purchase = Purchase(user_id=1, product_id=1, amount=1)
         db.session.rollback()
         # No purchase may have been made at this point

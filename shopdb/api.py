@@ -165,16 +165,15 @@ def insert_user(data):
     """
     This help function creates a new user with the given data.
 
-    :param data:                      Is the dictionary with all the data for
-                                      the user.
+    :param data:                 Is the dictionary containing the data for the
+                                 new user.
 
-    :return:                          None
+    :return:                     None
 
-    :raises DataIsMissing:            If not all required data is available.
-    :raises WrongType:                If one or more data is of the wrong type.
-    :raises PasswordsDoNotMatch:      If the passwords do not match.
-    :raises CouldNotCreateEntry:      If the new user cannot be added to the
-                                      database.
+    :raises DataIsMissing:       If not all required data is available.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises PasswordsDoNotMatch: If the passwords do not match.
+    :raises CouldNotCreateEntry: If the new user cannot be created.
     """
 
     allowed = {'firstname': str, 'lastname': str,
@@ -281,16 +280,16 @@ def adminOptional(f):
     If this is not the case, or the user has no admin rights, the following
     function returns only a part of the available data.
 
-    :param f:                   Is the wrapped function.
+    :param f:                Is the wrapped function.
 
-    :return:                    Returns the wrapped function f with the
-                                additional parameter admin, if present.
-                                Otherwise, the parameter admin is None.
+    :return:                 Returns the wrapped function f with the
+                             additional parameter admin, if present.
+                             Otherwise, the parameter admin is None.
 
-    :raises TokenIsInvalid:     If the token cannot be decoded.
-    :raises TokenHasExpired:    If the token has been expired.
-    :raises TokenIsInvalid:     If no user object could be found in the
-                                decoded token.
+    :raises TokenIsInvalid:  If the token cannot be decoded.
+    :raises TokenHasExpired: If the token has been expired.
+    :raises TokenIsInvalid:  If no user object could be found in the decoded
+                             token.
     """
 
     @wraps(f)
@@ -359,7 +358,7 @@ def handle_error(error):
         raise error  # pragma: no cover
 
     # Create, if possible, a user friendly response.
-    if all(hasattr(error, item) for item in ['type', 'message', 'code']):
+    if isinstance(error, exc.ShopdbException):
         return jsonify(result=error.type, message=error.message), error.code
     else:  # pragma: no cover
         raise error
@@ -406,7 +405,7 @@ def get_image(imagename):
         if os.path.isfile(app.config['UPLOAD_FOLDER'] + imagename):
             return send_from_directory(app.config['UPLOAD_FOLDER'], imagename)
         else:
-            raise exc.ImageNotFound()
+            raise exc.EntryNotFound()
 
 
 @app.route('/upload', methods=['POST'])
@@ -648,14 +647,9 @@ def register():
     """
     Registration of new users.
 
-    :return:                          A message that the registration was
-                                      successful.
+    :return:                     A message that the registration was successful.
 
-    :raises DataIsMissing:            If not all required data is available.
-    :raises WrongType:                If one or more data is of the wrong type.
-    :raises PasswordsDoNotMatch:      If the passwords do not match.
-    :raises CouldNotCreateEntry:      If the new user cannot be added to the
-                                      database.
+    :raises CouldNotCreateEntry: If the new user cannot be created.
     """
     insert_user(json_body())
     try:
@@ -690,25 +684,24 @@ def verify_user(admin, id):
     """
     Verify a user.
 
-    :param admin:                 Is the administrator user, determined by
-                                  @adminRequired.
-    :param id:                    Is the user id.
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the user id.
 
-    :return:                      A message that the verification was
-                                  successful.
+    :return:                     A message that the verification was successful.
 
-    :raises UserAlreadyVerified:  If the user already has been verified.
-    :raises DataIsMissing:        If the rank_id is not included in the request.
-    :raises UnknownField:         If an unknown parameter exists in the request
-                                  data.
-    :raises InvalidType:          If one or more parameters have an invalid
-                                  type.
-    :raises RankNotFound:         If the rank to be assigned to the user does
-                                  not exist.
+    :raises UserAlreadyVerified: If the user already has been verified.
+    :raises DataIsMissing:       If the rank_id is not included in the request.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid
+                                 type.
+    :raises EntryNotFound:       If the rank to be assigned to the user does
+                                 not exist.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if user.is_verified:
         raise exc.UserAlreadyVerified()
 
@@ -721,7 +714,7 @@ def verify_user(admin, id):
     rank_id = data['rank_id']
     rank = Rank.query.filter_by(id=rank_id).first()
     if not rank:
-        raise exc.RankNotFound()
+        raise exc.EntryNotFound()
 
     user.verify(admin_id=admin.id, rank_id=rank_id)
     db.session.commit()
@@ -761,12 +754,12 @@ def get_user_favorites(id):
 
     :return:                   A list with the IDs of the favorite products.
 
-    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises EntryNotFound:     If the user with this ID does not exist.
     :raises UserIsNotVerified: If the user has not yet been verified.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
     favorites = user.favorites
@@ -783,12 +776,12 @@ def get_user_deposits(id):
 
     :return:                   A list with all deposits of the user.
 
-    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises EntryNotFound:     If the user with this ID does not exist.
     :raises UserIsNotVerified: If the user has not yet been verified.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
     deposits = user.deposits.all()
@@ -808,12 +801,12 @@ def get_user_refunds(id):
 
     :return:                   A list with all refunds of the user.
 
-    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises EntryNotFound:     If the user with this ID does not exist.
     :raises UserIsNotVerified: If the user has not yet been verified.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
     result = user.refunds.all()
@@ -834,12 +827,12 @@ def get_user_purchases(id):
 
     :return:                   A list with all purchases of the user.
 
-    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises EntryNotFound:     If the user with this ID does not exist.
     :raises UserIsNotVerified: If the user has not yet been verified.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
     purchases = user.purchases.all()
@@ -860,12 +853,12 @@ def get_user(id):
 
     :return:                   The requested user as JSON object.
 
-    :raises UserNotFound:      If the user with this ID does not exist.
+    :raises EntryNotFound:     If the user with this ID does not exist.
     :raises UserIsNotVerified: If the user has not yet been verified.
     """
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
@@ -887,7 +880,7 @@ def update_user(admin, id):
     :return:                     A message that the update was
                                  successful and a list of all updated fields.
 
-    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises EntryNotFound:        If the user with this ID does not exist.
     :raises UserIsNotVerified:   If the user has not yet been verified.
     :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
@@ -904,7 +897,7 @@ def update_user(admin, id):
     # Query user
     user = User.query.filter(User.id == id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
 
     # Raise an exception if the user has not been verified yet.
     if not user.is_verified:
@@ -971,7 +964,7 @@ def update_user(admin, id):
     try:
         db.session.commit()
     except IntegrityError:
-        raise exc.UserCanNotBeUpdated()
+        raise exc.CouldNotUpdateEntry()
 
     return jsonify({
         'message': 'Updated user.',
@@ -985,32 +978,32 @@ def delete_user(admin, id):
     """
     Delete a user. This is only possible if the user has not yet been verified.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the user id.
+    :param admin:                 Is the administrator user, determined by
+                                  @adminRequired.
+    :param id:                    Is the user id.
 
-    :return:                     A message that the deletion was successful.
+    :return:                      A message that the deletion was successful.
 
-    :raises UserNotFound:        If the user with this ID does not exist.
-    :raises UserCanNotBeDeleted: If the user has already been verified or the
-                                 deletion cannot take place for any other
-                                 reason.
+    :raises EntryNotFound:        If the user with this ID does not exist.
+    :raises EntryCanNotBeDeleted: If the user has already been verified or the
+                                  deletion cannot take place for any other
+                                  reason.
     """
     # Check if the user exists
     user = User.query.filter_by(id=id).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
 
     # Check if the user has been verified
     if user.is_verified:
-        raise exc.UserCanNotBeDeleted()
+        raise exc.EntryCanNotBeDeleted()
 
     # Delete the user
     try:
         db.session.delete(user)
         db.session.commit()
     except IntegrityError:
-        raise UserCanNotBeDeleted()
+        raise exc.EntryCanNotBeDeleted()
 
     return jsonify({'message': 'User deleted.'}), 200
 
@@ -1050,11 +1043,11 @@ def get_tag(id):
 
     :return:               The requested tag as JSON object.
 
-    :raises TagNotFound:   If the tag with this ID does not exist.
+    :raises EntryNotFound: If the tag with this ID does not exist.
     """
     result = Tag.query.filter_by(id=id).first()
     if not result:
-        raise exc.TagNotFound()
+        raise exc.EntryNotFound()
 
     tag = convert_minimal(result, ['id', 'name', 'created_by'])[0]
     return jsonify({'tag': tag}), 200
@@ -1066,24 +1059,25 @@ def delete_tag(admin, id):
     """
     Delete a tag.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the tag id.
+    :param admin:                 Is the administrator user, determined by
+                                  @adminRequired.
+    :param id:                    Is the tag id.
 
-    :return:                     A message that the deletion was successful.
+    :return:                      A message that the deletion was successful.
 
-    :raises TagNotFound:        If the user with this ID does not exist.
+    :raises EntryNotFound:        If the user with this ID does not exist.
+    :raises EntryCanNotBeDeleted: If the tag can not be deleted.
     """
     tag = Tag.query.filter_by(id=id).first()
     if not tag:
-        raise exc.TagNotFound()
+        raise exc.EntryNotFound()
 
     # Delete the tag.
     try:
         db.session.delete(tag)
         db.session.commit()
     except IntegrityError:
-        raise exc.TagCanNotBeDeleted()
+        raise exc.EntryCanNotBeDeleted()
 
     return jsonify({'message': 'Tag deleted.'}), 200
 
@@ -1105,7 +1099,7 @@ def create_tag(admin):
                                   data.
     :raises InvalidType:          If one or more parameters have an invalid
                                   type.
-    :raises TagAlreadyExists:     If a tag with this name already exists.
+    :raises EntryAlreadyExists:   If a tag with this name already exists.
     :raises CouldNotCreateEntry:  If the new tag cannot be added to the
                                   database.
 
@@ -1119,7 +1113,7 @@ def create_tag(admin):
 
     # Check if a tag with this name already exists
     if Tag.query.filter_by(name=data['name']).first():
-        raise exc.TagAlreadyExists()
+        raise exc.EntryAlreadyExists()
 
     # Check the given dataset
     check_allowed_fields_and_types(data, createable)
@@ -1148,7 +1142,7 @@ def update_tag(admin, id):
     :return:                     A message that the update was
                                  successful and a list of all updated fields.
 
-    :raises TagNotFound:         If the tag with this ID does not exist.
+    :raises EntryNotFound:       If the tag with this ID does not exist.
     :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
                                  data.
@@ -1160,7 +1154,7 @@ def update_tag(admin, id):
     # Check, if the product exists.
     tag = Tag.query.filter_by(id=id).first()
     if not tag:
-        raise exc.TagNotFound()
+        raise exc.EntryNotFound()
 
     updateable = {'name': str}
 
@@ -1201,9 +1195,9 @@ def change_product_tag_assignment(admin, command):
     :raises UnknownField:      If an unknown parameter exists in the request
                                data.
     :raises InvalidType:       If one or more parameters have an invalid type.
-    :raises ProductNotFound    If the product with the specified ID does not
+    :raises EntryNotFound      If the product with the specified ID does not
                                exist.
-    :raises TagNotFound:       If the tag with the specified ID does not exist.
+    :raises EntryNotFound:     If the tag with the specified ID does not exist.
     :raises NothingHasChanged: If no change occurred after the update or removal.
     """
 
@@ -1222,12 +1216,12 @@ def change_product_tag_assignment(admin, command):
     # Check if the product exists.
     product = Product.query.filter_by(id=data['product_id']).first()
     if not product:
-        raise exc.ProductNotFound()
+        raise exc.EntryNotFound()
 
     # Check if the tag exists.
     tag = Tag.query.filter_by(id=data['tag_id']).first()
     if not tag:
-        raise exc.TagNotFound()
+        raise exc.EntryNotFound()
 
     if command == 'add':
         if tag in product.tags:
@@ -1288,20 +1282,21 @@ def create_product(admin):
     """
     Route to create a new product.
 
-    :param admin:                 Is the administrator user, determined by
-                                  @adminRequired.
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
 
-    :return:                      A message that the creation was successful.
+    :return:                     A message that the creation was successful.
 
-    :raises DataIsMissing:        If one or more fields are missing to create
-                                  the product.
-    :raises UnknownField:         If an unknown parameter exists in the request
-                                  data.
-    :raises InvalidType:          If one or more parameters have an invalid
-                                  type.
-    :raises ProductAlreadyExists: If a product with this name already exists.
-    :raises CouldNotCreateEntry:  If the new product cannot be added to the
-                                  database.
+    :raises DataIsMissing:       If one or more fields are missing to create
+                                 the product.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid
+                                 type.
+    :raises EntryAlreadyExists:  If a product with this name already exists.
+    :raises EntryAlreadyExists:  If the barcode already exists.
+    :raises CouldNotCreateEntry: If the new product cannot be added to the
+                                 database.
     """
     data = json_body()
     required = ['name', 'price']
@@ -1315,12 +1310,12 @@ def create_product(admin):
 
     # Check if a product with this name already exists
     if Product.query.filter_by(name=data['name']).first():
-        raise exc.ProductAlreadyExists()
+        raise exc.EntryAlreadyExists()
 
     # Check if a product with this barcode already exists
     if 'barcode' in data:
         if Product.query.filter_by(barcode=data['barcode']).first():
-            raise exc.BarcodeAlreadyExists()
+            raise exc.EntryAlreadyExists()
 
     # Check the given dataset
     check_allowed_fields_and_types(data, createable)
@@ -1354,13 +1349,13 @@ def get_product(admin, id):
 
     :return:                    The requested product as JSON object.
 
-    :raises ProductNotFound:    If the product with this ID does not exist.
+    :raises EntryNotFound:      If the product with this ID does not exist.
     :raises UnauthorizedAccess: If the product is inactive and the request
                                 does not come from an administrator.
     """
     product = Product.query.filter(Product.id == id).first()
     if not product:
-        raise exc.ProductNotFound()
+        raise exc.EntryNotFound()
 
     if not (product.active or admin):
         raise exc.UnauthorizedAccess()
@@ -1390,12 +1385,12 @@ def update_product(admin, id):
     :return:                     A message that the update was
                                  successful and a list of all updated fields.
 
-    :raises ProductNotFound:     If the product with this ID does not exist.
+    :raises EntryNotFound:       If the product with this ID does not exist.
     :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
                                  data.
     :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises ImageNotFound:       If the image is to be changed but no image
+    :raises EntryNotFound:       If the image is to be changed but no image
                                  with this name exists.
     :raises CouldNotUpdateEntry: If any other error occurs.
     """
@@ -1404,7 +1399,7 @@ def update_product(admin, id):
     # Check, if the product exists.
     product = Product.query.filter_by(id=id).first()
     if not product:
-        raise exc.ProductNotFound()
+        raise exc.EntryNotFound()
 
     updateable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
@@ -1433,7 +1428,7 @@ def update_product(admin, id):
         if imagename != product.imagename:
             upload = Upload.query.filter_by(filename=imagename).first()
             if not upload:
-                raise exc.ImageNotFound()
+                raise exc.EntryNotFound()
 
             product.image_id = upload.id
             updated_fields.append('imagename')
@@ -1490,10 +1485,10 @@ def create_purchase():
 
     :raises DataIsMissing:       If not all required data is available.
     :raises WrongType:           If one or more data is of the wrong type.
-    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises EntryNotFound:       If the user with this ID does not exist.
     :raises UserIsNotVerified:   If the user has not yet been verified.
-    :raises ProductNotFound:     If the product with this ID does not exist.
-    :raises ProductIsInactive:   If the product is inactive.
+    :raises EntryNotFound:       If the product with this ID does not exist.
+    :raises EntryIsInactive:     If the product is inactive.
     :raises InvalidAmount:       If amount is less than or equal to zero.
     :raises InsufficientCredit:  If the credit balance of the user is not
                                  sufficient.
@@ -1508,16 +1503,16 @@ def create_purchase():
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
     # Check product
     product = Product.query.filter_by(id=data['product_id']).first()
     if not product:
-        raise exc.ProductNotFound()
+        raise exc.EntryNotFound()
     if not product.active:
-        raise exc.ProductIsInactive()
+        raise exc.EntryIsInactive()
 
     # Check amount
     if data['amount'] <= 0:
@@ -1545,15 +1540,15 @@ def get_purchase(id):
     """
     Returns the purchase with the requested id.
 
-    :param id:                  Is the purchase id.
+    :param id:             Is the purchase id.
 
-    :return:                    The requested purchase as JSON object.
+    :return:               The requested purchase as JSON object.
 
-    :raises PurchaseNotFound:   If the purchase with this ID does not exist.
+    :raises EntryNotFound: If the purchase with this ID does not exist.
     """
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
-        raise exc.PurchaseNotFound()
+        raise exc.EntryNotFound()
     fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount', 'price',
               'productprice', 'revoked', 'revokehistory']
     return jsonify({'purchase': convert_minimal(purchase, fields)[0]}), 200
@@ -1564,26 +1559,26 @@ def update_purchase(id):
     """
     Update the purchase with the given id.
 
-    :param id:                    Is the purchase id.
+    :param id:                   Is the purchase id.
 
-    :return:                      A message that the update was
-                                  successful and a list of all updated fields.
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
 
-    :raises PurchaseNotFound:     If the purchase with this ID does not exist.
-    :raises PurchaseNotRevocable: An attempt is made to revoked a purchase
-                                  whose product is not revocable.
-    :raises ForbiddenField:       If a forbidden field is in the request data.
-    :raises UnknownField:         If an unknown parameter exists in the request
-                                  data.
-    :raises InvalidType:          If one or more parameters have an invalid
-                                  type.
-    :raises NothingHasChanged:    If no change occurred after the update.
-    :raises CouldNotUpdateEntry:  If any other error occurs.
+    :raises EntryNotFound:       If the purchase with this ID does not exist.
+    :raises EntryNotRevocable:   An attempt is made to revoked a purchase
+                                 whose product is not revocable.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid
+                                 type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
     """
     # Check purchase
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
-        raise exc.PurchaseNotFound()
+        raise exc.EntryNotFound()
 
     # Query the product
     product = Product.query.filter_by(id=purchase.product_id).first()
@@ -1599,7 +1594,7 @@ def update_purchase(id):
     if 'revoked' in data:
         # In case that the product is not revocable, an exception must be made.
         if not product.revocable:
-            raise exc.PurchaseNotRevocable()
+            raise exc.EntryNotRevocable()
         if purchase.revoked == data['revoked']:
             raise exc.NothingHasChanged()
         purchase.toggle_revoke(revoked=data['revoked'])
@@ -1651,7 +1646,7 @@ def create_deposit(admin):
 
     :raises DataIsMissing:       If not all required data is available.
     :raises WrongType:           If one or more data is of the wrong type.
-    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises EntryNotFound:       If the user with this ID does not exist.
     :raises UserIsNotVerified:   If the user has not yet been verified.
     :raises InvalidAmount:       If amount is equal to zero.
     :raises CouldNotCreateEntry: If any other error occurs.
@@ -1664,7 +1659,7 @@ def create_deposit(admin):
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
@@ -1689,17 +1684,17 @@ def get_deposit(id):
     """
     Returns the deposit with the requested id.
 
-    :param id:                 Is the deposit id.
+    :param id:             Is the deposit id.
 
-    :return:                   The requested deposit as JSON object.
+    :return:               The requested deposit as JSON object.
 
-    :raises DepositNotFound:   If the deposit with this ID does not exist.
+    :raises EntryNotFound: If the deposit with this ID does not exist.
     """
     # Query the deposit
     res = Deposit.query.filter_by(id=id).first()
     # If it not exists, return an error
     if not res:
-        raise exc.DepositNotFound()
+        raise exc.EntryNotFound()
     # Convert the deposit to a JSON friendly format
     fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
               'revokehistory']
@@ -1719,7 +1714,7 @@ def update_deposit(admin, id):
     :return:                     A message that the update was
                                  successful and a list of all updated fields.
 
-    :raises DepositNotFound:     If the deposit with this ID does not exist.
+    :raises EntryNotFound:       If the deposit with this ID does not exist.
     :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
                                  data.
@@ -1730,7 +1725,7 @@ def update_deposit(admin, id):
     # Check deposit
     deposit = Deposit.query.filter_by(id=id).first()
     if not deposit:
-        raise exc.DepositNotFound()
+        raise exc.EntryNotFound()
 
     data = json_body()
 
@@ -1782,22 +1777,21 @@ def get_replenishmentcollection(admin, id):
     Returns the replenishmentcollection with the requested id. In addition,
     all replenishments that belong to this collection are returned.
 
-    :param admin:                            Is the administrator user,
-                                             determined by @adminRequired.
-    :param id:                               Is the replenishmentcollection id.
+    :param admin:          Is the administrator user,
+                           determined by @adminRequired.
+    :param id:             Is the replenishmentcollection id.
 
-    :return:                                 The requested
-                                             replenishmentcollection and all
-                                             related replenishments JSON object.
+    :return:               The requested replenishmentcollection and all
+                           related replenishments JSON object.
 
-    :raises ReplenishmentcollectionNotFound: If the replenishmentcollection
-                                             with this ID does not exist.
+    :raises EntryNotFound: If the replenishmentcollection with this ID does
+                           not exist.
     """
     # Query the replenishmentcollection.
     replcoll = ReplenishmentCollection.query.filter_by(id=id).first()
     # If it does not exist, raise an exception.
     if not replcoll:
-        raise exc.ReplenishmentCollectionNotFound()
+        raise exc.EntryNotFound()
 
     fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
                        'revokehistory', 'comment']
@@ -1823,7 +1817,7 @@ def create_replenishmentcollection(admin):
     :raises DataIsMissing:       If not all required data is available.
     :raises ForbiddenField :     If a forbidden field is in the data.
     :raises WrongType:           If one or more data is of the wrong type.
-    :raises ProductNotFound:     If the product with with the id of any
+    :raises EntryNotFound:       If the product with with the id of any
                                  replenishment does not exist.
     :raises InvalidAmount:       If amount of any replenishment is less than
                                  or equal to zero.
@@ -1851,7 +1845,7 @@ def create_replenishmentcollection(admin):
         # Check product
         product = Product.query.filter_by(id=repl['product_id']).first()
         if not product:
-            raise exc.ProductNotFound()
+            raise exc.EntryNotFound()
 
     # Create and insert replenishmentcollection
     try:
@@ -1878,30 +1872,25 @@ def update_replenishmentcollection(admin, id):
     """
     Update the replenishmentcollection with the given id.
 
-    :param admin:                                Is the administrator user,
-                                                 determined by @adminRequired.
-    :param id:                                   Is the replenishmentcollection
-                                                 id.
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the replenishmentcollection id.
 
-    :return:                                     A message that the update was
-                                                 successful.
+    :return:                     A message that the update was successful.
 
-    :raises ReplenishmentCollectionNotFound:     If the replenishmentcollection
-                                                 with this ID does not exist.
-    :raises ForbiddenField:                      If a forbidden field is in the
-                                                 request data.
-    :raises UnknownField:                        If an unknown parameter exists
-                                                 in the request data.
-    :raises InvalidType:                         If one or more parameters have
-                                                 an invalid type.
-    :raises NothingHasChanged:                   If no change occurred after
-                                                 the update.
-    :raises CouldNotUpdateEntry:                 If any other error occurs.
+    :raises EntryNotFound:       If the replenishmentcollection with this ID
+                                 does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
     """
     # Check ReplenishmentCollection
     replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
     if not replcoll:
-        raise exc.ReplenishmentCollectionNotFound()
+        raise exc.EntryNotFound()
 
     data = json_body()
 
@@ -1943,27 +1932,27 @@ def update_replenishment(admin, id):
     """
     Update the replenishment with the given id.
 
-    :param admin:                  Is the administrator user, determined by
-                                   @adminRequired.
-    :param id:                     Is the replenishment id.
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the replenishment id.
 
-    :return:                       A message that the update was successful
-                                   and a list of all updated fields.
+    :return:                     A message that the update was successful
+                                 and a list of all updated fields.
 
-    :raises ReplenishmentNotFound: If the replenishment with this ID does not
-                                   exist.
-    :raises ForbiddenField:        If a forbidden field is in the request data.
-    :raises UnknownField:          If an unknown parameter exists in the
-                                   request data.
-    :raises InvalidType:           If one or more parameters have an invalid
-                                   type.
-    :raises NothingHasChanged:     If no change occurred after the update.
-    :raises CouldNotUpdateEntry:   If any other error occurs.
+    :raises EntryNotFound:       If the replenishment with this ID does not
+                                 exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the
+                                 request data.
+    :raises InvalidType:         If one or more parameters have an invalid
+                                 type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
     """
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
-        raise exc.ReplenishmentNotFound()
+        raise exc.EntryNotFound()
 
     # Data validation
     data = json_body()
@@ -1993,24 +1982,21 @@ def delete_replenishmentcollection(admin, id):
     Delete the replenishmentcollection with the given id. The replenishments
     belonging to this replenishmentcollection are also deleted.
 
-    :param admin:                                Is the administrator user,
-                                                 determined by @adminRequired.
-    :param id:                                   Is the replenishmentcollection
-                                                 id.
+    :param admin:                 Is the administrator user, determined by
+                                  @adminRequired.
+    :param id:                    Is the replenishmentcollection id.
 
-    :return:                                     A message that the deletion
-                                                 was successful.
+    :return:                      A message that the deletion was successful.
 
-    :raises ReplenishmentCollectionNotFound:     If the replenishmentcollection
-                                                 with this ID does not exist.
-    :raises CouldNotUpdateEntry:                 If any other error occurs.
-    :raises ReplenishmentCollCanNotBeDeleted:    If the replenishmentcollection
-                                                 can not be deleted.
+    :raises EntryNotFound:        If the replenishmentcollection with this ID
+                                  does not exist.
+    :raises EntryCanNotBeDeleted: If the replenishmentcollection can not be
+                                  deleted.
     """
     # Check ReplenishmentCollection
     replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
     if not replcoll:
-        raise exc.ReplenishmentCollectionNotFound()
+        raise exc.EntryNotFound()
 
     repls = Replenishment.query.filter_by(replcoll_id=id).all()
 
@@ -2023,7 +2009,7 @@ def delete_replenishmentcollection(admin, id):
     try:
         db.session.commit()
     except IntegrityError:
-        raise exc.ReplenishmentCollCanNotBeDeleted()
+        raise exc.EntryCanNotBeDeleted()
 
     return jsonify({'message': 'Deleted ReplenishmentCollection.'}), 201
 
@@ -2036,22 +2022,21 @@ def delete_replenishment(admin, id):
     replenishment belongs no longer has any entries after deletion, it is also
     deleted.
 
-    :param admin:                         Is the administrator user, determined
-                                          by @adminRequired.
-    :param id:                            Is the replenishment id.
+    :param admin:                 Is the administrator user, determined by
+                                  @adminRequired.
+    :param id:                    Is the replenishment id.
 
-    :return:                              A message that the deletion has been
-                                          successful.
+    :return:                      A message that the deletion has been
+                                  successful.
 
-    :raises ReplenishmentNotFound:        If the replenishment with this ID
-                                          does not exist.
-    :raises ReplenishmentCanNotBeDeleted: If the replenishment can not be
-                                          deleted.
+    :raises EntryNotFound:        If the replenishment with this ID does not
+                                  exist.
+    :raises EntryCanNotBeDeleted: If the replenishment can not be deleted.
     """
     # Check Replenishment
     repl = Replenishment.query.filter_by(id=id).first()
     if not repl:
-        raise exc.ReplenishmentNotFound()
+        raise exc.EntryNotFound()
     # Get the corresponding ReplenishmentCollection
     replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
                 .first())
@@ -2071,7 +2056,7 @@ def delete_replenishment(admin, id):
     try:
         db.session.commit()
     except IntegrityError:
-        raise exc.ReplenishmentCanNotBeDeleted()
+        raise exc.EntryCanNotBeDeleted()
 
     return jsonify({'message': message}), 201
 
@@ -2098,17 +2083,17 @@ def get_refund(id):
     """
     Returns the refund with the requested id.
 
-    :param id:              Is the refund id.
+    :param id:             Is the refund id.
 
-    :return:                The requested refund as JSON object.
+    :return:               The requested refund as JSON object.
 
-    :raises RefundNotFound: If the refund with this ID does not exist.
+    :raises EntryNotFound: If the refund with this ID does not exist.
     """
     # Query the refund
     res = Refund.query.filter_by(id=id).first()
     # If it not exists, return an error
     if not res:
-        raise exc.RefundNotFound()
+        raise exc.EntryNotFound()
     # Convert the refund to a JSON friendly format
     fields = ['id', 'timestamp', 'user_id', 'total_price', 'comment', 'revoked',
               'revokehistory']
@@ -2128,7 +2113,7 @@ def create_refund(admin):
 
     :raises DataIsMissing:       If not all required data is available.
     :raises WrongType:           If one or more data is of the wrong type.
-    :raises UserNotFound:        If the user with this ID does not exist.
+    :raises EntryNotFound:       If the user with this ID does not exist.
     :raises UserIsNotVerified:   If the user has not yet been verified.
     :raises InvalidAmount:       If amount is equal to zero.
     :raises CouldNotCreateEntry: If any other error occurs.
@@ -2141,7 +2126,7 @@ def create_refund(admin):
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
     if not user:
-        raise exc.UserNotFound()
+        raise exc.EntryNotFound()
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
@@ -2174,7 +2159,7 @@ def update_refund(admin, id):
     :return:                     A message that the update was
                                  successful and a list of all updated fields.
 
-    :raises RefundNotFound:      If the refund with this ID does not exist.
+    :raises EntryNotFound:       If the refund with this ID does not exist.
     :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
                                  data.
@@ -2186,7 +2171,7 @@ def update_refund(admin, id):
     # Check refund
     refund = Refund.query.filter_by(id=id).first()
     if not refund:
-        raise exc.RefundNotFound()
+        raise exc.EntryNotFound()
 
     data = json_body()
 
@@ -2236,19 +2221,19 @@ def get_payoff(admin, id):
     """
     Returns the payoff with the requested id.
 
-    :param admin:           Is the administrator user, determined by
-                            @adminRequired.
-    :param id:              Is the payoff id.
+    :param admin:          Is the administrator user, determined by
+                           @adminRequired.
+    :param id:             Is the payoff id.
 
-    :return:                The requested payoff as JSON object.
+    :return:               The requested payoff as JSON object.
 
-    :raises PayoffNotFound: If the payoff with this ID does not exist.
+    :raises EntryNotFound: If the payoff with this ID does not exist.
     """
     # Query the payoff
     res = Payoff.query.filter_by(id=id).first()
     # If it not exists, return an error
     if not res:
-        raise exc.PayoffNotFound()
+        raise exc.EntryNotFound()
     # Convert the payoff to a JSON friendly format
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked',
               'revokehistory']
@@ -2305,7 +2290,7 @@ def update_payoff(admin, id):
     :return:                     A message that the update was
                                  successful and a list of all updated fields.
 
-    :raises PayoffNotFound:      If the payoff with this ID does not exist.
+    :raises EntryNotFound:       If the payoff with this ID does not exist.
     :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
                                  data.
@@ -2317,7 +2302,7 @@ def update_payoff(admin, id):
     # Check payoff
     payoff = Payoff.query.filter_by(id=id).first()
     if not payoff:
-        raise exc.PayoffNotFound()
+        raise exc.EntryNotFound()
 
     data = json_body()
 

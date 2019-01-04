@@ -71,7 +71,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         data = {'name': 'Pizza', 'price': 300}
         res = self.post(url='/products', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ProductAlreadyExists)
+        self.assertException(res, exc.EntryAlreadyExists)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
     def test_create_product_unknown_field(self):

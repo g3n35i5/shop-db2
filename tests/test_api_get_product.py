@@ -46,7 +46,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         """Getting a non existing product should fail"""
         res = self.get(url='/products/6')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ProductNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_get_product_with_single_tag(self):
         product = Product.query.filter_by(id=1).first()

@@ -42,7 +42,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         data = {'amount': 0, 'total_price': 0}
         res = self.put(url='/replenishments/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ReplenishmentNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_replenishment_with_forbidden_field(self):
         """Updating a forbidden field of a single replenishment"""

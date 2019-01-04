@@ -45,7 +45,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         """
         res = self.get(url='/users/5/deposits')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_get_deposit_non_verified_user(self):
         """

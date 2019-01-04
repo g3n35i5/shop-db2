@@ -83,7 +83,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         data = {'user_id': 5, 'product_id': 3, 'amount': 4}
         res = self.post(url='/purchases', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserNotFound)
+        self.assertException(res, exc.EntryNotFound)
         self.assertEqual(len(Purchase.query.all()), 0)
 
     def test_create_purchase_inactive_product(self):
@@ -94,7 +94,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         data = {'user_id': 1, 'product_id': 4, 'amount': 2}
         res = self.post(url='/purchases', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ProductIsInactive)
+        self.assertException(res, exc.EntryIsInactive)
         self.assertEqual(len(Purchase.query.all()), 0)
 
     def test_create_purchase_invalid_amount(self):
@@ -110,5 +110,5 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         data = {'user_id': 1, 'product_id': 5, 'amount': 1}
         res = self.post(url='/purchases', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ProductNotFound)
+        self.assertException(res, exc.EntryNotFound)
         self.assertEqual(len(Purchase.query.all()), 0)

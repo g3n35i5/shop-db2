@@ -45,4 +45,4 @@ class DeleteReplenishmentAPITestCase(BaseAPITestCase):
         """Trying to delete a single replenishment with invalid id"""
         res = self.delete(url='/replenishments/5', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ReplenishmentNotFound)
+        self.assertException(res, exc.EntryNotFound)

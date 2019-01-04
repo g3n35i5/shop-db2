@@ -30,11 +30,11 @@ class VerifyUserAPITestCase(BaseAPITestCase):
         data = {'rank_id': 1}
         res = self.post(url='/verify/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_verify_non_existing_rank(self):
         """Test verifying a user with an invalid rank_id."""
         data = {'rank_id': 5}
         res = self.post(url='/verify/4', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.RankNotFound)
+        self.assertException(res, exc.EntryNotFound)

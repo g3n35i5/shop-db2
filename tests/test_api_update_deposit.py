@@ -32,7 +32,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         data = {'revoked': True}
         res = self.put(url='/deposits/6', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.DepositNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_revoke_deposit_twice(self):
         """Revoking a deposit twice should raise an error and do nothing."""

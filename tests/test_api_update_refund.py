@@ -32,7 +32,7 @@ class UpdateRefundAPITestCase(BaseAPITestCase):
         data = {'revoked': True}
         res = self.put(url='/refunds/6', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.RefundNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_revoke_refund_twice(self):
         """Revoking a refund twice should raise an error and do nothing."""

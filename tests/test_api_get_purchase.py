@@ -27,4 +27,4 @@ class GetPurchaseAPITestCase(BaseAPITestCase):
         """Getting a non existing purchase should raise an error."""
         res = self.get(url='/purchases/5')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.PurchaseNotFound)
+        self.assertException(res, exc.EntryNotFound)

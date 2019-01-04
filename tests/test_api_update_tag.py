@@ -31,7 +31,7 @@ class UpdateTagAPITestCase(BaseAPITestCase):
         data = {'name': 'Foo'}
         res = self.put(url='/tags/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.TagNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_wrong_type(self):
         """A wrong field type should raise an error"""

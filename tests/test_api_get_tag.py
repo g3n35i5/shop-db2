@@ -18,4 +18,4 @@ class GetTagAPITestCase(BaseAPITestCase):
         """Getting a non existing tag should raise an error."""
         res = self.get(url='/tags/5')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.TagNotFound)
+        self.assertException(res, exc.EntryNotFound)

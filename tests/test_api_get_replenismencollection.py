@@ -37,4 +37,4 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         self.insert_default_replenishmentcollections()
         res = self.get(url='/replenishmentcollections/5', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ReplenishmentCollectionNotFound)
+        self.assertException(res, exc.EntryNotFound)

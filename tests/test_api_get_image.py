@@ -17,7 +17,7 @@ class GetImageAPITestCase(BaseAPITestCase):
         is requested.
         """
         res = self.get('images/does_not_exist.png')
-        self.assertException(res, ImageNotFound)
+        self.assertException(res, EntryNotFound)
 
     def test_get_image_empty_name(self):
         """

@@ -31,4 +31,4 @@ class DeleteReplenishmentCollectionAPITestCase(BaseAPITestCase):
         """Trying to delete a single replenishment with invalid id"""
         res = self.delete(url='/replenishmentcollections/3', role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ReplenishmentCollectionNotFound)
+        self.assertException(res, exc.EntryNotFound)

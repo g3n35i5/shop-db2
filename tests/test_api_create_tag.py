@@ -51,7 +51,7 @@ class CreateTagAPITestCase(BaseAPITestCase):
         data = {'name': 'Coffee'}
         res = self.post(url='/tags', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.TagAlreadyExists)
+        self.assertException(res, exc.EntryAlreadyExists)
         self.assertFalse(Tag.query.filter_by(id=5).first())
 
     def test_create_tag_unknown_field(self):

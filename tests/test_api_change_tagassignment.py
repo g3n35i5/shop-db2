@@ -59,14 +59,14 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         data = {'product_id': 5, 'tag_id': 1}
         res = self.post(url='/tagassignment/add', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.ProductNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_assign_tag_invalid_tag(self):
         """Assign a tag with an invalid tag id."""
         data = {'product_id': 1, 'tag_id': 5}
         res = self.post(url='/tagassignment/add', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.TagNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_assign_tag_twice(self):
         """Assign a tag which has already been assigned"""

@@ -31,7 +31,7 @@ class UpdatePayoffAPITestCase(BaseAPITestCase):
         data = {'revoked': True}
         res = self.put(url='/payoffs/6', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.PayoffNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_revoke_payoff_twice(self):
         """Revoking a payoff twice should raise an error and do nothing."""

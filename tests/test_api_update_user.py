@@ -96,7 +96,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         data = {'firstname': 'Peter'}
         res = self.put(url='/users/5', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UserNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_user_password_too_short(self):
         """

@@ -32,7 +32,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         data = {'amount': 5}
         res = self.put(url='/purchases/6', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.PurchaseNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_update_revoke_purchase_twice(self):
         """Revoking a purchase twice should raise an error and do nothing."""
@@ -92,7 +92,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         data = {'revoked': True}
         res = self.put(url='/purchases/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.PurchaseNotRevocable)
+        self.assertException(res, exc.EntryNotRevocable)
         self.assertFalse(Purchase.query.filter_by(id=1).first().revoked)
 
     def test_update_purchase_amount(self):
