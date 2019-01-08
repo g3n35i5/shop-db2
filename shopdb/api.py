@@ -334,15 +334,18 @@ def before_request_hook():
     This function is executed before each request is processed. Its purpose is
     to check whether the application is currently in maintenance mode. If this
     is the case, the current request is aborted and a corresponding exception
-    is raised.
+    is raised. An exception to this is a request on the route
+    "/maintenance" [POST]: Via this route the maintenance mode can be switched
+    on and off (by an administrator) or on the route "/login", so that one can
+    log in as administrator.
 
-    :raises MaintenanceMode: if the application is in mainenance mode.
-
-    :return:                 None
+    :raises MaintenanceMode: if the application is in maintenance mode.
     """
 
-    # Check for maintenance mode
-    if app.config.get('MAINTENANCE'):
+    # Check for maintenance mode.
+    exceptions = ['maintenance', 'login']
+
+    if app.config.get('MAINTENANCE') and request.endpoint not in exceptions:
         raise exc.MaintenanceMode()
 
 
@@ -404,6 +407,49 @@ def index():
     :return: A message which says that the backend is online.
     """
     return jsonify({'message': 'Backend is online.'})
+
+
+@app.route('/maintenance', methods=['POST'], endpoint='maintenance')
+@adminRequired
+def set_maintenance(admin):
+    """
+    This route can be used by an administrator to switch the maintenance mode
+    on or off.
+
+    :param admin:              Is the administrator user, determined by
+                               @adminRequired.
+
+    :raises DataIsMissing:     If the maintenance state is not included
+                               in the request.
+    :raises UnknownField:      If an unknown parameter exists in the request
+                               data.
+    :raises InvalidType:       If one or more parameters have an invalid type.
+    :raises NothingHasChanged: If the maintenance mode is not changed by the
+                               request.
+
+    :return:                   A message with the new maintenance mode.
+    """
+
+    data = json_body()
+    # Check all items in the json body.
+    allowed = {'state': bool}
+    check_required(data, allowed)
+    check_allowed_fields_and_types(data, allowed)
+
+    # Get the current maintenance state.
+    current_state = app.config['MAINTENANCE']
+
+    # Get the new state.
+    new_state = data['state']
+
+    # Handle the request.
+    if current_state == new_state:
+        raise exc.NothingHasChanged()
+
+    app.config['MAINTENANCE'] = new_state
+
+    message = 'Turned maintenance mode ' + ('on.' if new_state else 'off.')
+    return jsonify({'message': message})
 
 
 @app.route('/images/', methods=['GET'], defaults={'imagename': None})
@@ -605,7 +651,7 @@ def get_financial_overview(admin):
 
 
 # Login route ################################################################
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST'], endpoint='login')
 def login():
     """
     Registered users can log in on this route.
