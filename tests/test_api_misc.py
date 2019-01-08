@@ -1,6 +1,7 @@
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from flask import json
+from shopdb.api import app, Purchase
 
 
 class MiscAPITestCase(BaseAPITestCase):
@@ -22,3 +23,30 @@ class MiscAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['message'], 'Page does not exist.')
         self.assertEqual(data['result'], 'error')
+
+    def test_maintenance_mode(self):
+        """
+        This test checks the maintenance mode.
+
+        If the application is in maintenance mode, all requests must be aborted
+        and the appropriate exception raised. There must be no modification to
+        the database.
+        """
+        # First make sure that the application is not in maintenance mode.
+        self.assertFalse(app.config.get('MAINTENANCE'))
+
+        # Put the application into maintenance mode.
+        app.config['MAINTENANCE'] = True
+
+        # Make sure that the application is in maintenance mode.
+        self.assertTrue(app.config.get('MAINTENANCE'))
+
+        # Do a simple request.
+        res = self.client.get('/')
+        self.assertException(res, exc.MaintenanceMode)
+
+        # Do a purchase.
+        data = {'user_id': 2, 'product_id': 1, 'amount': 1}
+        res = self.post(url='/purchases', data=data)
+        self.assertException(res, exc.MaintenanceMode)
+        self.assertFalse(Purchase.query.all())

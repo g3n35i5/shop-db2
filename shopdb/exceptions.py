@@ -12,6 +12,21 @@ class ShopdbException(Exception, DontWrapMixin):
 
 
 """
+App related exceptions.
+
+These exceptions handle all app errors.
+"""
+
+
+class MaintenanceMode(ShopdbException):
+    type = 'error'
+    message = 'The application is in maintenance mode. ' \
+              'Please try again later. If you think this is an error, ' \
+              'please contact the administrator.'
+    code = 503
+
+
+"""
 Data related exceptions.
 
 These exceptions handle all errors that occur when incorrect and/or incomplete

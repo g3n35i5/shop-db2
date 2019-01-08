@@ -328,6 +328,24 @@ def adminOptional(f):
     return decorated
 
 
+@app.before_request
+def before_request_hook():
+    """
+    This function is executed before each request is processed. Its purpose is
+    to check whether the application is currently in maintenance mode. If this
+    is the case, the current request is aborted and a corresponding exception
+    is raised.
+
+    :raises MaintenanceMode: if the application is in mainenance mode.
+
+    :return:                 None
+    """
+
+    # Check for maintenance mode
+    if app.config.get('MAINTENANCE'):
+        raise exc.MaintenanceMode()
+
+
 @app.errorhandler(Exception)
 def handle_error(error):
     """
