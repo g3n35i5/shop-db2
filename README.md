@@ -292,16 +292,18 @@ field in the latest entry related to the user.
 
 #### Uploads
 
-An admin can upload a picture of a product to the application which is then
-shown in the frontend. The UPLOAD_FOLDER can be set in configuration.py. To
-correlate a picture to a product ???
+An admin can upload an image of a product to the application which is then
+shown in the frontend. The UPLOAD_FOLDER can be set in configuration.py. There,
+one can also specify the MAX_CONTENT_LENGTH and the valid file types via the
+VALID_EXTENSIONS property. Through the uploads id, a product can be linked to
+the Upload and the image.
 
 | Name | TYPE | Explanation
 | --- | --- | --- |
 | id | *Integer* | The Upload id is unique and is used for identification in the application. It is created automatically with a new Upload.
 | timestamp | *DateTime* | This is the date and time the Upload was created. It is created automatically with the new Upload.
 | admin_id | *Integer* | This is the id of the admin who performed the Upload.
-| filename | *String(64)* | This is the filename of the image that has been uploaded.
+| filename | *String(64)* | This is the filename of the image that has been uploaded. It is saved in the UPLOAD_FOLDER and created automatically with the new Upload.
 
 #### Rank
 
@@ -330,7 +332,8 @@ is checked for the latest entry related to the user.
 
 #### Product
 
-Each item that can be sold through the application has to be a product. A product can only be created by an admin. A product can have an image which is
+Each item that can be sold through the application has to be a product. A
+product can only be created by an admin. A product can have an image which is
 shown in the frontend to identify it. In addition, each product has a price and
 a pricehistory. Furthermore tags are used to group products into categories.
 
@@ -344,7 +347,7 @@ a pricehistory. Furthermore tags are used to group products into categories.
 | active | *Boolean* | This indicates whether the product is active (True) and therefor available in the frontend or not (False). If not specified further, it will automatically be set to True.
 | countable | *Boolean* | This indicates whether the product is countable (True) like a chocolate bar or not countable (False) like coffee powder. If not specified further, it will automatically be set to True.
 | revocable | *Boolean* | This indicates whether the product is revocable (True) or not (False). If not specified further, it will automatically be set to True.
-| image_id | *Integer* | This is the id of the Upload with the products picture. This entry is optional.
+| image_upload_id | *Integer* | This is the id of the Upload with the products picture. This entry is optional.
 
 #### ProductPrice
 

@@ -1494,7 +1494,7 @@ def update_product(admin, id):
             if not upload:
                 raise exc.EntryNotFound()
 
-            product.image_id = upload.id
+            product.image_upload_id = upload.id
             updated_fields.append('imagename')
 
     # Update all other fields

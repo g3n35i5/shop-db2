@@ -220,7 +220,7 @@ class Product(db.Model):
     active = db.Column(db.Boolean, nullable=False, default=True)
     countable = db.Column(db.Boolean, nullable=False, default=True)
     revocable = db.Column(db.Boolean, nullable=False, default=True)
-    image_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
+    image_upload_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
                          nullable=True)
     tags = db.relationship('Tag', secondary=product_tag_assignments,
                            backref=db.backref('products', lazy='dynamic'))
@@ -235,7 +235,7 @@ class Product(db.Model):
 
     @hybrid_property
     def imagename(self):
-        upload = Upload.query.filter_by(id=self.image_id).first()
+        upload = Upload.query.filter_by(id=self.image_upload_id).first()
         if upload:
             return upload.filename
         return None
