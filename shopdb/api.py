@@ -25,6 +25,10 @@ app = Flask(__name__)
 
 # Default app settings (to suppress unittest warnings) will be overwritten.
 app.config.from_object(config.BaseConfig)
+
+# Setting strict slash mapping to false ('/foo/' and '/foo' are same this way)
+app.url_map.strict_slashes = False
+
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
@@ -452,7 +456,7 @@ def set_maintenance(admin):
     return jsonify({'message': message})
 
 
-@app.route('/images/', methods=['GET'], defaults={'imagename': None})
+@app.route('/images', methods=['GET'], defaults={'imagename': None})
 @app.route('/images/<imagename>', methods=['GET'])
 def get_image(imagename):
     """
