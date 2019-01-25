@@ -81,13 +81,10 @@ def insert_dev_data(db):
         {'user_id': 1, 'product_id': 3, 'amount': 12},
         {'user_id': 2, 'product_id': 5, 'amount': 13},
         {'user_id': 3, 'product_id': 3, 'amount': 15},
-        {'user_id': 4, 'product_id': 2, 'amount': 1},
-        {'user_id': 4, 'product_id': 1, 'amount': 6},
         {'user_id': 3, 'product_id': 2, 'amount': 3},
         {'user_id': 1, 'product_id': 2, 'amount': 9},
         {'user_id': 2, 'product_id': 4, 'amount': 7},
-        {'user_id': 3, 'product_id': 6, 'amount': 1},
-        {'user_id': 4, 'product_id': 6, 'amount': 2}
+        {'user_id': 3, 'product_id': 6, 'amount': 1}
     ]
 
     for purchase in purchases:
