@@ -103,6 +103,42 @@ def insert_dev_data(db):
         db.session.add(tag)
     db.session.commit()
 
+    # Insert default tag assignments
+    tagassignments = [
+        {'product_id': 1, 'tag_id': 2},  # Water     -> Drinks
+        {'product_id': 2, 'tag_id': 1},  # Pizza     -> Food
+        {'product_id': 3, 'tag_id': 2},  # Coca Cola -> Drinks
+        {'product_id': 4, 'tag_id': 3},  # Cookies   -> Sweets
+        {'product_id': 4, 'tag_id': 4},  # Cookies   -> Coffee
+        {'product_id': 5, 'tag_id': 2},  # Tea       -> Drinks
+        {'product_id': 5, 'tag_id': 4},  # Tea       -> Coffee
+        {'product_id': 6, 'tag_id': 2},  # Coffee    -> Drinks
+        {'product_id': 6, 'tag_id': 4}   # Coffee    -> Coffee
+    ]
+
+    for tagassignment in tagassignments:
+        p = Product.query.filter_by(id=tagassignment['product_id']).first()
+        t = Tag.query.filter_by(id=tagassignment['tag_id']).first()
+        t.products.append(p)
+
+    db.session.commit()
+
+    # Insert uploads and product images
+    images = [
+        {'product_id': 1, 'image_name': 'water.png'},
+        {'product_id': 2, 'image_name': 'pizza.png'},
+        {'product_id': 3, 'image_name': 'cola.png'},
+        {'product_id': 4, 'image_name': 'cookies.png'},
+        {'product_id': 6, 'image_name': 'coffee.png'}
+    ]
+
+    for index, file in enumerate(images):
+        upload = Upload(filename=file['image_name'], admin_id=1)
+        db.session.add(upload)
+        product = Product.query.filter_by(id=file['product_id']).first()
+        product.image_upload_id = index + 1
+        db.session.commit()
+
     # Insert default replenishmentcollections
     product1 = Product.query.filter_by(id=1).first()
     product2 = Product.query.filter_by(id=2).first()
