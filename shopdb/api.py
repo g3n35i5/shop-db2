@@ -2029,11 +2029,8 @@ def update_replenishment(admin, id):
     # Data validation
     data = json_body()
     updateable = {'revoked': bool, 'amount': int, 'total_price': int}
-    only_together= {'amount': int, 'total_price': int}
     check_forbidden(data, updateable, repl)
     check_allowed_fields_and_types(data, updateable)
-    if(('amount' in data) or ('total_price' in data)):
-        check_required(data, only_together)
 
     updated_fields = []
 

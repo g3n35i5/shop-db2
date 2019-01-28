@@ -69,13 +69,16 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_update_replenishment_with_data_missing(self):
-        """Updating a single replenishment with no amount given"""
+    def test_update_replenishment_with_less_data(self):
+        """Updating a single replenishment with less data"""
         self.insert_default_replenishmentcollections()
         data = {'amount': 0}
         res = self.put(url='/replenishments/1', data=data, role='admin')
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.DataIsMissing)
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        assert 'message', 'updated_fields' in data
+        self.assertEqual(data['message'], 'Updated replenishment.')
+        self.assertEqual(data['updated_fields'], ['amount'])
 
     def test_update_replenishment_revoke(self):
         """Revoking a single replenishment"""
