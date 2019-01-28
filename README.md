@@ -426,13 +426,14 @@ and revoked field of each entry related to the purchase.
 
 #### ReplenishmentCollection
 
-When an admin fills up the products by buying them at an external supplier with the communities money, he creates a ReplenishmentCollection entry. A
+When an admin fills up the products by buying them at an external supplier with
+the communities money, he creates a ReplenishmentCollection entry. A
 replenishmentcollection can be revoked, even more than once. So in addition, a
 revokehistory for the replenishmentcollection can be called. When creating, the
 admin has to pass a list of all single replenishments the
 replenishmentcollection consists of. The price of a replenishmentcollection is
-the sum of the total_price of all related replenishments. This price can be
-used to give an overview of the communities finances.
+the sum of the total_price of all related non-revoked replenishments. This
+price can be used to give an overview of the communities finances.
 
 | Name | TYPE | Explanation
 | --- | --- | --- |
@@ -460,8 +461,11 @@ revoked field of each entry related to the replenishmentcollection.
 #### Replenishment
 
 A replenishment is a fill up of a single product and always has to be part of a
-replenishmentcollection. Its total_price is added to the price of the related
-replenishmentcollection.
+replenishmentcollection. It can be revoked. If all replenishments of a
+replenishmentcollection are revoked, the replenishmentcollection is revoked
+automatically. When rerevoking the replenishmentcollection, the replenishments
+stay revoked. If not revoked, the replenishments total_price is added to the
+price of the related replenishmentcollection.
 
 | Name | TYPE | Explanation
 | --- | --- | --- |

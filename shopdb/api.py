@@ -1971,7 +1971,7 @@ def update_replenishmentcollection(admin, id):
 
     updated_fields = []
 
-    # Handle deposit revoke
+    # Handle replenishmentcollection revoke
     if 'revoked' in data:
         if replcoll.revoked == data['revoked']:
             raise exc.NothingHasChanged()
@@ -2022,14 +2022,40 @@ def update_replenishment(admin, id):
     if not repl:
         raise exc.EntryNotFound()
 
+    #Get the corresponding ReplenishmentCollection
+    replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
+                .first())
+
     # Data validation
     data = json_body()
-    updateable = {'amount': int, 'total_price': int}
+    updateable = {'revoked': bool, 'amount': int, 'total_price': int}
+    only_together= {'amount': int, 'total_price': int}
     check_forbidden(data, updateable, repl)
     check_allowed_fields_and_types(data, updateable)
-    check_required(data, updateable)
+    if(('amount' in data) or ('total_price' in data)):
+        check_required(data, only_together)
 
-    updated_fields = update_fields(data, repl)
+    updated_fields = []
+
+    # Handle replenishment revoke
+    if 'revoked' in data:
+        if repl.revoked == data['revoked']:
+            raise exc.NothingHasChanged()
+        repl.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+        del data['revoked']
+        updated_fields.append('revoked')
+
+    # Handle all other fields
+    updated_fields = update_fields(data, repl, updated_fields)
+
+    message = 'Updated replenishment.'
+
+    # Check if ReplenishmentCollection still has unrevoked Replenishments
+    repls = replcoll.replenishments.filter_by(revoked=False).all()
+    if ((not repls) and (replcoll.revoked == False)):
+        message = message + (' Revoked ReplenishmentCollection ID: {}'
+                             .format(replcoll.id))
+        replcoll.toggle_revoke(revoked=True, admin_id=admin.id)
 
     # Apply changes
     try:
@@ -2038,95 +2064,9 @@ def update_replenishment(admin, id):
         raise exc.CouldNotUpdateEntry()
 
     return jsonify({
-        'message': 'Updated replenishment.',
+        'message': message,
         'updated_fields': updated_fields
     }), 201
-
-
-@app.route('/replenishmentcollections/<int:id>', methods=['DELETE'])
-@adminRequired
-def delete_replenishmentcollection(admin, id):
-    """
-    Delete the replenishmentcollection with the given id. The replenishments
-    belonging to this replenishmentcollection are also deleted.
-
-    :param admin:                 Is the administrator user, determined by
-                                  @adminRequired.
-    :param id:                    Is the replenishmentcollection id.
-
-    :return:                      A message that the deletion was successful.
-
-    :raises EntryNotFound:        If the replenishmentcollection with this ID
-                                  does not exist.
-    :raises EntryCanNotBeDeleted: If the replenishmentcollection can not be
-                                  deleted.
-    """
-    # Check ReplenishmentCollection
-    replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
-    if not replcoll:
-        raise exc.EntryNotFound()
-
-    repls = Replenishment.query.filter_by(replcoll_id=id).all()
-
-    for repl in repls:
-        db.session.delete(repl)
-
-    db.session.delete(replcoll)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.EntryCanNotBeDeleted()
-
-    return jsonify({'message': 'Deleted ReplenishmentCollection.'}), 201
-
-
-@app.route('/replenishments/<int:id>', methods=['DELETE'])
-@adminRequired
-def delete_replenishment(admin, id):
-    """
-    Delete a replenishment. If the replenishmentcollection to which this
-    replenishment belongs no longer has any entries after deletion, it is also
-    deleted.
-
-    :param admin:                 Is the administrator user, determined by
-                                  @adminRequired.
-    :param id:                    Is the replenishment id.
-
-    :return:                      A message that the deletion has been
-                                  successful.
-
-    :raises EntryNotFound:        If the replenishment with this ID does not
-                                  exist.
-    :raises EntryCanNotBeDeleted: If the replenishment can not be deleted.
-    """
-    # Check Replenishment
-    repl = Replenishment.query.filter_by(id=id).first()
-    if not repl:
-        raise exc.EntryNotFound()
-    # Get the corresponding ReplenishmentCollection
-    replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
-                .first())
-
-    # Delete replenishment
-    db.session.delete(repl)
-    message = 'Deleted Replenishment.'
-
-    # Check if ReplenishmentCollection still has Replenishments
-    repls = replcoll.replenishments.all()
-    if not repls:
-        message = message + (' Deleted ReplenishmentCollection ID: {}'
-                             .format(replcoll.id))
-        db.session.delete(replcoll)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.EntryCanNotBeDeleted()
-
-    return jsonify({'message': message}), 201
 
 
 # Refund routes ##############################################################

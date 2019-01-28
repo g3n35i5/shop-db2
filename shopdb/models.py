@@ -379,7 +379,8 @@ class ReplenishmentCollection(db.Model):
 
     @hybrid_property
     def price(self):
-        return sum(map(lambda x: x.total_price, self.replenishments.all()))
+        return sum(map(lambda x: x.total_price, self.replenishments.
+                       filter_by(revoked=False).all()))
 
     @hybrid_method
     def toggle_revoke(self, revoked, admin_id):
@@ -432,8 +433,51 @@ class Replenishment(db.Model):
                             nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
                            nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
     amount = db.Column(db.Integer, nullable=False)
     total_price = db.Column(db.Integer, nullable=False)
+
+    @hybrid_method
+    def toggle_revoke(self, revoked, admin_id):
+        if self.revoked == revoked:
+            raise NothingHasChanged()
+        dr = ReplenishmentRevoke(revoked=revoked, admin_id=admin_id,
+                                           repl_id=self.id)
+        self.revoked = revoked
+        db.session.add(dr)
+
+    @hybrid_property
+    def revokehistory(self):
+        res = (ReplenishmentRevoke.query
+               .filter(ReplenishmentRevoke.repl_id == self.id)
+               .all())
+        revokehistory = []
+        for revoke in res:
+            revokehistory.append({
+                'id': revoke.id,
+                'timestamp': revoke.timestamp,
+                'revoked': revoke.revoked
+            })
+        return revokehistory
+
+
+class ReplenishmentRevoke(db.Model):
+    __tablename__ = 'replenishmentrevoke'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False)
+    repl_id = db.Column(db.Integer,
+                            db.ForeignKey('replenishments.id'),
+                            nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
 
 
 class PurchaseRevoke(db.Model):

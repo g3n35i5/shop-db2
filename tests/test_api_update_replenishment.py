@@ -2,6 +2,7 @@ from shopdb.api import *
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from flask import json
+import pdb
 
 
 class UpdateReplenishmentAPITestCase(BaseAPITestCase):
@@ -76,3 +77,41 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
+    def test_update_replenishment_revoke(self):
+        """Revoking a single replenishment"""
+        self.insert_default_replenishmentcollections()
+        data = {'revoked': True}
+        res = self.put(url='/replenishments/2', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        assert 'message', 'updated_fields' in data
+        self.assertEqual(data['message'], 'Updated replenishment.')
+        self.assertEqual(data['updated_fields'], ['revoked'])
+        repl = Replenishment.query.filter_by(id=2).first()
+        self.assertTrue(repl.revoked)
+
+    def test_update_replenishment_revoke_all(self):
+        """Revoking a all replenishments of a replenishmentcollection"""
+        self.insert_default_replenishmentcollections()
+        data = {'revoked': True}
+        res = self.put(url='/replenishments/1', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        assert 'message', 'updated_fields' in data
+        self.assertEqual(data['message'], 'Updated replenishment.')
+        self.assertEqual(data['updated_fields'], ['revoked'])
+        repl = Replenishment.query.filter_by(id=1).first()
+        self.assertTrue(repl.revoked)
+        data = {'revoked': True}
+        res = self.put(url='/replenishments/2', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        assert 'message', 'updated_fields' in data
+        self.assertEqual(data['message'],
+                'Updated replenishment. Revoked ReplenishmentCollection ID: 1')
+        self.assertEqual(data['updated_fields'], ['revoked'])
+        repl = Replenishment.query.filter_by(id=2).first()
+        self.assertTrue(repl.revoked)
+        replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
+        self.assertTrue(replcoll.revoked)
+        self.assertEqual(replcoll.price, 0)
