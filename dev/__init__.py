@@ -59,6 +59,16 @@ def insert_dev_data(db):
 
     db.session.commit()
 
+    # Insert default deposits
+    deposits = [
+        {'user_id': 2, 'amount': 1000, 'comment': 'Cash deposit'},
+        {'user_id': 3, 'amount': 1500, 'comment': 'Bank deposit'},
+        {'user_id': 4, 'amount': 3000, 'comment': 'Other'}
+    ]
+    for deposit in deposits:
+        db.session.add(Deposit(**deposit, admin_id=1))
+    db.session.commit()
+
     # Insert default products
     products = [
         {'name': 'Water', 'price': 100},
