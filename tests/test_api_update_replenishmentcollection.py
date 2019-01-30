@@ -107,3 +107,19 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
                        data={}, role='admin')
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
+
+    def test_update_replenishmentcollection_revoke_error(self):
+        """Trying to rerevoke a replenishmentcollection which only has revoked
+           replenishments should raise an error"""
+        self.insert_default_replenishmentcollections()
+        # revoke the corresponding replenishments
+        data = {'revoked': True}
+        res = self.put(url='/replenishments/1', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        res = self.put(url='/replenishments/2', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        # actual test
+        res = self.put(url='/replenishmentcollections/1',
+                       data={'revoked': False}, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.EntryNotRevocable)

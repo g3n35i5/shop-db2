@@ -463,9 +463,10 @@ revoked field of each entry related to the replenishmentcollection.
 A replenishment is a fill up of a single product and always has to be part of a
 replenishmentcollection. It can be revoked. If all replenishments of a
 replenishmentcollection are revoked, the replenishmentcollection is revoked
-automatically. When rerevoking the replenishmentcollection, the replenishments
-stay revoked. If not revoked, the replenishments total_price is added to the
-price of the related replenishmentcollection.
+automatically. In this case, the replenishmentcollection can only be rerevoked
+by rerevoking a replenishment. When rerevoking the replenishmentcollection, the
+replenishments stay revoked. If not revoked, the replenishments total_price is
+added to the price of the related replenishmentcollection.
 
 | Name | TYPE | Explanation
 | --- | --- | --- |

@@ -58,6 +58,14 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
+    def test_create_replenishmentcollection_with_missing_data_III(self):
+        """Creating a ReplenishmentCollection with empty repl"""
+        data = {'replenishments': [], 'comment': 'My test comment'}
+        res = self.post(url='/replenishmentcollections', data=data,
+                        role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.DataIsMissing)
+
     def test_create_replenishmentcollection_with_unknown_field_I(self):
         """
         Creating a replenishmentcollection with unknown field in the

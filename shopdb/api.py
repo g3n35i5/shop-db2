@@ -1900,6 +1900,9 @@ def create_replenishmentcollection(admin):
     check_allowed_fields_and_types(data, required_data)
 
     repls = data['replenishments']
+    # Check for repls in replcoll
+    if not repls:
+        raise exc.DataIsMissing()
 
     for repl in repls:
 
@@ -1954,11 +1957,17 @@ def update_replenishmentcollection(admin, id):
     :raises InvalidType:         If one or more parameters have an invalid type.
     :raises NothingHasChanged:   If no change occurred after the update.
     :raises CouldNotUpdateEntry: If any other error occurs.
+    :raises EntryNotRevocable:   If the replenishmentcollections was revoked by
+                                 by replenishment_update, because all
+                                 replenishments are revoked, the revoked field
+                                 can not be set to true.
     """
     # Check ReplenishmentCollection
     replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
     if not replcoll:
         raise exc.EntryNotFound()
+    # Which replenishments are not revoked?
+    repls = replcoll.replenishments.filter_by(revoked=False).all()
 
     data = json_body()
 
@@ -1970,11 +1979,15 @@ def update_replenishmentcollection(admin, id):
     check_allowed_fields_and_types(data, updateable)
 
     updated_fields = []
-
     # Handle replenishmentcollection revoke
     if 'revoked' in data:
         if replcoll.revoked == data['revoked']:
             raise exc.NothingHasChanged()
+        # Check if the revoke was caused through the replenishment_update and
+        # therefor cant be changed
+        if data['revoked'] == False:
+            if not repls:
+                raise exc.EntryNotRevocable()
         replcoll.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
         del data['revoked']
         updated_fields.append('revoked')
@@ -2022,9 +2035,12 @@ def update_replenishment(admin, id):
     if not repl:
         raise exc.EntryNotFound()
 
-    #Get the corresponding ReplenishmentCollection
+    # Get the corresponding ReplenishmentCollection
     replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
                 .first())
+    # Get all not revoked replenishments corresponding to the
+    # replenishmentcollection before changes are made
+    repls_nr = replcoll.replenishments.filter_by(revoked=False).all()
 
     # Data validation
     data = json_body()
@@ -2033,19 +2049,23 @@ def update_replenishment(admin, id):
     check_allowed_fields_and_types(data, updateable)
 
     updated_fields = []
+    message = 'Updated replenishment.'
 
     # Handle replenishment revoke
     if 'revoked' in data:
         if repl.revoked == data['revoked']:
             raise exc.NothingHasChanged()
+        if data['revoked'] == False:
+            if not repls_nr:
+                replcoll.toggle_revoke(revoked=False, admin_id=admin.id)
+                message = message + (' Rerevoked ReplenishmentCollection ID: {}'
+                                     .format(replcoll.id))
         repl.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
         del data['revoked']
         updated_fields.append('revoked')
 
     # Handle all other fields
     updated_fields = update_fields(data, repl, updated_fields)
-
-    message = 'Updated replenishment.'
 
     # Check if ReplenishmentCollection still has unrevoked Replenishments
     repls = replcoll.replenishments.filter_by(revoked=False).all()
