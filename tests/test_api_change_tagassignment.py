@@ -30,15 +30,17 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
     def test_remove_tag_assignment(self):
         """Remove a tag assignment as admin."""
         product = Product.query.filter_by(id=1).first()
-        tag = Tag.query.filter_by(id=1).first()
-        product.tags.append(tag)
+        tag1 = Tag.query.filter_by(id=1).first()
+        tag2 = Tag.query.filter_by(id=2).first()
+        product.tags.append(tag1)
+        product.tags.append(tag2)
         db.session.commit()
         data = {'product_id': 1, 'tag_id': 1}
         res = self.post(url='/tagassignment/remove', role='admin', data=data)
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         self.assertEqual(data['message'], 'Tag assignment has been removed.')
-        self.assertEqual(0, len(Product.query.filter_by(id=1).first().tags))
+        self.assertEqual(1, len(Product.query.filter_by(id=1).first().tags))
 
     def test_assign_tag_wrong_type(self):
         """Assign a tag with a wrong type."""
@@ -85,6 +87,19 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         res = self.post(url='/tagassignment/remove', role='admin', data=data)
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
+
+    def test_remove_last_tag(self):
+        """Removing the last tag of a product must raise an error"""
+        # Assign tag
+        product = Product.query.filter_by(id=1).first()
+        tag = Tag.query.filter_by(id=1).first()
+        product.tags.append(tag)
+        db.session.commit()
+
+        data = {'product_id': 1, 'tag_id': 1}
+        res = self.post(url='/tagassignment/remove', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.NoRemainingTag)
 
     def test_assign_tag_unknown_field(self):
         """Unknown fields should raise an exception."""

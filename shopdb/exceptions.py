@@ -162,6 +162,12 @@ class EntryNotRevocable(ShopdbException):
     code = 401
 
 
+class NoRemainingTag(ShopdbException):
+    type = 'error'
+    message = 'There always has to be at least one tag per product.'
+    code = 401
+
+
 """
 User related exceptions.
 

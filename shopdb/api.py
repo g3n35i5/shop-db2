@@ -1306,6 +1306,9 @@ def change_product_tag_assignment(admin, command):
         if tag not in product.tags:
             raise exc.NothingHasChanged()
 
+        if len(product.tags) <= 1:
+            raise exc.NoRemainingTag()
+
         try:
             product.tags.remove(tag)
             db.session.commit()
@@ -1367,10 +1370,10 @@ def create_product(admin):
                                  database.
     """
     data = json_body()
-    required = ['name', 'price']
+    required = ['name', 'price', 'tags']
     createable = {
         'name': str, 'price': int, 'barcode': str, 'active': bool,
-        'countable': bool, 'revocable': bool, 'imagename': str
+        'countable': bool, 'revocable': bool, 'imagename': str, 'tags': list
     }
 
     # Check all required fields
@@ -1388,6 +1391,17 @@ def create_product(admin):
     # Check the given dataset
     check_allowed_fields_and_types(data, createable)
 
+    # Check the product tags
+    tags = data['tags']
+    for tag_id in tags:
+        if not isinstance(tag_id, int):
+            raise exc.WrongType
+        tag = Tag.query.filter_by(id=tag_id).first()
+        if not tag:
+            raise exc.EntryNotFound
+
+    del data['tags']
+
     # Save the price and delete it from the data dictionary
     price = int(data['price'])
     del data['price']
@@ -1398,6 +1412,10 @@ def create_product(admin):
         db.session.add(product)
         db.session.flush()
         product.set_price(price=price, admin_id=admin.id)
+        for tag_id in tags:
+            tag = Tag.query.filter_by(id=tag_id).first()
+            product.tags.append(tag)
+
         db.session.commit()
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
