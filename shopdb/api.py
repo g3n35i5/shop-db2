@@ -1881,7 +1881,8 @@ def get_replenishmentcollection(admin, id):
 
     fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
                        'revokehistory', 'comment']
-    fields_repl = ['id', 'replcoll_id', 'product_id', 'amount', 'total_price']
+    fields_repl = ['id', 'replcoll_id', 'product_id', 'amount',
+                   'total_price', 'revoked']
     repls = replcoll.replenishments.all()
 
     result = convert_minimal(replcoll, fields_replcoll)[0]

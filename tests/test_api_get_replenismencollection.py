@@ -17,7 +17,7 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         required_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'comment',
                              'replenishments', 'revoked', 'revokehistory']
         required_repl = ['id', 'replcoll_id', 'product_id', 'amount',
-                         'total_price']
+                         'total_price', 'revoked']
         assert all(x in replcoll for x in required_replcoll)
         repls = replcoll['replenishments']
         for repl in repls:
