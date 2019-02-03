@@ -1145,6 +1145,11 @@ def delete_tag(admin, id):
     if len(tags) == 1:
         raise exc.NoRemainingTag()
 
+    # Check all product tags
+    for product in tag.products:
+        if len(product.tags) == 1:
+            raise exc.NoRemainingTag()
+
     # Delete the tag.
     try:
         db.session.delete(tag)

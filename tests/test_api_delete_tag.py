@@ -30,19 +30,34 @@ class DeleteTagAPITestCase(BaseAPITestCase):
         """
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
-        tag = Tag.query.filter_by(id=1).first()
-        product1.tags.append(tag)
-        product2.tags.append(tag)
+        tag1 = Tag.query.filter_by(id=1).first()
+        tag2 = Tag.query.filter_by(id=2).first()
+        product1.tags.append(tag1)
+        product2.tags.append(tag1)
+        product1.tags.append(tag2)
+        product2.tags.append(tag2)
         db.session.commit()
+        product1 = Product.query.filter_by(id=1).first()
+        product2 = Product.query.filter_by(id=2).first()
+        self.assertEqual(len(product1.tags), 2)
+        self.assertEqual(len(product2.tags), 2)
+        self.delete(url='/tags/1', role='admin')
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
         self.assertEqual(len(product1.tags), 1)
         self.assertEqual(len(product2.tags), 1)
-        self.delete(url='/tags/1', role='admin')
-        product1 = Product.query.filter_by(id=1).first()
-        product2 = Product.query.filter_by(id=2).first()
-        self.assertEqual(len(product1.tags), 0)
-        self.assertEqual(len(product2.tags), 0)
+
+    def test_delete_last_tag_of_product(self):
+        """
+        It should not be possible to delete a tag which is assigned to a
+        product which has only one tag.
+        """
+        product = Product.query.filter_by(id=1).first()
+        tag = Tag.query.filter_by(id=1).first()
+        product.tags.append(tag)
+        db.session.commit()
+        res = self.delete(url='/tags/1', role='admin')
+        self.assertException(res, exc.NoRemainingTag)
 
     def test_delete_non_existing_tag(self):
         """Delete a non existing tag."""
