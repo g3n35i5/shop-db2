@@ -81,9 +81,22 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_already_existing(self):
+    def test_create_product_with_existing_name(self):
         """Creating a product which already exists should not be possible."""
         data = {'name': 'Pizza', 'price': 300, 'tags': [1]}
+        res = self.post(url='/products', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.EntryAlreadyExists)
+        self.assertFalse(Product.query.filter_by(id=5).first())
+
+    def test_create_product_already_existing(self):
+        """
+        Creating a product with an existing barcode should not be possible.
+        """
+        Product.query.filter_by(id=1).first().barcode = '123456'
+        db.session.commit()
+        data = {'name': 'FooBar', 'price': 100, 'barcode': '123456',
+                'tags': [1]}
         res = self.post(url='/products', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryAlreadyExists)

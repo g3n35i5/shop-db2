@@ -116,3 +116,14 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         res = self.put(url='/products/1', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
+
+    def test_update_barcode_with_existing_barcode(self):
+        """
+        It should not be possible to assign a barcode to a product which has
+        been assigned to another product.
+        """
+        Product.query.filter_by(id=1).first().barcode = '123456'
+        db.session.commit()
+        data = {'barcode': '123456'}
+        res = self.put(url='/products/2', data=data, role='admin')
+        self.assertException(res, exc.EntryAlreadyExists)

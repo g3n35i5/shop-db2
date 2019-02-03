@@ -1507,6 +1507,11 @@ def update_product(admin, id):
             product.set_price(price=price, admin_id=admin.id)
             updated_fields.append('price')
 
+    # Check for barcode change
+    if 'barcode' in data:
+        if Product.query.filter_by(barcode=data['barcode']).first():
+            raise exc.EntryAlreadyExists()
+
     # Check for image change.
     if 'imagename' in data:
         imagename = data['imagename']
