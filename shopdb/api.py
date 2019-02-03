@@ -1140,6 +1140,11 @@ def delete_tag(admin, id):
     if not tag:
         raise exc.EntryNotFound()
 
+    # You can't delete the last remaining tag
+    tags = Tag.query.all()
+    if len(tags) == 1:
+        raise exc.NoRemainingTag()
+
     # Delete the tag.
     try:
         db.session.delete(tag)

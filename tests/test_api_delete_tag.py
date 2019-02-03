@@ -49,3 +49,14 @@ class DeleteTagAPITestCase(BaseAPITestCase):
         res = self.delete(url='/tags/5', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
+
+    def test_delete_last_tag_in_database(self):
+        """It should not be possible to delete the last remaining tag."""
+        tags = Tag.query.all()
+        for i in range(3):
+            db.session.delete(tags[i])
+        db.session.commit()
+
+        res = self.delete(url='/tags/4', role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.NoRemainingTag)
