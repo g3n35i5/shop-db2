@@ -7,8 +7,9 @@ This is the documentation for shop-db.
 2.  [Dependencies](#dependencies)
 3.  [Getting started](#getting-started)
 4.  [Development](#development)
-5.  [Unittests](#unittests)
-6.  [Models](#models)
+5.  [Backups](#backups)
+6.  [Unittests](#unittests)
+7.  [Models](#models)
 
 
 ### About shop.db
@@ -213,6 +214,54 @@ starts shop-db for you in developer mode. This means that a temporary database
 is created in memory with default data defined in the dev folder. Your
 production database will not be used in this mode, but you should make sure
 you have a backup in case something goes wrong.
+
+
+### Backups
+To create backups from the database, you can use the `backup.py` script in the
+root directory of shop-db. To do this regularly, either a service or a
+crobjob can be used.
+
+##### Option 1: systemd service
+Create two files with the following content:
+
+`/etc/systemd/system/shop-db-backup.service`:
+```
+[Unit]
+Description=shop-db backup service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/shop-db2/bin/python3 /srv/shop-db2/backup.py
+```
+
+`/etc/systemd/system/shop-db-backup.timer`:
+```
+[Unit]
+Description=Timer for the shop-db backup service.
+
+[Timer]
+OnCalendar=00/3
+
+[Install]
+WantedBy=timers.target
+```
+
+Reload the services and start the backup service by typing
+```bash
+$ systemctl daemon-reload
+$ systemctl start shop-db-backup.timer
+```
+
+If you want to check your timer and the states of the backups, you can use
+```bash
+$ systemctl list-timers --all
+```
+
+##### Option 2: cronjob
+Create the following cronob:
+```bash
+0 */3 * * * /srv/shop-db2/backup.py
+```
 
 ### Unittests
 Currently, most of the core features of shop-db are covered with the
