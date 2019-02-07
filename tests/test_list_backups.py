@@ -3,7 +3,6 @@ import shopdb.exceptions as exc
 from flask import json
 from pyfakefs import fake_filesystem_unittest
 from tests.base_api import BaseAPITestCase
-import datetime
 
 
 class TestListBackups(BaseAPITestCase, fake_filesystem_unittest.TestCase):
@@ -16,6 +15,16 @@ class TestListBackups(BaseAPITestCase, fake_filesystem_unittest.TestCase):
         res = self.get(url='/backups', role='user')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
+
+    def test_list_backups_no_backups_existing(self):
+        """
+        This test checks whether the return value of the backup route is
+        correct when there are no backups.
+        """
+        res = self.get('/backups', role='admin')
+        data = json.loads(res.data)
+        self.assertEqual(len(data['backups']), 0)
+        self.assertFalse(data['latest'])
 
     def test_list_backups(self):
         """

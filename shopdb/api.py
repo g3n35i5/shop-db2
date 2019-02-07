@@ -605,7 +605,7 @@ def get_backups(admin):
     start = root_dir.rfind(os.sep) + 1
     for path, dirs, files in os.walk(root_dir):
         # Ignore the root path
-        if path == root_dir.rstrip('/'):
+        if os.path.normpath(path) == os.path.normpath(root_dir):
             continue
         # Ignore all empty folders
         if not dirs and not files:
