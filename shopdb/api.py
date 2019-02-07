@@ -11,9 +11,10 @@ import jwt
 import base64
 import sqlite3
 import sqlalchemy
+import glob
 from sqlalchemy.sql import exists
 from sqlalchemy.exc import *
-from functools import wraps
+from functools import wraps, reduce
 import datetime
 import configuration as config
 import random
@@ -578,6 +579,56 @@ def upload(admin):
     return jsonify({
         'message': 'Image uploaded successfully.',
         'filename': filename}), 200
+
+
+# Backups route ###################################################
+@app.route('/backups', methods=['GET'])
+@adminRequired
+def get_backups(admin):
+    """
+    Returns a dictionary with all backups in the backup folder.
+    The following backup directory structure is assumed for this function:
+
+    [Year]/[Month]/[Day]/shop-db_[Year]-[Month]-[Day]_[Hour]-[Minute].db
+
+    For example:
+    2019/02/07/shop-db_2019-02-07_15-00.db
+
+    :return: A dictionary containing all backups and the timestamp of the
+             latest backup.
+    """
+    data = {
+        'backups': {},
+        'latest': None
+    }
+    root_dir = app.config['BACKUP_DIR']
+    start = root_dir.rfind(os.sep) + 1
+    for path, dirs, files in os.walk(root_dir):
+        # Ignore the root path
+        if path == root_dir.rstrip('/'):
+            continue
+        # Ignore all empty folders
+        if not dirs and not files:
+            continue
+
+        folders = path[start:].split(os.sep)
+        subdir = dict.fromkeys(files)
+
+        parent = reduce(dict.get, folders[:-1], data['backups'])
+
+        # We are in the day-directory of our tree
+        if len(subdir) != 0:
+            parent[folders[-1]] = [key for key in subdir.keys()]
+        else:
+            parent[folders[-1]] = subdir
+
+    # Get the timestamp of the latest backup
+    all_files = glob.glob(root_dir + '**/*.db', recursive=True)
+    if all_files:
+        latest = os.path.getctime(max(all_files, key=os.path.getctime))
+        data['latest'] = datetime.datetime.fromtimestamp(latest)
+
+    return jsonify(data)
 
 
 # Financial overview route ###################################################
