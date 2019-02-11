@@ -1508,7 +1508,7 @@ def get_product(admin, id):
         raise exc.UnauthorizedAccess()
 
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-              'revocable', 'imagename', 'pricehistory', 'tags']
+              'revocable', 'imagename', 'tags']
 
     # Convert the product to a dictionary
     product = convert_minimal(product, fields)[0]
@@ -1517,6 +1517,30 @@ def get_product(admin, id):
     product['tags'] = [t.id for t in product['tags']]
 
     return jsonify({'product': product}), 200
+
+
+@app.route('/products/<int:id>/pricehistory', methods=['GET'])
+@adminRequired
+def get_product_pricehistory(admin, id):
+    """
+    Returns the pricehistory of the product with the given id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the product id.
+    :return:      The pricehistory of the product.
+    """
+
+    # Check, whether the product exists.
+    product = Product.query.filter(Product.id == id).first()
+    if not product:
+        raise exc.EntryNotFound()
+
+    # Get the (optional) time range parameters
+    start_date = request.args.get('start_date', default=None, type=int)
+    end_date = request.args.get('end_date', default=None, type=int)
+
+    history = product.get_pricehistory(start_date, end_date)
+
+    return jsonify({'pricehistory': history}), 200
 
 
 @app.route('/products/<int:id>', methods=['PUT'])

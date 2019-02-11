@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
+import datetime
 
 db = SQLAlchemy()
 
@@ -247,19 +248,38 @@ class Product(db.Model):
                 .order_by(ProductPrice.id.desc())
                 .first().price)
 
-    @hybrid_property
-    def pricehistory(self):
-        res = (ProductPrice.query
+    @hybrid_method
+    def get_pricehistory(self, start_date=None, end_date=None):
+
+        # If the time range parameters are not set, we use the creation date
+        # and the current date as range.
+
+        if start_date:
+            start = datetime.datetime.fromtimestamp(start_date)
+        else:
+            start = self.creation_date
+
+        if end_date:
+            end = datetime.datetime.fromtimestamp(end_date)
+        else:
+            end = datetime.datetime.now()
+
+        # Make sure that we select the whole day by shifting the selected
+        # range to the very beginning of the start day and to the end of the
+        # end day.
+        start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = end.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        # Query the pricehistory in the given range
+        res = (db.session.query(ProductPrice)
                .filter(ProductPrice.product_id == self.id)
+               .filter(ProductPrice.timestamp.between(start, end))
                .all())
-        pricehistory = []
-        for price in res:
-            pricehistory.append({
-                'id': price.id,
-                'timestamp': price.timestamp,
-                'price': price.price
-            })
-        return pricehistory
+
+        # Map the result to a dictionary containing all price changes.
+        return list(map(lambda p: {
+            'id': p.id, 'timestamp': p.timestamp, 'price': p.price
+        }, res))
 
     @hybrid_method
     def set_price(self, price, admin_id):
