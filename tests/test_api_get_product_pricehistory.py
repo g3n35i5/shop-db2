@@ -59,6 +59,14 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         res = self.get(url=url, role='admin')
         self.assertException(res, exc.WrongType)
 
+    def test_get_pricehistory_end_before_start(self):
+        """
+        There should be an exception when end date lies before the start date.
+        """
+        url = '/products/1/pricehistory?start_date=1000&end_date=900'
+        res = self.get(url=url, role='admin')
+        self.assertException(res, exc.InvalidData)
+
     def test_get_pricehistory_defining_only_start_date(self):
         """
         Querying the pricehistory with only the start date given.

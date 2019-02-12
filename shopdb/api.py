@@ -1545,6 +1545,11 @@ def get_product_pricehistory(admin, id):
     except (TypeError, ValueError):
         raise exc.WrongType()
 
+    # Check whether start lies before end date
+    if start and end:
+        if not start < end:
+            raise exc.InvalidData()
+
     history = product.get_pricehistory(start, end)
 
     return jsonify({'pricehistory': history}), 200

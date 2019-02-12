@@ -64,6 +64,12 @@ class InvalidJSON(ShopdbException):
     code = 401
 
 
+class InvalidData(ShopdbException):
+    type = 'error'
+    message = 'Invalid input data.'
+    code = 401
+
+
 class NoFileIncluded(ShopdbException):
     type = 'error'
     message = 'No file could be found in the request.'
