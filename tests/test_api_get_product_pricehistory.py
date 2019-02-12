@@ -40,6 +40,25 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         res = self.get(url='/products/10/pricehistory', role='admin')
         self.assertException(res, exc.EntryNotFound)
 
+    def test_get_pricehistory_invalid_start_or_end_date(self):
+        """
+        There should be an exception when the start or end date are invalid.
+        """
+        # Testing start date
+        url = '/products/1/pricehistory?start_date=trololol'
+        res = self.get(url=url, role='admin')
+        self.assertException(res, exc.WrongType)
+
+        # Testing end date
+        url = '/products/1/pricehistory?end_date=trololol'
+        res = self.get(url=url, role='admin')
+        self.assertException(res, exc.WrongType)
+
+        # Testing start and end date
+        url = '/products/1/pricehistory?start_date=trololol&end_date=trololol'
+        res = self.get(url=url, role='admin')
+        self.assertException(res, exc.WrongType)
+
     def test_get_pricehistory_defining_only_start_date(self):
         """
         Querying the pricehistory with only the start date given.

@@ -1535,10 +1535,17 @@ def get_product_pricehistory(admin, id):
         raise exc.EntryNotFound()
 
     # Get the (optional) time range parameters
-    start_date = request.args.get('start_date', default=None, type=int)
-    end_date = request.args.get('end_date', default=None, type=int)
+    try:
+        start = request.args.get('start_date')
+        if start:
+            start = int(start)
+        end = request.args.get('end_date')
+        if end:
+            end = int(end)
+    except (TypeError, ValueError):
+        raise exc.WrongType()
 
-    history = product.get_pricehistory(start_date, end_date)
+    history = product.get_pricehistory(start, end)
 
     return jsonify({'pricehistory': history}), 200
 
