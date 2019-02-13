@@ -169,3 +169,22 @@ def insert_dev_data(db):
     for r in [rep1, rep2, rep3, rep4]:
         db.session.add(r)
     db.session.commit()
+
+    # Insert product price history for product with id 1
+    dt = datetime.datetime.strptime('01.01.2019', '%d.%m.%Y')
+    Product.query.filter_by(id=1).first().creation_date = dt
+    ProductPrice.query.filter_by(product_id=1).first().timestamp = dt
+    db.session.commit()
+
+    dates = ['02.01.2019', '03.01.2019', '08.01.2019', '10.01.2019']
+    prices = [120, 150, 90, 50]
+    timestamps = []
+    for d in dates:
+        timestamps.append(datetime.datetime.strptime(d, '%d.%m.%Y'))
+
+    for i in range(4):
+        p = ProductPrice(
+            price=prices[i], product_id=1, admin_id=1,
+            timestamp=timestamps[i])
+        db.session.add(p)
+    db.session.commit()
