@@ -254,15 +254,18 @@ class Product(db.Model):
         # If the time range parameters are not set, we use the creation date
         # and the current date as range.
 
-        if start_date:
-            start = datetime.datetime.fromtimestamp(start_date)
-        else:
-            start = self.creation_date
+        try:
+            if start_date:
+                start = datetime.datetime.fromtimestamp(start_date)
+            else:
+                start = self.creation_date
 
-        if end_date:
-            end = datetime.datetime.fromtimestamp(end_date)
-        else:
-            end = datetime.datetime.now()
+            if end_date:
+                end = datetime.datetime.fromtimestamp(end_date)
+            else:
+                end = datetime.datetime.now()
+        except ValueError:
+            raise InvalidData()
 
         # Make sure that we select the whole day by shifting the selected
         # range to the very beginning of the start day and to the end of the
