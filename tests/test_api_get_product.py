@@ -12,7 +12,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert 'product' in data
         product = data['product']
-        required = ['id', 'name', 'price', 'barcode', 'active',
+        required = ['id', 'name', 'price', 'barcode', 'active', 'creation_date',
                     'countable', 'revocable', 'imagename', 'tags']
         assert all(x in product for x in required)
 
@@ -38,7 +38,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         assert 'product' in data
         assert 'product' in data
         product = data['product']
-        required = ['id', 'name', 'price', 'barcode', 'active',
+        required = ['id', 'name', 'price', 'barcode', 'active', 'creation_date',
                     'countable', 'revocable', 'imagename', 'tags']
         assert all(x in product for x in required)
 

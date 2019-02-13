@@ -1508,7 +1508,7 @@ def get_product(admin, id):
         raise exc.UnauthorizedAccess()
 
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-              'revocable', 'imagename', 'tags']
+              'revocable', 'imagename', 'tags', 'creation_date']
 
     # Convert the product to a dictionary
     product = convert_minimal(product, fields)[0]
