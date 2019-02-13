@@ -1523,10 +1523,19 @@ def get_product(admin, id):
 @adminRequired
 def get_product_pricehistory(admin, id):
     """
-    Returns the pricehistory of the product with the given id.
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the product id.
-    :return:      The pricehistory of the product.
+    Returns the pricehistory of the product with the given id. If only want to
+    query a part of the history in a range there are optional request arguments:
+    - start_date:          Is the unix timestamp of the start date.
+    - end_date:            Is the unix timestamp of the end date.
+
+    :param admin:          Is the administrator user, determined by
+                           @adminRequired.
+    :param id:             Is the product id.
+
+    :raises EntryNotFound: If the product does not exist.
+    :raises WrongType:     If the request args are invalid.
+
+    :return:               The pricehistory of the product.
     """
 
     # Check, whether the product exists.
