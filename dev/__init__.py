@@ -86,6 +86,10 @@ def insert_dev_data(db):
 
     db.session.commit()
 
+    # Set some barcodes
+    Product.query.filter_by(name='Water').first().barcode = '4004870070145'
+    db.session.commit()
+
     # Insert default purchases
     purchases = [
         {'user_id': 1, 'product_id': 3, 'amount': 12},
