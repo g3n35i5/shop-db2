@@ -1384,24 +1384,16 @@ def change_product_tag_assignment(admin, command):
 @adminOptional
 def list_products(admin):
     """
-    Returns a list of all products. If this route is called by an
-    administrator, all information is returned. However, if it is called
-    without further rights, a minimal version is returned.
+    Returns a list of all products.
 
     :param admin: Is the administrator user, determined by @adminOptional.
 
     :return:      A list of all products
     """
-    if not admin:
-        result = (Product.query
-                  .filter(Product.active.is_(True))
-                  .order_by(Product.name)
-                  .all())
-    else:
-        result = Product.query.order_by(Product.name).all()
-    products = convert_minimal(result, ['id', 'name', 'price', 'barcode',
-                                        'active', 'countable', 'revocable',
-                                        'imagename', 'tags'])
+    result = Product.query.all()
+    fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
+              'revocable', 'imagename', 'tags']
+    products = convert_minimal(result, fields)
 
     for product in products:
         product['tags'] = [t.id for t in product['tags']]
