@@ -15,7 +15,7 @@ class BaseAPITestCase(BaseTestCase):
         self.assertEqual(data['message'], exception.message)
         self.assertEqual(data['result'], exception.type)
 
-    def _request(self, type, url, data, role, content_type):
+    def _request(self, type, url, data, role, content_type, params=None):
         """Helper function to perform a request to the API"""
         if role not in ['admin', 'user', None]:  # pragma: no cover
             sys.exit(f'Wrong role: {role}')
@@ -43,7 +43,7 @@ class BaseAPITestCase(BaseTestCase):
         elif type == 'PUT':
             res = self.client.put(url, data=data, headers=headers)
         elif type == 'GET':
-            res = self.client.get(url, data=data, headers=headers)
+            res = self.client.get(url, data=data, headers=headers, query_string=params)
         elif type == 'DELETE':
             res = self.client.delete(url, data=data, headers=headers)
         else:  # pragma: no cover
@@ -57,11 +57,11 @@ class BaseAPITestCase(BaseTestCase):
         return self._request(type='POST', url=url, data=data, role=role,
                              content_type=content_type)
 
-    def get(self, url, data=None, role=None,
+    def get(self, url, data=None, role=None, params=None,
             content_type='application/json'):
         """Helper function to perform a GET request to the API"""
         return self._request(type='GET', url=url, data=data, role=role,
-                             content_type=content_type)
+                             params=params, content_type=content_type)
 
     def put(self, url, data=None, role=None,
             content_type='application/json'):

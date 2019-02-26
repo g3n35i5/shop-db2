@@ -51,3 +51,35 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         for purchase in purchases:
             assert all(x in purchase for x in required)
             assert all(x not in purchase for x in forbidden)
+
+    def test_list_purchases_with_limit(self):
+        """
+        Listing the purchases with a limit.
+        """
+        # Do 5 purchases
+        self.insert_default_purchases()
+
+        # Revoke the third purchase
+        purchase = Purchase.query.filter_by(id=3).first()
+        purchase.toggle_revoke(revoked=True)
+        db.session.commit()
+
+        res = self.get(url='/purchases', params={'limit': 3})
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'purchases' in data
+        purchases = data['purchases']
+        self.assertEqual(len(purchases), 3)
+        self.assertEqual(purchases[0]['id'], 5)
+        self.assertEqual(purchases[1]['id'], 4)  # <- Third purchase is revoked!
+        self.assertEqual(purchases[2]['id'], 2)
+
+    def test_invalid_parameter(self):
+        res = self.get(url='/purchases', params={'unknown': 2})
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UnauthorizedAccess)
+
+    def test_wrong_parameter_type(self):
+        res = self.get(url='/purchases', params={'limit': 'two'})
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.WrongType)

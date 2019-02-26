@@ -134,6 +134,32 @@ def check_allowed_fields_and_types(data, allowed_fields):
             raise exc.WrongType()
 
 
+def check_allowed_parameters(allowed):
+    """
+    This method checks all GET parameters for their type.
+
+    :param allowed:               A dictionary containing all allowed parameters
+                                  and types.
+
+    :return:                      A dictionary with all converted and checked
+                                  parameters.
+
+    :raises UnauthorizedAccess:   If there's an illegal parameter in the data.
+    :raises WrongType:            If an argument is of the wrong type.
+    """
+    result = {}
+    if any([argument not in allowed for argument in request.args]):
+        raise exc.UnauthorizedAccess()
+
+    for key in request.args:
+        try:
+            result[key] = allowed[key](request.args.get(key))
+        except ValueError:
+            raise exc.WrongType()
+
+    return result
+
+
 def update_fields(data, row, updated=None):
     """
     This helper function updates all fields defined in the dictionary "data"
@@ -1650,18 +1676,31 @@ def list_purchases(admin):
 
     :return:      A list of all purchases.
     """
+
+    allowed_params = {'limit': int}
+    args = check_allowed_parameters(allowed_params)
+
+    # All optional params
+    limit = args.get('limit')
+
+    res = Purchase.query
     # Create a list for an admin
     if admin:
-        res = Purchase.query.all()
         fields = ['id', 'timestamp', 'user_id', 'product_id', 'productprice',
                   'amount', 'revoked', 'price']
-        return jsonify({'purchases': convert_minimal(res, fields)}), 200
+    else:
+        # Only list non-revoked purchases
+        res = res.filter(
+            ~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
+        fields = ['id', 'timestamp', 'user_id', 'product_id']
 
-    # Create a public list
-    res = (db.session.query(Purchase)
-           .filter(~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
-           .all())
-    fields = ['id', 'timestamp', 'user_id', 'product_id']
+    # Apply the limit if given
+    if limit:
+        res = res.order_by(Purchase.id.desc()).limit(limit)
+
+    # Finish the query
+    res = res.all()
+
     return jsonify({'purchases': convert_minimal(res, fields)}), 200
 
 
