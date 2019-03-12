@@ -68,7 +68,7 @@ def convert_minimal(data, fields):
     for item in data:
         element = {}
         for field in fields:
-            element[field] = getattr(item, field)
+            element[field] = getattr(item, field, None)
 
         out.append(element)
 
