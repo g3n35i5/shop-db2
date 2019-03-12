@@ -95,42 +95,41 @@ def check_forbidden(data, allowed_fields, row):
             raise exc.ForbiddenField()
 
 
-def check_required(data, required_fields):
+def check_fields_and_types(data, required, optional=None):
     """
-    This function checks whether all required fields are in a Dictionary
-    and, if necessary, returns an error message.
+    This function checks the given data for its types and existence.
+    Required fields must exist, optional fields must not.
 
     :param data:            The data sent to the API.
-    :param required_fields: A list of all required fields.
-
-    :return:                None
-
-    :raises DataIsMissing:  If a required field is not in the data.
-    """
-    if any(item not in data for item in required_fields):
-        raise exc.DataIsMissing()
-
-
-def check_allowed_fields_and_types(data, allowed_fields):
-    """
-    This function checks whether the data contains an invalid field.
-    At the same time, all entries are checked for their type.
-
-    :param data:            The dictionary whose entries are to be checked.
-    :param allowed_fields:  A dictionary with all allowed entries and their
+    :param required:        A dictionary with all required entries and their
+                            types.
+    :param optional:        A dictionary with all optional entries and their
                             types.
 
     :return:                None
 
-    :raises UnknownField:   If there's an unknown field in the data.
+    :raises DataIsMissing:  If a required field is not in the data.
     :raises WrongType:      If a field is of the wrong type.
     """
 
-    if not all(x in allowed_fields for x in data):
+    if required and optional:
+        allowed = dict(**required, **optional)
+    elif required:
+        allowed = required
+    else:
+        allowed = optional
+
+    # Check if there is an unknown field in the data
+    if not all(x in allowed for x in data):
         raise exc.UnknownField()
 
+    # Check whether all required data is available
+    if required and any(item not in data for item in required):
+        raise exc.DataIsMissing()
+
+    # Check all data (including optional data) for their types
     for key, value in data.items():
-        if not isinstance(value, allowed_fields[key]):
+        if not isinstance(value, allowed.get(key)):
             raise exc.WrongType()
 
 
@@ -207,13 +206,10 @@ def insert_user(data):
     :raises CouldNotCreateEntry: If the new user cannot be created.
     """
 
-    allowed = {'firstname': str, 'lastname': str,
-               'password': str, 'password_repeat': str}
+    required = {'lastname': str}
+    optional = {'firstname': str, 'password': str, 'password_repeat': str}
 
-    required = ['lastname']
-
-    check_required(data, required)
-    check_allowed_fields_and_types(data, allowed)
+    check_fields_and_types(data, required, optional)
 
     password = None
 
@@ -463,9 +459,8 @@ def set_maintenance(admin):
 
     data = json_body()
     # Check all items in the json body.
-    allowed = {'state': bool}
-    check_required(data, allowed)
-    check_allowed_fields_and_types(data, allowed)
+    required = {'state': bool}
+    check_fields_and_types(data, required)
 
     # Get the current maintenance state.
     current_state = app.config['MAINTENANCE']
@@ -751,9 +746,8 @@ def login():
     """
     data = json_body()
     # Check all items in the json body.
-    allowed = {'id': int, 'password': str}
-    check_required(data, allowed)
-    check_allowed_fields_and_types(data, allowed)
+    required = {'id': int, 'password': str}
+    check_fields_and_types(data, required)
 
     # Try to get the user with the id
     user = User.query.filter_by(id=data['id']).first()
@@ -852,9 +846,8 @@ def verify_user(admin, id):
 
     data = json_body()
     # Check all items in the json body.
-    allowed = {'rank_id': int}
-    check_required(data, allowed)
-    check_allowed_fields_and_types(data, allowed)
+    required = {'rank_id': int}
+    check_fields_and_types(data, required)
 
     rank_id = data['rank_id']
     rank = Rank.query.filter_by(id=rank_id).first()
@@ -1059,7 +1052,7 @@ def update_user(admin, id):
     # Check the data for forbidden fields.
     check_forbidden(data, allowed, user)
     # Check all allowed fields and for their types.
-    check_allowed_fields_and_types(data, allowed)
+    check_fields_and_types(data, None, allowed)
 
     updated_fields = []
 
@@ -1260,18 +1253,14 @@ def create_tag(admin):
 
     """
     data = json_body()
-    required = ['name']
-    createable = {'name': str}
+    required = {'name': str}
 
     # Check all required fields
-    check_required(data, required)
+    check_fields_and_types(data, required)
 
     # Check if a tag with this name already exists
     if Tag.query.filter_by(name=data['name']).first():
         raise exc.EntryAlreadyExists()
-
-    # Check the given dataset
-    check_allowed_fields_and_types(data, createable)
 
     try:
         tag = Tag(**data)
@@ -1316,7 +1305,7 @@ def update_tag(admin, id):
     # Check forbidden fields
     check_forbidden(data, updateable, tag)
     # Check types
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, updateable)
 
     updated_fields = update_fields(data, tag)
     tag.created_by = admin.id
@@ -1363,10 +1352,7 @@ def change_product_tag_assignment(admin, command):
     required = {'product_id': int, 'tag_id': int}
 
     # Check all required fields
-    check_required(data, required)
-
-    # Check the given dataset
-    check_allowed_fields_and_types(data, required)
+    check_fields_and_types(data, required)
 
     # Check if the product exists.
     product = Product.query.filter_by(id=data['product_id']).first()
@@ -1449,14 +1435,14 @@ def create_product(admin):
                                  database.
     """
     data = json_body()
-    required = ['name', 'price', 'tags']
-    createable = {
-        'name': str, 'price': int, 'barcode': str, 'active': bool,
-        'countable': bool, 'revocable': bool, 'imagename': str, 'tags': list
+    required = {'name': str, 'price': int, 'tags': list}
+    optional = {
+        'barcode': str, 'active': bool, 'countable': bool,
+        'revocable': bool, 'imagename': str
     }
 
     # Check all required fields
-    check_required(data, required)
+    check_fields_and_types(data, required, optional)
 
     # Check if a product with this name already exists
     if Product.query.filter_by(name=data['name']).first():
@@ -1466,9 +1452,6 @@ def create_product(admin):
     if 'barcode' in data:
         if Product.query.filter_by(barcode=data['barcode']).first():
             raise exc.EntryAlreadyExists()
-
-    # Check the given dataset
-    check_allowed_fields_and_types(data, createable)
 
     # Check the product tags
     tags = data['tags']
@@ -1611,15 +1594,15 @@ def update_product(admin, id):
     if not product:
         raise exc.EntryNotFound()
 
-    updateable = {
-        'name': str, 'price': int, 'barcode': str, 'active': bool,
+    optional = {
+        'name': str, 'price': int, 'barcode': str,
         'imagename': str, 'countable': bool, 'revocable': bool
     }
 
     # Check forbidden fields
-    check_forbidden(data, updateable, product)
+    check_forbidden(data, optional, product)
     # Check types
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, optional)
 
     updated_fields = []
 
@@ -1725,8 +1708,7 @@ def create_purchase():
     data = json_body()
     required = {'user_id': int, 'product_id': int, 'amount': int}
 
-    check_allowed_fields_and_types(data, required)
-    check_required(data, required)
+    check_fields_and_types(data, required)
 
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
@@ -1814,7 +1796,7 @@ def update_purchase(id):
     data = json_body()
     updateable = {'revoked': bool, 'amount': int}
     check_forbidden(data, updateable, purchase)
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, updateable)
 
     updated_fields = []
 
@@ -1881,8 +1863,7 @@ def create_deposit(admin):
     """
     data = json_body()
     required = {'user_id': int, 'amount': int, 'comment': str}
-    check_required(data, required)
-    check_allowed_fields_and_types(data, required)
+    check_fields_and_types(data, required)
 
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
@@ -1962,7 +1943,7 @@ def update_deposit(admin, id):
 
     updateable = {'revoked': bool}
     check_forbidden(data, updateable, deposit)
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, updateable)
 
     # Handle deposit revoke
     if 'revoked' in data:
@@ -2053,42 +2034,44 @@ def create_replenishmentcollection(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required_data = {'replenishments': list, 'comment': str}
+    required = {'replenishments': list, 'comment': str}
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
 
     # Check all required fields
-    check_required(data, required_data)
-    check_allowed_fields_and_types(data, required_data)
+    check_fields_and_types(data, required)
 
-    repls = data['replenishments']
-    # Check for repls in replcoll
-    if not repls:
+    replenishments = data['replenishments']
+    # Check for the replenishments in the collection
+    if not replenishments:
         raise exc.DataIsMissing()
 
-    for repl in repls:
+    for repl in replenishments:
 
         # Check all required fields
-        check_required(repl, required_repl)
-        check_allowed_fields_and_types(repl, required_repl)
+        check_fields_and_types(repl, required_repl)
+
+        product_id = repl.get('product_id')
+        amount = repl.get('amount')
 
         # Check amount
-        if repl['amount'] <= 0:
+        if amount <= 0:
             raise exc.InvalidAmount()
         # Check product
-        product = Product.query.filter_by(id=repl['product_id']).first()
+        product = Product.query.filter_by(id=product_id).first()
         if not product:
             raise exc.EntryNotFound()
 
+
     # Create and insert replenishmentcollection
     try:
-        replcoll = ReplenishmentCollection(admin_id=admin.id,
-                                           comment=data['comment'],
-                                           revoked=False)
-        db.session.add(replcoll)
+        collection = ReplenishmentCollection(admin_id=admin.id,
+                                             comment=data['comment'],
+                                             revoked=False)
+        db.session.add(collection)
         db.session.flush()
 
-        for repl in repls:
-            rep = Replenishment(replcoll_id=replcoll.id, **repl)
+        for repl in replenishments:
+            rep = Replenishment(replcoll_id=collection.id, **repl)
             db.session.add(rep)
         db.session.commit()
 
@@ -2137,7 +2120,7 @@ def update_replenishmentcollection(admin, id):
 
     updateable = {'revoked': bool, 'comment': str}
     check_forbidden(data, updateable, replcoll)
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, updateable)
 
     updated_fields = []
     # Handle replenishmentcollection revoke
@@ -2207,7 +2190,7 @@ def update_replenishment(admin, id):
     data = json_body()
     updateable = {'revoked': bool, 'amount': int, 'total_price': int}
     check_forbidden(data, updateable, repl)
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, updateable)
 
     updated_fields = []
     message = 'Updated replenishment.'
@@ -2306,8 +2289,7 @@ def create_refund(admin):
     """
     data = json_body()
     required = {'user_id': int, 'total_price': int, 'comment': str}
-    check_required(data, required)
-    check_allowed_fields_and_types(data, required)
+    check_fields_and_types(data, required)
 
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
@@ -2366,7 +2348,7 @@ def update_refund(admin, id):
 
     updateable = {'revoked': bool}
     check_forbidden(data, updateable, refund)
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, updateable)
 
     # Handle refund revoke
     if 'revoked' in data:
@@ -2444,8 +2426,7 @@ def create_payoff(admin):
     """
     data = json_body()
     required = {'amount': int, 'comment': str}
-    check_required(data, required)
-    check_allowed_fields_and_types(data, required)
+    check_fields_and_types(data, required)
 
     # Check amount
     if data['amount'] <= 0:
@@ -2497,7 +2478,7 @@ def update_payoff(admin, id):
 
     updateable = {'revoked': bool}
     check_forbidden(data, updateable, payoff)
-    check_allowed_fields_and_types(data, updateable)
+    check_fields_and_types(data, None, updateable)
 
     # Handle payoff revoke
     if 'revoked' in data:
