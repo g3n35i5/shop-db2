@@ -2,6 +2,9 @@ from shopdb.models import *
 from shopdb.api import bcrypt
 
 
+PASSWORD = bcrypt.generate_password_hash('1234')
+
+
 def insert_dev_data(db):
     # Insert default ranks
     ranks = [
@@ -18,7 +21,7 @@ def insert_dev_data(db):
     user = User(
         firstname='John',
         lastname='Doe',
-        password=bcrypt.generate_password_hash('1234'))
+        password=PASSWORD)
     db.session.add(user)
     au = AdminUpdate(user_id=1, admin_id=1, is_admin=True)
     db.session.add(au)
@@ -27,8 +30,8 @@ def insert_dev_data(db):
 
     # Insert all default users. Two of them have a password defined.
     usernames = [
-        {'firstname': 'Andree', 'lastname': 'Owings', 'password': '1234'},
-        {'firstname': 'Milan', 'lastname': 'Glazier', 'password': '1234'},
+        {'firstname': 'Andree', 'lastname': 'Owings', 'password': PASSWORD},
+        {'firstname': 'Milan', 'lastname': 'Glazier', 'password': PASSWORD},
         {'firstname': 'Hiroko', 'lastname': 'Trinh'},
         {'firstname': 'Malia', 'lastname': 'Constance'},
         {'firstname': 'Rob', 'lastname': 'Hydrick'}

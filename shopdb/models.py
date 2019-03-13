@@ -665,3 +665,58 @@ class PayoffRevoke(db.Model):
             raise UnauthorizedAccess()
 
         return admin_id
+
+
+class Stocktaking(db.Model):
+    __tablename__ = 'stocktakings'
+    id = db.Column(db.Integer, primary_key=True)
+    count = db.Column(db.Integer, nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
+                           nullable=False)
+    collection_id = db.Column(db.Integer,
+                              db.ForeignKey('stocktakingcollections.id'),
+                              nullable=False)
+
+
+class StocktakingCollection(db.Model):
+    __tablename__ = 'stocktakingcollections'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    stocktakings = db.relationship('Stocktaking', lazy='dynamic',
+                                    foreign_keys='Stocktaking.collection_id')
+
+    @hybrid_method
+    def toggle_revoke(self, revoked, admin_id):
+        if self.revoked == revoked:
+            raise NothingHasChanged
+        sr = StocktakingCollectionRevoke(revoked=revoked, admin_id=admin_id,
+                                         collection_id=self.id)
+        self.revoked = revoked
+        db.session.add(sr)
+
+    @hybrid_property
+    def revokehistory(self):
+        res = (StocktakingCollectionRevoke.query
+               .filter(StocktakingCollectionRevoke.collection_id == self.id)
+               .all())
+        revokehistory = []
+        for revoke in res:
+            revokehistory.append({
+                'id': revoke.id,
+                'timestamp': revoke.timestamp,
+                'revoked': revoke.revoked
+            })
+        return revokehistory
+
+
+class StocktakingCollectionRevoke(db.Model):
+    __tablename__ = 'stocktakingcollectionrevokes'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False)
+    collection_id = db.Column(db.Integer,
+                              db.ForeignKey('stocktakingcollections.id'),
+                              nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

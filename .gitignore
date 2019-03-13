@@ -3,6 +3,7 @@
 *.dump
 configuration.py
 .idea
+coverage.xml
 shopdb/uploads/*
 !shopdb/uploads/valid*
 !shopdb/uploads/broken*
