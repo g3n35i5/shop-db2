@@ -57,6 +57,27 @@ class CreateProductsAPITestCase(BaseAPITestCase):
 
         self.assertEqual(len(Product.query.all()), 4)
 
+    def test_create_product_wrong_type_tags(self):
+        """
+        If the tags of a product are of the wrong type, an exception must
+        be raised.
+        """
+        data = {'name': 'Bread', 'price': 100, 'tags': ['1']}
+        res = self.post(url='/products', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.WrongType)
+        self.assertFalse(Product.query.filter_by(id=5).first())
+
+    def test_create_product_non_existing_tag(self):
+        """
+        If the tags of a product do not exist, an exception must be raised.
+        """
+        data = {'name': 'Bread', 'price': 100, 'tags': [42]}
+        res = self.post(url='/products', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.EntryNotFound)
+        self.assertFalse(Product.query.filter_by(id=5).first())
+
     def test_create_product_missing_name(self):
         """Create a Product as admin with missing name."""
         data = {'price': 100, 'tags': [1]}
