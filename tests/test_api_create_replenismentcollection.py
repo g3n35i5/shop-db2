@@ -31,6 +31,22 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
             for key in dict:
                 self.assertEqual(getattr(repls[i], key), dict[key])
 
+    def test_create_replenishmentcollection_reactivate_product(self):
+        """
+        If a product was marked as inactive with a stocktaking, it can
+        be set to active again with a replenishment. This functionality is
+        checked with this test.
+        """
+        # Mark product 1 as inactive
+        Product.query.filter_by(id=1).first().active = False
+        db.session.commit()
+        self.assertFalse(Product.query.filter_by(id=1).first().active)
+        replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
+                          {'product_id': 2, 'amount': 20, 'total_price': 20}]
+        data = {'replenishments': replenishments, 'comment': 'My test comment'}
+        self.post(url='/replenishmentcollections', data=data, role='admin')
+        self.assertTrue(Product.query.filter_by(id=1).first().active)
+
     def test_create_replenishmentcollection_as_user(self):
         """Creating a ReplenishmentCollection as user"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},

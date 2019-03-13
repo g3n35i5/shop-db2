@@ -131,6 +131,30 @@ class BaseTestCase(TestCase):
             db.session.add(r)
         db.session.commit()
 
+    def insert_default_stocktakingcollections(self):
+        db.session.add(StocktakingCollection(admin_id=1))
+        db.session.add(StocktakingCollection(admin_id=1))
+        db.session.flush()
+
+        stocktakings = [
+            {'product_id': 1, 'count': 100},
+            {'product_id': 2, 'count': 50},
+            {'product_id': 3, 'count': 25},
+            {'product_id': 4, 'count': 33}
+        ]
+        for s in stocktakings:
+            db.session.add(Stocktaking(**s, collection_id=1))
+
+        stocktakings = [
+            {'product_id': 1, 'count': 50},
+            {'product_id': 2, 'count': 25},
+            {'product_id': 3, 'count': 12},
+            {'product_id': 4, 'count': 3}
+        ]
+        for s in stocktakings:
+            db.session.add(Stocktaking(**s, collection_id=2))
+        db.session.commit()
+
     def insert_default_purchases(self):
         p1 = Purchase(user_id=1, product_id=1, amount=1)
         p2 = Purchase(user_id=2, product_id=3, amount=2)

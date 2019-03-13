@@ -19,6 +19,7 @@ import datetime
 import configuration as config
 import random
 import os
+import collections
 from PIL import Image
 import shutil
 
@@ -2061,6 +2062,10 @@ def create_replenishmentcollection(admin):
         if not product:
             raise exc.EntryNotFound()
 
+        # If the product has been marked as inactive, it will now be marked as
+        # active again.
+        if not product.active:
+            product.active = True
 
     # Create and insert replenishmentcollection
     try:
@@ -2494,4 +2499,269 @@ def update_payoff(admin, id):
 
     return jsonify({
         'message': 'Updated payoff.',
+    }), 201
+
+
+# StocktakingCollection routes ##############################################
+@app.route('/stocktakingcollections', methods=['GET'])
+@adminRequired
+def list_stocktakingcollections(admin):
+    """
+    Returns a list of all stocktakingcollections.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A list of all stocktakingcollections.
+    """
+    data = StocktakingCollection.query.all()
+    fields = ['id', 'timestamp', 'admin_id', 'revoked']
+    response = convert_minimal(data, fields)
+    return jsonify({'stocktakingcollections': response}), 200
+
+
+@app.route('/stocktakingcollections/<int:id>', methods=['GET'])
+@adminRequired
+def get_stocktakingcollections(admin, id):
+    """
+    Returns the stocktakingcollection with the requested id. In addition,
+    all stocktakings that belong to this collection are returned.
+
+    :param admin:          Is the administrator user,
+                           determined by @adminRequired.
+    :param id:             Is the stocktakingcollection id.
+
+    :return:               The requested stocktakingcollection and all
+                           related stocktakings JSON object.
+
+    :raises EntryNotFound: If the stocktakingcollection with this ID does
+                           not exist.
+    """
+    # Query the stocktakingcollection.
+    collection = StocktakingCollection.query.filter_by(id=id).first()
+    # If it does not exist, raise an exception.
+    if not collection:
+        raise exc.EntryNotFound()
+
+    fields_collection = ['id', 'timestamp', 'admin_id', 'revoked',
+                         'revokehistory']
+    fields_stocktaking = ['id', 'product_id', 'count', 'collection_id']
+    stocktakings = collection.stocktakings.all()
+
+    result = convert_minimal(collection, fields_collection)[0]
+    result['stocktakings'] = convert_minimal(stocktakings, fields_stocktaking)
+    return jsonify({'stocktakingcollection': result}), 200
+
+
+@app.route('/stocktakingcollections', methods=['POST'])
+@adminRequired
+def create_stocktakingcollections(admin):
+    """
+    Insert a new stocktakingcollection.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+
+    :return:                     A message that the creation was successful.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises ForbiddenField :     If a forbidden field is in the data.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises EntryNotFound:       If the product with with the id of any
+                                 replenishment does not exist.
+    :raises InvalidAmount:       If amount of any replenishment is less than
+                                 or equal to zero.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
+    data = json_body()
+    required = {'stocktakings': list}
+    required_s = {'product_id': int, 'count': int}
+    optional_s = {'set_inactive': bool}
+
+    # Check all required fields
+    check_fields_and_types(data, required)
+
+    stocktakings = data['stocktakings']
+    # Check for stocktakings in the collection
+    if not stocktakings:
+        raise exc.DataIsMissing()
+
+    for stocktaking in stocktakings:
+        product_id = stocktaking.get('product_id')
+        if not Product.query.filter_by(id=product_id).first():
+            raise exc.EntryNotFound()
+
+    # Get all active product ids
+    products = Product.query.filter(Product.active.is_(True)).all()
+    active_ids = list(map(lambda p: p.id, products))
+    data_product_ids = list(map(lambda d: d['product_id'], stocktakings))
+
+    # Compare function
+    def compare(x, y):
+        return collections.Counter(x) == collections.Counter(y)
+
+    # We need an entry for all active products. If some data is missing,
+    # raise an exception
+    if not compare(active_ids, data_product_ids):
+        raise exc.DataIsMissing()
+
+    # Create stocktakingcollection
+    collection = StocktakingCollection(admin_id=admin.id)
+    db.session.add(collection)
+    db.session.flush()
+
+    # Check for all required data and types
+    for stocktaking in stocktakings:
+
+        # Check all required fields
+        check_fields_and_types(stocktaking, required_s, optional_s)
+
+        # Get all fields
+        product_id = stocktaking.get('product_id')
+        count = stocktaking.get('count')
+        set_inactive = stocktaking.get('set_inactive', False)
+
+        # Check amount
+        if count < 0:
+            raise exc.InvalidAmount()
+
+        # Does the product changes its active state?
+        product = Product.query.filter_by(id=product_id).first()
+        if set_inactive:
+            if count == 0 and product.active:
+                product.active = False
+            else:
+                raise exc.CouldNotUpdateEntry()
+
+    # Create and insert stocktakingcollection
+    try:
+        for stocktaking in stocktakings:
+            s = Stocktaking(
+                collection_id=collection.id,
+                product_id=stocktaking.get('product_id'),
+                count=stocktaking.get('count'))
+            db.session.add(s)
+        db.session.commit()
+
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created stocktakingcollection.'}), 201
+
+
+@app.route('/stocktakingcollections/<int:id>', methods=['PUT'])
+@adminRequired
+def update_stocktakingcollection(admin, id):
+    """
+    Update the stocktakingcollection with the given id.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the stocktakingcollection id.
+
+    :return:                     A message that the update was successful.
+
+    :raises EntryNotFound:       If the stocktakingcollection with this ID
+                                 does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
+    # Check StocktakingCollection
+    collection = (StocktakingCollection.query.filter_by(id=id).first())
+    if not collection:
+        raise exc.EntryNotFound()
+
+    data = json_body()
+
+    if data == {}:
+        raise exc.NothingHasChanged()
+
+    updateable = {'revoked': bool}
+    check_forbidden(data, updateable, collection)
+    check_fields_and_types(data, None, updateable)
+
+    updated_fields = []
+    # Handle revoke
+    if 'revoked' in data:
+        if collection.revoked == data['revoked']:
+            raise exc.NothingHasChanged()
+        collection.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+        del data['revoked']
+        updated_fields.append('revoked')
+
+    # Handle all other fields
+    updated_fields = update_fields(data, collection, updated_fields)
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated stocktakingcollection.',
+        'updated_fields': updated_fields
+    }), 201
+
+
+@app.route('/stocktakings/<int:id>', methods=['PUT'])
+@adminRequired
+def update_stocktaking(admin, id):
+    """
+    Update the stocktaking with the given id.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the stocktaking id.
+
+    :return:                     A message that the update was successful
+                                 and a list of all updated fields.
+
+    :raises EntryNotFound:       If the stocktaking with this ID does not
+                                 exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the
+                                 request data.
+    :raises InvalidType:         If one or more parameters have an invalid
+                                 type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
+    # Check Stocktaking
+    stocktaking = Stocktaking.query.filter_by(id=id).first()
+    if not stocktaking:
+        raise exc.EntryNotFound()
+
+    # Data validation
+    data = json_body()
+    updateable = {'count': int}
+    check_forbidden(data, updateable, stocktaking)
+    check_fields_and_types(data, None, updateable)
+
+    updated_fields = []
+    message = 'Updated stocktaking.'
+
+    # Check count
+    if 'count' in data:
+        if data['count'] < 0:
+            raise exc.InvalidAmount()
+
+        if data['count'] == stocktaking.count:
+            raise exc.NothingHasChanged()
+
+    # Handle all other fields
+    updated_fields = update_fields(data, stocktaking, updated_fields)
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': message,
+        'updated_fields': updated_fields
     }), 201
