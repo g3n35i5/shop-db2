@@ -60,8 +60,9 @@ def create_database():
     rank1 = Rank(name='Member', debt_limit=-2000)
     rank2 = Rank(name='Alumni', debt_limit=-2000)
     rank3 = Rank(name='Contender', debt_limit=0)
+    rank4 = Rank(name='Inactive', debt_limit=0, active=False)
     try:
-        for r in (rank1, rank2, rank3):
+        for r in (rank1, rank2, rank3, rank4):
             db.session.add(r)
         db.session.commit()
     except IntegrityError:

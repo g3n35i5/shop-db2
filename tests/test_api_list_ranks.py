@@ -1,5 +1,5 @@
 from tests.base_api import BaseAPITestCase
-from tests.base import r_names, r_limits
+from tests.base import rank_data
 from flask import json
 
 
@@ -11,7 +11,7 @@ class ListRanksAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert 'ranks' in data
         ranks = data['ranks']
-        self.assertEqual(len(ranks), 3)
-        for i in range(3):
-            self.assertEqual(ranks[i]['name'], r_names[i])
-            self.assertEqual(ranks[i]['debt_limit'], r_limits[i])
+        self.assertEqual(len(ranks), 4)
+        for index, rank in enumerate(ranks):
+            self.assertEqual(rank['name'], rank_data[index]['name'])
+            self.assertEqual(rank['id'], index + 1)

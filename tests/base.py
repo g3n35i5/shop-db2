@@ -20,8 +20,11 @@ p_names = ['Pizza', 'Coffee', 'Cookie', 'Coke']
 p_prices = [300, 50, 100, 200]
 
 # Default data for ranks
-r_names = ['Contender', 'Member', 'Alumni']
-r_limits = [0, -2000, -2000]
+rank_data = [
+        {'name': 'Contender', 'debt_limit': 0},
+        {'name': 'Member', 'debt_limit': -2000},
+        {'name': 'Alumni', 'debt_limit': -1000},
+        {'name': 'Inactive', 'debt_limit': 0, 'active': False}]
 
 # Default data for product tags
 t_names = ['Food', 'Sweets', 'Drinks', 'Coffee']
@@ -91,9 +94,8 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     def insert_default_ranks(self):
-        for i in range(0, len(r_names)):
-            rank = Rank(name=r_names[i], debt_limit=r_limits[i])
-            db.session.add(rank)
+        for rank in rank_data:
+            db.session.add(Rank(**rank))
         db.session.commit()
 
     def verify_all_users_except_last(self):

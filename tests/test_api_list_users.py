@@ -1,3 +1,4 @@
+from shopdb.api import *
 from tests.base_api import BaseAPITestCase
 from flask import json
 
@@ -5,13 +6,19 @@ from flask import json
 class ListUsersAPITestCase(BaseAPITestCase):
     def test_list_users_as_user_and_external(self):
         """Get a list of all users as user and as external."""
+
+        # Set user 3 inactive
+        rank = Rank.query.filter(Rank.active.is_(False)).first()
+        User.query.filter_by(id=3).first().set_rank_id(rank.id, 1)
+        db.session.commit()
+        self.assertFalse(User.query.filter_by(id=3).first().rank.active)
         for role in ['user', None]:
             res = self.get(url='/users', role=role)
             self.assertEqual(res.status_code, 200)
             data = json.loads(res.data)
             assert 'users' in data
             users = data['users']
-            self.assertEqual(len(users), 3)
+            self.assertEqual(len(users), 2)
             for user in users:
                 self.assertEqual(len(user), 4)
                 for item in ['id', 'firstname', 'lastname', 'rank_id']:
@@ -32,3 +39,4 @@ class ListUsersAPITestCase(BaseAPITestCase):
             for item in ['id', 'firstname', 'lastname', 'creation_date',
                          'credit', 'is_admin', 'rank_id']:
                 assert item in user
+

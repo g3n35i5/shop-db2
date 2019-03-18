@@ -10,11 +10,11 @@ def insert_dev_data(db):
     ranks = [
         {'name': 'Contender', 'debt_limit': 0},
         {'name': 'Member', 'debt_limit': -2000},
-        {'name': 'Alumni', 'debt_limit': -1000}
+        {'name': 'Alumni', 'debt_limit': -1000},
+        {'name': 'Inactive', 'debt_limit': 0, 'active': False}
     ]
     for rank in ranks:
-        rank = Rank(name=rank['name'], debt_limit=rank['debt_limit'])
-        db.session.add(rank)
+        db.session.add(Rank(**rank))
     db.session.commit()
 
     # Insert admin

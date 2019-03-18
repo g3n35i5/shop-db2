@@ -876,6 +876,7 @@ def list_users(admin):
     result = User.query.filter(User.is_verified.is_(True)).all()
     if not admin:
         fields = ['id', 'firstname', 'lastname', 'rank_id']
+        result = list(filter(lambda user: user.rank.active, result))
         return jsonify({'users': convert_minimal(result, fields)}), 200
 
     fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin',

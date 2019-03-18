@@ -1,6 +1,6 @@
 from shopdb.api import *
 from tests.base import BaseTestCase
-from tests.base import u_passwords, u_firstnames, u_lastnames, r_names
+from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data
 
 
 class DefaultDataTest(BaseTestCase):
@@ -20,9 +20,10 @@ class DefaultDataTest(BaseTestCase):
     def test_insert_default_ranks(self):
         """Check if all ranks have been entered correctly"""
         ranks = Rank.query.all()
-        self.assertEqual(len(ranks), len(r_names))
-        for i in range(0, len(r_names)):
-            self.assertEqual(ranks[i].name, r_names[i])
+        self.assertEqual(len(ranks), len(rank_data))
+        for index, rank in enumerate(ranks):
+            self.assertEqual(rank.name, rank_data[index]['name'])
+            self.assertEqual(rank.id, index + 1)
 
     def test_verify_all_users_except_last(self):
         """Check if all users except the last one have been verified"""

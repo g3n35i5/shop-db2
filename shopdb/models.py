@@ -95,7 +95,7 @@ class User(db.Model):
         if self.rank_id:
             rank = Rank.query.filter(Rank.id == self.rank_id).first()
             if rank:
-                return rank.name
+                return rank
         return None
 
     @hybrid_property
@@ -187,6 +187,7 @@ class Rank(db.Model):
     __tablename__ = 'ranks'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=True, nullable=False)
+    active = db.Column(db.Boolean, nullable=False, default=True)
     debt_limit = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):

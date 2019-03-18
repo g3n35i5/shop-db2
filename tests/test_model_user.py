@@ -67,12 +67,12 @@ class UserModelTestCase(BaseTestCase):
         """Update the user rank id"""
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.rank_id, 2)
-        self.assertEqual(user.rank, 'Member')
+        self.assertEqual(user.rank.name, 'Member')
         user.set_rank_id(rank_id=3, admin_id=1)
         db.session.commit()
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.rank_id, 3)
-        self.assertEqual(user.rank, 'Alumni')
+        self.assertEqual(user.rank.name, 'Alumni')
         with self.assertRaises(NothingHasChanged):
             user.set_rank_id(rank_id=3, admin_id=1)
 
