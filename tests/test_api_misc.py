@@ -24,6 +24,14 @@ class MiscAPITestCase(BaseAPITestCase):
         self.assertEqual(data['message'], 'Page does not exist.')
         self.assertEqual(data['result'], 'error')
 
+    def test_method_not_allowed_exception(self):
+        """Check the MethodNotAllowed exception message."""
+        res = self.client.get('/login')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['message'], 'Method not allowed.')
+        self.assertEqual(data['result'], 'error')
+
     def test_maintenance_mode(self):
         """
         This test checks the maintenance mode.

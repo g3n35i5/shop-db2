@@ -6,7 +6,7 @@ from flask import (Flask, request, g, make_response, jsonify,
                    send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import NotFound, MethodNotAllowed
 import jwt
 import base64
 import sqlite3
@@ -400,6 +400,10 @@ def handle_error(error):
     # Catch the 404-error.
     if isinstance(error, NotFound):
         return jsonify(result='error', message='Page does not exist.'), 404
+
+    # Catch the 'MethodNotAllowed' exception
+    if isinstance(error, MethodNotAllowed):
+        return jsonify(result='error', message='Method not allowed.'), 405
 
     # As long as the application is in debug mode, all other exceptions
     # should be output immediately.
