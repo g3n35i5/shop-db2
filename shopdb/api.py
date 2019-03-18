@@ -2592,11 +2592,17 @@ def create_stocktakingcollections(admin):
 
     for stocktaking in stocktakings:
         product_id = stocktaking.get('product_id')
-        if not Product.query.filter_by(id=product_id).first():
+        product = Product.query.filter_by(id=product_id).first()
+        if not product:
             raise exc.EntryNotFound()
+        if not product.countable:
+            raise exc.InvalidData()
 
     # Get all active product ids
-    products = Product.query.filter(Product.active.is_(True)).all()
+    products = (Product.query
+                .filter(Product.active.is_(True))
+                .filter(Product.countable.is_(True))
+                .all())
     active_ids = list(map(lambda p: p.id, products))
     data_product_ids = list(map(lambda d: d['product_id'], stocktakings))
 

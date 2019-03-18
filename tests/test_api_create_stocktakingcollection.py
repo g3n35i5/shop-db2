@@ -22,8 +22,12 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         """Creating a StocktakingCollection as admin"""
 
         self.insert_default_stocktakingcollections()
+
+        # Set product 1 to non countable
+        Product.query.filter_by(id=1).first().countable = False
+        db.session.commit()
+
         stocktakings = [
-            {'product_id': 1, 'count': 100},
             {'product_id': 2, 'count': 50},
             {'product_id': 3, 'count': 25},
             {'product_id': 4, 'count': 33}
@@ -50,6 +54,30 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         for i, _dict in enumerate(stocktakings):
             for key in _dict:
                 self.assertEqual(getattr(api_stocktakings[i], key), _dict[key])
+
+    def test_create_stocktakingcollection_non_countable_product(self):
+        """
+        Only the products which are countable can be in a stocktaking.
+        """
+        # Set product 1 to non countable
+        Product.query.filter_by(id=1).first().countable = False
+        db.session.commit()
+
+        stocktakings = [
+            {'product_id': 1, 'count': 10},
+            {'product_id': 2, 'count': 50},
+            {'product_id': 3, 'count': 25},
+            {'product_id': 4, 'count': 33}
+        ]
+
+        data = {
+            'stocktakings': stocktakings,
+            'timestamp': int(self.TIMESTAMP.timestamp())
+        }
+        res = self.post(url='/stocktakingcollections', data=data, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.InvalidData)
+        self.assertFalse(StocktakingCollection.query.all())
 
     def test_create_stocktakingcollection_non_existing_product(self):
         """
