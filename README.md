@@ -39,7 +39,7 @@ In order to use shop-db, you need to install the following main dependencies:
   5. nginx
 
 ```bash
-$ sudo apt install python3 python3-venv python3-pip git nginx
+$ sudo apt install python3.7 python3-venv python3-pip git nginx
 ```
 
 ### Getting started
@@ -57,7 +57,7 @@ the owner to the shopdb_user account:
 
 ```bash
 $ cd /srv
-$ sudo git clone <GIT_URL_TO_SHOPDB>
+$ sudo git clone https://github.com/g3n35i5/shop-db2
 $ sudo chown -R shopdb_user:shopdb_user shop-db2
 ```
 
