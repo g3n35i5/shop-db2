@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.mode == 'interactive':
+    if args.mode == 'interactive':  # pragma: no cover
         list_files = os.listdir('tests')
         list_tests = []
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
         if answ in ['', 'all', 'a']:
             do_all_tests()
-        else:  # pragma: no cover
+        else:
             list_testnumbers = answ.split(' ')
             test = []
 
@@ -63,5 +63,5 @@ if __name__ == '__main__':
     elif args.mode == 'auto':
         do_all_tests()
 
-    else:
+    else:  # pragma: no cover
         sys.exit(f'Invalid operating mode: {args.mode}')
