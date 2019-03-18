@@ -74,11 +74,3 @@ class CreateRefundAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
         self.assertEqual(len(Refund.query.all()), 0)
-
-    def test_create_refund_invalid_amount(self):
-        """Create a purchase with an invalid total_price."""
-        data = {'user_id': 2, 'total_price': 0, 'comment': 'Test refund'}
-        res = self.post(url='/refunds', role='admin', data=data)
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.InvalidAmount)
-        self.assertEqual(len(Refund.query.all()), 0)
