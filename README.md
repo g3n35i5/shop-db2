@@ -32,8 +32,8 @@ developed [shop-db-admin](INSERT_LINK "Admin tool for shop-db") interface.
 ### Dependencies
 
 In order to use shop-db, you need to install the following main dependencies:
-  1. Python 3
-  2. Python 3 Virtual Environment
+  1. Python 3.7
+  2. Python 3.7 Virtual Environment
   3. pip3
   4. git
   5. nginx
@@ -110,7 +110,7 @@ will be done as the shopdb_user account:
 ```bash
 $ sudo su -s /bin/bash shopdb_user
 $ cd /srv/shop-db2
-$ python3 -m venv .
+$ python3.7 -m venv .
 $ source bin/activate
 ```
 
@@ -118,7 +118,7 @@ Once you have activated the virtual environment you will notice the prompt
 change and then you can install the required python modules:
 
 ```bash
-(shop-db) $ pip3 install -r requirements.txt
+(shop-db) $ pip3.7 install -r requirements.txt
 ```
 
 Now the configuration file of shop-db2 has to be adjusted.
@@ -144,13 +144,13 @@ requirements.
 If you are satisfied with them, you can now initialize the database:
 
 ```bash
-(shop-db) $ python3 ./setupdb.py
+(shop-db) $ python3.7 ./setupdb.py
 ```
 
 Ready? Almost. To start shop-db, you only have to type:
 
 ```bash
-(shop-db) $ python3 ./wsgi.py
+(shop-db) $ python3.7 ./wsgi.py
 ```
 
 However, so that the backend does not have to be started manually every time, it
@@ -158,20 +158,20 @@ is advisable to run shop-db as a systemd service:
 
 ```bash
 (shop-db) $ exit # To switch back to the root user
-$ sudo nano /etc/systemd/system/shop-db@shopdb_user.service
+$ sudo nano /etc/systemd/system/shop-db2@shopdb_user.service
 ```
 
 The file must have the following content:
 
 ```
 [Unit]
-Description=shop-db
+Description=shop-db2
 After=network-online.target
 
 [Service]
 Type=simple
 User=%i
-ExecStart=/srv/shop-db2/bin/python3 /srv/shop-db2/wsgi.py
+ExecStart=/srv/shop-db2/bin/python3.7 /srv/shop-db2/wsgi.py
 
 [Install]
 WantedBy=multi-user.target
@@ -186,19 +186,19 @@ $ sudo systemctl --system daemon-reload
 To have shop-db start automatically at boot, enable the service:
 
 ```bash
-$ sudo systemctl enable shop-db@shopdb_user
+$ sudo systemctl enable shop-db2@shopdb_user
 ```
 
 To disable the automatic start, use this command:
 
 ```bash
-$ sudo systemctl disable shop-db@shopdb_user
+$ sudo systemctl disable shop-db2@shopdb_user
 ```
 
 To start shop-db now, use this command:
 
 ```bash
-$ sudo systemctl start shop-db@shopdb_user
+$ sudo systemctl start shop-db2@shopdb_user
 ```
 
 
@@ -207,7 +207,7 @@ You want to start shop-db in developer mode and participate in the project?
 Great! The command
 
 ```bash
-$ python3 ./shopdb.py --mode development
+$ python3.7 ./shopdb.py --mode development
 ```
 
 starts shop-db for you in developer mode. This means that a temporary database
@@ -227,17 +227,17 @@ Create two files with the following content:
 `/etc/systemd/system/shop-db-backup.service`:
 ```
 [Unit]
-Description=shop-db backup service
+Description=shop-db2 backup service
 
 [Service]
 Type=oneshot
-ExecStart=/srv/shop-db2/bin/python3 /srv/shop-db2/backup.py
+ExecStart=/srv/shop-db2/bin/python3.7 /srv/shop-db2/backup.py
 ```
 
 `/etc/systemd/system/shop-db-backup.timer`:
 ```
 [Unit]
-Description=Timer for the shop-db backup service.
+Description=Timer for the shop-db2 backup service.
 
 [Timer]
 OnCalendar=00/3
@@ -249,7 +249,7 @@ WantedBy=timers.target
 Reload the services and start the backup service by typing
 ```bash
 $ systemctl daemon-reload
-$ systemctl start shop-db-backup.timer
+$ systemctl start shop-db2-backup.timer
 ```
 
 If you want to check your timer and the states of the backups, you can use
@@ -274,14 +274,14 @@ $ python3 -m coverage run test.py
 If you want to check the test coverage, type
 
 ```bash
-$ python3 -m coverage html
+$ python3.7 -m coverage html
 ```
 to generate the html preview and open a web server in the newly created
 directory `htmlcov`
 
 ```bash
 $ cd htmlcov
-$ python3 -m http.server
+$ python3.7 -m http.server
 ```
 
 ### Models
