@@ -778,7 +778,7 @@ def login():
     d_user = convert_minimal(user, fields)[0]
 
     # Create a token.
-    exp = datetime.datetime.now() + datetime.timedelta(minutes=15)
+    exp = datetime.datetime.now() + datetime.timedelta(minutes=60)
     token = jwt.encode({'user': d_user, 'exp': exp}, app.config['SECRET_KEY'])
 
     # Return the result.
