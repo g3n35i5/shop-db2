@@ -67,6 +67,16 @@ class CreateRefundAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserIsNotVerified)
         self.assertEqual(len(Refund.query.all()), 0)
 
+    def test_create_refund_inactive_user(self):
+        """Create a refund for an inactive user."""
+        User.query.filter_by(id=3).first().set_rank_id(4, 1)
+        db.session.commit()
+        data = {'user_id': 3, 'total_price': 1000, 'comment': 'Test refund'}
+        res = self.post(url='/refunds', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsInactive)
+        self.assertEqual(len(Purchase.query.all()), 0)
+
     def test_create_refund_non_existing_user(self):
         """Create a refund as non existing user."""
         data = {'user_id': 5, 'total_price': 1000, 'comment': 'Test refund'}

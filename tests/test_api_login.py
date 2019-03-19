@@ -1,3 +1,4 @@
+from shopdb.api import *
 import shopdb.exceptions as exc
 from tests.base import u_passwords, u_firstnames, u_lastnames
 from tests.base_api import BaseAPITestCase
@@ -44,6 +45,16 @@ class LoginAPITestCase(BaseAPITestCase):
         res = self.post(url='/login', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)
+
+    def test_login_as_inactive_user(self):
+        """
+        If an authentication attempt is made by an inactive user,
+        the correct error message must be returned."""
+        User.query.filter_by(id=1).first().set_rank_id(4, 1)
+        db.session.commit()
+        data = {'id': 1, 'password': u_passwords[0]}
+        res = self.post(url='/login', data=data)
+        self.assertException(res, exc.UserIsInactive)
 
     def test_login_missing_password(self):
         """If an authentication attempt is made without a password,

@@ -187,6 +187,12 @@ class UserIsNotVerified(ShopdbException):
     code = 401
 
 
+class UserIsInactive(ShopdbException):
+    type = 'error'
+    message = 'This user account has been deactivated.'
+    code = 401
+
+
 class InsufficientCredit(ShopdbException):
     type = 'error'
     message = 'You do not have enough credit for this purchase'

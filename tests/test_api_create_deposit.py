@@ -74,6 +74,16 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserIsNotVerified)
         self.assertEqual(len(Deposit.query.all()), 0)
 
+    def test_create_deposit_inactive_user(self):
+        """Create a deposit for an inactive user."""
+        User.query.filter_by(id=3).first().set_rank_id(4, 1)
+        db.session.commit()
+        data = {'user_id': 3, 'amount': 1000, 'comment': 'Test deposit'}
+        res = self.post(url='/deposits', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsInactive)
+        self.assertEqual(len(Purchase.query.all()), 0)
+
     def test_create_deposit_non_existing_user(self):
         """Create a deposit as non existing user."""
         data = {'user_id': 5, 'amount': 1000, 'comment': 'Test deposit'}

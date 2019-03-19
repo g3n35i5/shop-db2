@@ -765,6 +765,10 @@ def login():
     if not user.is_verified:
         raise exc.UserIsNotVerified()
 
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
+
     # Check if the user has set a password.
     if not user.password:
         raise exc.InvalidCredentials()
@@ -904,8 +908,15 @@ def get_user_favorites(id):
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
+
     favorites = user.favorites
 
     return jsonify({'favorites': favorites}), 200
@@ -926,8 +937,15 @@ def get_user_deposits(id):
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
+
     deposits = user.deposits.all()
 
     fields = ['id', 'timestamp', 'admin_id', 'amount', 'revoked', 'comment']
@@ -951,8 +969,15 @@ def get_user_refunds(id):
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
+
     result = user.refunds.all()
 
     fields = ['id', 'timestamp', 'admin_id', 'total_price', 'revoked',
@@ -977,8 +1002,15 @@ def get_user_purchases(id):
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
+
     purchases = user.purchases.all()
 
     fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount',
@@ -1003,8 +1035,14 @@ def get_user(id):
     user = User.query.filter_by(id=id).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
 
     fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id',
               'is_admin', 'creation_date', 'verification_date']
@@ -1720,8 +1758,14 @@ def create_purchase():
     user = User.query.filter_by(id=data['user_id']).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
 
     # Check product
     product = Product.query.filter_by(id=data['product_id']).first()
@@ -1875,8 +1919,14 @@ def create_deposit(admin):
     user = User.query.filter_by(id=data['user_id']).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
 
     # Check amount
     if data['amount'] == 0:
@@ -2305,8 +2355,14 @@ def create_refund(admin):
     user = User.query.filter_by(id=data['user_id']).first()
     if not user:
         raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
     if not user.is_verified:
         raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
 
     # Check amount
     if data['total_price'] <= 0:

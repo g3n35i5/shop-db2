@@ -78,6 +78,16 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserIsNotVerified)
         self.assertEqual(len(Purchase.query.all()), 0)
 
+    def test_create_purchase_inactive_user(self):
+        """Create a purchase as inactive user."""
+        User.query.filter_by(id=3).first().set_rank_id(4, 1)
+        db.session.commit()
+        data = {'user_id': 3, 'product_id': 3, 'amount': 4}
+        res = self.post(url='/purchases', role='admin', data=data)
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsInactive)
+        self.assertEqual(len(Purchase.query.all()), 0)
+
     def test_create_purchase_non_existing_user(self):
         """Create a purchase as non existing user."""
         data = {'user_id': 5, 'product_id': 3, 'amount': 4}
