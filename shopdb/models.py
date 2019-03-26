@@ -631,14 +631,14 @@ class Payoff(db.Model):
         if self.revoked == revoked:
             raise NothingHasChanged
         rr = PayoffRevoke(revoked=revoked, admin_id=admin_id,
-                          refund_id=self.id)
+                          payoff_id=self.id)
         self.revoked = revoked
         db.session.add(rr)
 
     @hybrid_property
     def revokehistory(self):
         res = (PayoffRevoke.query
-               .filter(PayoffRevoke.refund_id == self.id)
+               .filter(PayoffRevoke.payoff_id == self.id)
                .all())
         revokehistory = []
         for revoke in res:
@@ -655,7 +655,7 @@ class PayoffRevoke(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
-    refund_id = db.Column(db.Integer, db.ForeignKey('payoffs.id'),
+    payoff_id = db.Column(db.Integer, db.ForeignKey('payoffs.id'),
                           nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
