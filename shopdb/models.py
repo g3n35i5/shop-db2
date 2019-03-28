@@ -26,12 +26,22 @@ class User(db.Model):
     lastname = db.Column(db.String(32), unique=False, nullable=False)
     password = db.Column(db.String(256), unique=False, nullable=True)
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
-    purchases = db.relationship('Purchase', lazy='dynamic',
-                                foreign_keys='Purchase.user_id')
-    deposits = db.relationship('Deposit', lazy='dynamic',
-                               foreign_keys='Deposit.user_id')
-    refunds = db.relationship('Refund', lazy='dynamic',
-                              foreign_keys='Refund.user_id')
+
+    # Link to all purchases of a user.
+    purchases = db.relationship(
+        'Purchase', lazy='dynamic',
+        foreign_keys='Purchase.user_id'
+    )
+    # Link to all deposits of a user.
+    deposits = db.relationship(
+        'Deposit', lazy='dynamic',
+        foreign_keys='Deposit.user_id'
+    )
+    # Link to all refunds of a user.
+    refunds = db.relationship(
+        'Refund', lazy='dynamic',
+        foreign_keys='Refund.user_id'
+    )
 
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
