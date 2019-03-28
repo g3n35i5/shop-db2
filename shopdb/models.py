@@ -348,6 +348,13 @@ class Purchase(db.Model):
     amount = db.Column(db.Integer, nullable=False)
     revoked = db.Column(db.Boolean, nullable=False, default=False)
 
+    # Link to the user who made the purchase.
+    user = db.relationship(
+        'User',
+        back_populates='purchases',
+        foreign_keys=[user_id]
+    )
+
     def __init__(self, **kwargs):
         super(Purchase, self).__init__(**kwargs)
         productprice = (ProductPrice.query
@@ -533,6 +540,13 @@ class Deposit(db.Model):
     comment = db.Column(db.String(64), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False, default=False)
 
+    # Link to the user of the deposit.
+    user = db.relationship(
+        'User',
+        back_populates='deposits',
+        foreign_keys=[user_id]
+    )
+
     @hybrid_method
     def toggle_revoke(self, revoked, admin_id):
         if self.revoked == revoked:
@@ -584,6 +598,13 @@ class Refund(db.Model):
     comment = db.Column(db.String(64), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False, default=False)
     total_price = db.Column(db.Integer, nullable=False)
+
+    # Link to the user of the refund.
+    user = db.relationship(
+        'User',
+        back_populates='refunds',
+        foreign_keys=[user_id]
+    )
 
     @hybrid_method
     def toggle_revoke(self, revoked, admin_id):

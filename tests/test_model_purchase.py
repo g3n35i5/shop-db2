@@ -34,6 +34,16 @@ class PurchaseModelTestCase(BaseTestCase):
         self.assertEqual(len(user.purchases.all()), 1)
         self.assertEqual(user.credit, -product.price)
 
+    def test_purchase_link_to_its_user(self):
+        """
+        This test checks whether the reference to the user of a purchase is
+        working correctly.
+        """
+        db.session.add(Purchase(user_id=1, product_id=1, amount=1))
+        db.session.commit()
+        purchase = Purchase.query.filter_by(id=1).first()
+        self.assertEqual(purchase.user, User.query.filter_by(id=1).first())
+
     def test_insert_multiple_purchases(self):
         """Testing multiple purchases"""
         product = Product.query.filter_by(id=1).first()
