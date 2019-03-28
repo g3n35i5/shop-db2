@@ -1,3 +1,4 @@
+from shopdb.api import *
 import shopdb.exceptions as exc
 from tests.base import u_firstnames, u_lastnames
 from tests.base_api import BaseAPITestCase
@@ -30,3 +31,13 @@ class GetUserAPITestCase(BaseAPITestCase):
         res = self.get(url='/users/4')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)
+
+    def test_get_user_inactive_user(self):
+        """
+        Getting an inactive user should raise an error.
+        """
+        User.query.filter_by(id=3).first().set_rank_id(4, 1)
+        db.session.commit()
+        res = self.get(url='/users/3')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.UserIsInactive)
