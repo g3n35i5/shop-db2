@@ -32,8 +32,7 @@ t_names = ['Food', 'Sweets', 'Drinks', 'Coffee']
 
 class BaseTestCase(TestCase):
     def create_app(self):
-        app.config.from_object(config.UnittestConfig)
-        return app
+        return set_app(config.UnittestConfig)
 
     def setUp(self):
         # Create tables
