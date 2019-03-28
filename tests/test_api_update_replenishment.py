@@ -29,6 +29,17 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
+    def test_update_replenishment_no_changes_II(self):
+        """
+        Trying to un-revoke a non revoked replenishment should raise an
+        exception.
+        """
+        self.insert_default_replenishmentcollections()
+        data = {'revoked': False}
+        res = self.put(url='/replenishments/1', data=data, role='admin')
+        self.assertEqual(res.status_code, 200)
+        self.assertException(res, exc.NothingHasChanged)
+
     def test_update_replenishment_as_user(self):
         """Updating a single replenishment as user"""
         self.insert_default_replenishmentcollections()
