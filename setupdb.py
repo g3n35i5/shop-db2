@@ -3,6 +3,7 @@
 import sys
 import os
 import getpass
+import getopt
 from sqlalchemy.exc import IntegrityError
 from shopdb.models import User, Rank
 from shopdb.api import app, db, set_app, insert_user
@@ -52,7 +53,7 @@ def input_user():
     return firstname, lastname, password
 
 
-def create_database():
+def create_database(argv):
     set_app(config.ProductiveConfig)
     app.app_context().push()
     db.create_all()
@@ -70,7 +71,17 @@ def create_database():
         sys.exit('ERROR: Could not create database!')
 
     # Handle the user.
-    firstname, lastname, password = input_user()
+    try:
+        opts, args = getopt.getopt (argv, 'f:l:p:')
+        for opt, arg in opts:
+            if opt == '-f':
+                firstname = arg
+            elif opt == '-l':
+                lastname = arg
+            elif opt == '-p':
+                password = arg
+    except getopt.GetoptError:
+        firstname, lastname, password = input_user()
     user = {
         'firstname': firstname, 'lastname': lastname,
         'password': password, 'password_repeat': password
@@ -99,7 +110,7 @@ if __name__ == '__main__':
     if db_exists:
         sys.exit('ERROR: The database already exists!')
     try:
-        create_database()
+        create_database(sys.argv[1:])
     except KeyboardInterrupt:
         print("\n")
         os.remove(config.ProductiveConfig.DATABASE_PATH)
