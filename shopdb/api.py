@@ -1719,7 +1719,7 @@ def list_purchases(admin):
         # Only list non-revoked purchases
         res = res.filter(
             ~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
-        fields = ['id', 'timestamp', 'user_id', 'product_id']
+        fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount']
 
     # Apply the limit if given
     if limit:

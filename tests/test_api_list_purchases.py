@@ -46,8 +46,8 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         self.assertEqual(purchases[2]['user_id'], 3)
         self.assertEqual(purchases[3]['user_id'], 1)
 
-        required = ['id', 'timestamp', 'user_id', 'product_id']
-        forbidden = ['productprice', 'amount', 'revoked']
+        required = ['id', 'timestamp', 'user_id', 'product_id', 'amount']
+        forbidden = ['productprice', 'revoked']
         for purchase in purchases:
             assert all(x in purchase for x in required)
             assert all(x not in purchase for x in forbidden)
