@@ -2,6 +2,7 @@
 
 from shopdb.models import *
 import shopdb.exceptions as exc
+from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
 from flask import (Flask, request, g, make_response, jsonify,
                    send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
@@ -692,31 +693,117 @@ def get_financial_overview(admin):
                  .filter(ReplenishmentCollection.revoked.is_(False))
                  .all())
 
-    sum_pur = sum(list(map(lambda x: x.price, purchases)))
-    sum_dep = sum(list(map(lambda x: x.amount, deposits)))
-    sum_pay = sum(list(map(lambda x: x.amount, payoffs)))
-    sum_ref = sum(list(map(lambda x: x.total_price, refunds)))
-    sum_rep = sum(list(map(lambda x: x.price, replcolls)))
+    # Get the balance between the first and the last stocktaking.
+    # If there is no stocktaking or only one stocktaking, the balance is 0.
+    stock_first = (StocktakingCollection.query
+                   .order_by(StocktakingCollection.id)
+                   .first())
+    stock_last = (StocktakingCollection.query
+                  .order_by(StocktakingCollection.id.desc())
+                  .first())
 
-    # The financial income is limited only to the income from purchases.
-    sum_incomes = sum([sum_pur])
+    if not all([stock_first, stock_last]) or stock_first is stock_last:
+        pos_stock = 0
+        neg_stock = 0
+    else:
+        balance = _get_balance_between_stocktakings(stock_first, stock_last)
+        pos_stock = balance['profit']
+        neg_stock = balance['loss']
+
+    # Incomes are:
+    # - Purchases                    with a positive price
+    # - Deposits                     with a positive amount
+    # - Replenishmentcollections     with a negative price
+    # - Refunds                      with a negative amount
+    # - Payoffs                      with a negative amount
+    # - Profits between stocktakings
+
+    pos_pur = sum(
+        map(abs, list(filter(lambda x: x >= 0,
+                    list(map(lambda x: x.price, purchases)))))
+    )
+
+    pos_dep = sum(
+        map(abs, list(filter(lambda x: x >= 0,
+                    list(map(lambda x: x.amount, deposits)))))
+    )
+
+    neg_rep = sum(
+        map(abs, list(filter(lambda x: x < 0,
+                    list(map(lambda x: x.price, replcolls)))))
+    )
+
+    neg_ref = sum(
+        map(abs, list(filter(lambda x: x < 0,
+                    list(map(lambda x: x.total_price, refunds)))))
+    )
+
+    neg_pay = sum(
+        map(abs, list(filter(lambda x: x < 0,
+                    list(map(lambda x: x.amount, payoffs)))))
+    )
+
+    sum_incomes = sum([
+        pos_pur, pos_dep, neg_rep, neg_ref, neg_pay, pos_stock
+    ])
+
     incomes = {
         'amount': sum_incomes,
         'items': [
-            {'name': 'Purchases', 'amount': sum_pur}
+            {'name': 'Purchases', 'amount': pos_pur},
+            {'name': 'Deposits', 'amount': pos_dep},
+            {'name': 'Replenishments', 'amount': neg_rep},
+            {'name': 'Refunds', 'amount': neg_ref},
+            {'name': 'Payoffs', 'amount': neg_pay},
+            {'name': 'Stocktakings', 'amount': pos_stock}
         ]
     }
 
-    # The financial expenses result from deposits, payoffs, refunds and
-    # replenishmentcollections.
-    sum_expenses = sum([sum_dep, sum_pay, sum_ref, sum_rep])
+    # Expenses are:
+    # - Purchases                with a negative price
+    # - Deposits                 with a negative amount
+    # - Replenishmentcollections with a positive price
+    # - Refunds                  with a positive amount
+    # - Payoffs                  with a positive amount
+    # - Losses between stocktakings
+    neg_pur = sum(
+        map(abs, list(filter(lambda x: x < 0,
+                    list(map(lambda x: x.price, purchases)))))
+    )
+
+    neg_dep = sum(
+        map(abs, list(filter(lambda x: x < 0,
+                    list(map(lambda x: x.amount, deposits)))))
+    )
+
+    pos_rep = sum(
+        map(abs, list(filter(lambda x: x >= 0,
+                    list(map(lambda x: x.price, replcolls)))))
+    )
+
+    pos_ref = sum(
+        map(abs, list(filter(lambda x: x >= 0,
+                    list(map(lambda x: x.total_price, refunds)))))
+    )
+
+    pos_pay = sum(
+        map(abs, list(filter(lambda x: x >= 0,
+                    list(map(lambda x: x.amount, payoffs)))))
+    )
+
+    sum_expenses = sum([
+        neg_pur, neg_dep, pos_rep, pos_ref, pos_pay, neg_stock
+    ])
+
     expenses = {
         'amount': sum_expenses,
         'items': [
-            {'name': 'Deposits', 'amount': sum_dep},
-            {'name': 'Payoffs', 'amount': sum_pay},
-            {'name': 'Refunds', 'amount': sum_ref},
-            {'name': 'Replenishments', 'amount': sum_rep}
+            {'name': 'Purchases', 'amount': neg_pur},
+            {'name': 'Deposits', 'amount': neg_dep},
+            {'name': 'Replenishments', 'amount': pos_rep},
+            {'name': 'Refunds', 'amount': pos_ref},
+            {'name': 'Payoffs', 'amount': pos_pay},
+            {'name': 'Stocktakings', 'amount': neg_stock}
         ]
     }
 

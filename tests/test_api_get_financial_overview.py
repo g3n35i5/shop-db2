@@ -2,6 +2,7 @@ from shopdb.api import *
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from flask import json
+from datetime import datetime
 
 
 class GetFinancialOverviewAPITestCase(BaseAPITestCase):
@@ -26,17 +27,44 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         compared with the amount calculated by the API.
         """
 
+        # Add a product with negative price
+        p_data = {'name': 'Negative', 'price': -100, 'tags': [1]}
+        self.post(url='/products', role='admin', data=p_data)
+
+        # Manipulate the product price timestamps
+        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        for id in [1, 2, 3, 4, 5]:
+            ProductPrice.query.filter_by(id=id).first().timestamp = ts
+        db.session.commit()
+
+        # Insert the first stocktaking
+        stocktakings = [
+            {'product_id': 1, 'count': 100},
+            {'product_id': 2, 'count': 100},
+            {'product_id': 3, 'count': 100},
+            {'product_id': 4, 'count': 100},
+            {'product_id': 5, 'count': 100}
+        ]
+        t = datetime.strptime('2018-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        data = {
+            'stocktakings': stocktakings,
+            'timestamp': int(t.timestamp())
+        }
+        self.post(url='/stocktakingcollections', data=data, role='admin')
+
         # Insert some purchases (some are revoked)
-        p1 = Purchase(user_id=1, product_id=3, amount=4, revoked=True)
-        p2 = Purchase(user_id=2, product_id=2, amount=3, revoked=False)  # <-
-        p3 = Purchase(user_id=3, product_id=1, amount=2, revoked=False)  # <-
-        p4 = Purchase(user_id=1, product_id=2, amount=1, revoked=True)
-        for p in [p1, p2, p3, p4]:
+        t = datetime.strptime('2018-01-01 10:00:00', '%Y-%m-%d %H:%M:%S')
+        p1 = Purchase(user_id=1, product_id=3, amount=4, revoked=True, timestamp=t)
+        p2 = Purchase(user_id=2, product_id=2, amount=3, revoked=False, timestamp=t)  # <-
+        p3 = Purchase(user_id=3, product_id=1, amount=2, revoked=False, timestamp=t)  # <-
+        p4 = Purchase(user_id=1, product_id=2, amount=1, revoked=True, timestamp=t)
+        p5 = Purchase(user_id=1, product_id=5, amount=1, revoked=False, timestamp=t)  # <-
+        for p in [p1, p2, p3, p4, p5]:
             db.session.add(p)
 
-        # Purchase amount should be 3 * 50 + 2 * 300
-        psum = p2.price + p3.price
-        self.assertEqual(psum, 750)
+        # Purchase amount should be 3 * 50 + 2 * 300 - 1 * 100
+        psum = p2.price + p3.price + p5.price
+        self.assertEqual(psum, 650)
 
         # Insert some deposits (some are revoked)
         d1 = Deposit(user_id=1, admin_id=1, comment='Foo',
@@ -47,11 +75,10 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
                      amount=300, revoked=False)  # <-
         d4 = Deposit(user_id=2, admin_id=1, comment='Foo',
                      amount=200, revoked=True)
-        for d in [d1, d2, d3, d4]:
+        d5 = Deposit(user_id=2, admin_id=1, comment='Negative',
+                     amount=-100, revoked=False)
+        for d in [d1, d2, d3, d4, d5]:
             db.session.add(d)
-        # Deposit amount should be 300 + 100
-        dsum = d1.amount + d3.amount
-        self.assertEqual(dsum, 400)
 
         # Insert some refunds (some are revoked)
         r1 = Refund(user_id=1, total_price=100, admin_id=1,
@@ -65,10 +92,6 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         for r in [r1, r2, r3, r4]:
             db.session.add(r)
 
-        # Refund sum should be 150 + 700 = 850
-        rsum = r3.total_price + r4.total_price
-        self.assertEqual(rsum, 850)
-
         # Commit the changes.
         db.session.commit()
 
@@ -77,22 +100,86 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         rc = ReplenishmentCollection.query.filter_by(id=1).first()
         rc.toggle_revoke(admin_id=1, revoked=True)
         db.session.commit()
-        rc = ReplenishmentCollection.query.filter_by(id=2).first()
-        rcsum = rc.price
-        self.assertEqual(3500, rcsum)
+
+        # Manipulate the replenishment timestamps
+        # First replenishment: 01.01.2017 (Before the first stocktaking!)
+        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ReplenishmentCollection.query.filter_by(id=1).first().timestamp = ts
+        # Second replenishment: 01.02.2019 (Between the stocktakings)
+        ts = datetime.strptime('2018-02-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ReplenishmentCollection.query.filter_by(id=2).first().timestamp = ts
 
         # Insert the payoffs and revoke the first one.
         self.insert_default_payoffs()
         po = Payoff.query.filter_by(id=1).first()
         po.toggle_revoke(admin_id=1, revoked=True)
         db.session.commit()
-        po = Payoff.query.filter_by(id=2).first()
-        posum = po.amount
-        self.assertEqual(200, posum)
+
+        # Add negative payoff
+        db.session.add(Payoff(amount=-100, admin_id=1, comment='Negative'))
+        db.session.commit()
+
+        # Insert the second stocktaking
+        stocktakings = [
+            {'product_id': 1, 'count': 110},  # Products have been added!
+            {'product_id': 2, 'count': 90},   # Products have been lost!
+            {'product_id': 3, 'count': 100},
+            {'product_id': 4, 'count': 100},
+            {'product_id': 5, 'count': 100}
+        ]
+        t = datetime.strptime('2018-03-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        data = {
+            'stocktakings': stocktakings,
+            'timestamp': int(t.timestamp())
+        }
+        self.post(url='/stocktakingcollections', data=data, role='admin')
 
         # Calculate the total balance, incomes and expenses.
-        incomes = psum
-        expenses = sum([dsum, rsum, rcsum, posum])
+
+        # Incomes are:
+        # - Purchases                    with a positive price
+        # - Deposits                     with a positive amount
+        # - Replenishmentcollections     with a negative price
+        # - Refunds                      with a negative amount
+        # - Payoffs                      with a negative amount
+        # - Profits between stocktakings
+        positive_purchase_amount = 750
+        positive_deposits_amount = 400
+        negative_replenishmentcollections_price = 0
+        negative_refunds_amount = 0
+        negative_payoffs_amount = 100
+        profit_between_stocktakings = 600
+        incomes = sum([
+            positive_purchase_amount,
+            positive_deposits_amount,
+            negative_replenishmentcollections_price,
+            negative_refunds_amount,
+            negative_payoffs_amount,
+            profit_between_stocktakings
+        ])
+
+        # Expenses are:
+        # - Purchases                with a negative price
+        # - Deposits                 with a negative amount
+        # - Replenishmentcollections with a positive price
+        # - Refunds                  with a positive amount
+        # - Payoffs                  with a positive amount
+        # - Losses between stocktakings
+        negative_purchase_amount = 100
+        negative_deposits_amount = 100
+        positive_replenishmentcollections_price = 3500
+        positive_refunds_amount = 850
+        positive_payoffs_amount = 200
+        loss_between_stocktakings = 950
+        expenses = sum([
+            negative_purchase_amount,
+            negative_deposits_amount,
+            positive_replenishmentcollections_price,
+            positive_refunds_amount,
+            positive_payoffs_amount,
+            loss_between_stocktakings
+        ])
+
         total_balance = incomes - expenses
 
         res = self.get(url='/financial_overview', role='admin')
@@ -103,13 +190,36 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(overview['total_balance'], total_balance)
         self.assertEqual(overview['incomes']['amount'], incomes)
         self.assertEqual(overview['expenses']['amount'], expenses)
-        self.assertEqual(overview['expenses']['items'][0]['name'], 'Deposits')
-        self.assertEqual(overview['expenses']['items'][0]['amount'], dsum)
-        self.assertEqual(overview['expenses']['items'][1]['name'], 'Payoffs')
-        self.assertEqual(overview['expenses']['items'][1]['amount'], posum)
-        self.assertEqual(overview['expenses']['items'][2]['name'], 'Refunds')
-        self.assertEqual(overview['expenses']['items'][2]['amount'], rsum)
-        self.assertEqual(overview['expenses']['items'][3]['name'],
-                         'Replenishments')
-        self.assertEqual(overview['expenses']['items'][3]['amount'], rcsum)
+
+        # Check the incomes
+        api_incomes = overview['incomes']['items']
+        self.assertEqual(api_incomes[0]['name'], 'Purchases')
+        self.assertEqual(api_incomes[0]['amount'], positive_purchase_amount)
+        self.assertEqual(api_incomes[1]['name'], 'Deposits')
+        self.assertEqual(api_incomes[1]['amount'], positive_deposits_amount)
+        self.assertEqual(api_incomes[2]['name'], 'Replenishments')
+        self.assertEqual(api_incomes[2]['amount'],
+                         negative_replenishmentcollections_price)
+        self.assertEqual(api_incomes[3]['name'], 'Refunds')
+        self.assertEqual(api_incomes[3]['amount'], negative_refunds_amount)
+        self.assertEqual(api_incomes[4]['name'], 'Payoffs')
+        self.assertEqual(api_incomes[4]['amount'], negative_payoffs_amount)
+        self.assertEqual(api_incomes[5]['name'], 'Stocktakings')
+        self.assertEqual(api_incomes[5]['amount'], profit_between_stocktakings)
+
+        # Check the expenses
+        api_incomes = overview['expenses']['items']
+        self.assertEqual(api_incomes[0]['name'], 'Purchases')
+        self.assertEqual(api_incomes[0]['amount'], negative_purchase_amount)
+        self.assertEqual(api_incomes[1]['name'], 'Deposits')
+        self.assertEqual(api_incomes[1]['amount'], negative_deposits_amount)
+        self.assertEqual(api_incomes[2]['name'], 'Replenishments')
+        self.assertEqual(api_incomes[2]['amount'],
+                         positive_replenishmentcollections_price)
+        self.assertEqual(api_incomes[3]['name'], 'Refunds')
+        self.assertEqual(api_incomes[3]['amount'], positive_refunds_amount)
+        self.assertEqual(api_incomes[4]['name'], 'Payoffs')
+        self.assertEqual(api_incomes[4]['amount'], positive_payoffs_amount)
+        self.assertEqual(api_incomes[5]['name'], 'Stocktakings')
+        self.assertEqual(api_incomes[5]['amount'], loss_between_stocktakings)
 
