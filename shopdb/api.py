@@ -2574,7 +2574,9 @@ def list_stocktakingcollections(admin):
 
     :return:      A list of all stocktakingcollections.
     """
-    data = StocktakingCollection.query.all()
+    data = (StocktakingCollection.query
+            .order_by(StocktakingCollection.timestamp)
+            .all())
     fields = ['id', 'timestamp', 'admin_id', 'revoked']
     response = convert_minimal(data, fields)
     return jsonify({'stocktakingcollections': response}), 200
