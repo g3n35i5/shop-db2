@@ -23,7 +23,9 @@ def _get_balance_between_stocktakings(start, end):
     start_product_ids = [s.product_id for s in start.stocktakings]
     end_product_ids = [s.product_id for s in end.stocktakings]
 
-    out = {'balance': 0,
+    out = {'profit': 0,
+           'loss': 0,
+           'balance': 0,
            'products': {}}
 
     for _id in product_ids:
@@ -91,6 +93,12 @@ def _get_balance_between_stocktakings(start, end):
 
         # Increase the overall balance
         out['balance'] += balance
+
+        # If the balance is negative, this means a loss, otherwise a profit.
+        if balance < 0:
+            out['loss'] += abs(balance)
+        else:
+            out['profit'] += abs(balance)
 
         # Write the data for the current product to the output dictionary.
         out['products'][_id] = {

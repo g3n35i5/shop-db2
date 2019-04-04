@@ -170,6 +170,8 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Check overall balance
         self.assertEqual(result['balance'], -25100)
+        self.assertEqual(result['loss'], 25100)
+        self.assertEqual(result['profit'], 0)
 
     def test_balance_between_stocktakings_multiple_stocktakings(self):
         """
@@ -293,6 +295,8 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Check overall balance
         self.assertEqual(result['balance'], -27200)
+        self.assertEqual(result['loss'], 27200)
+        self.assertEqual(result['profit'], 0)
 
     def test_balance_between_stocktakings_product_set_to_inactive(self):
         """
@@ -401,6 +405,8 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Check overall balance
         self.assertEqual(result['balance'], -3000)
+        self.assertEqual(result['loss'], 3000)
+        self.assertEqual(result['profit'], 0)
 
     def test_balance_between_stocktakings_product_creation(self):
         """
@@ -510,6 +516,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Check overall balance
         self.assertEqual(result['balance'], -1000)
+        self.assertEqual(result['profit'], 0)
 
     def test_balance_between_stocktakings_new_product_and_set_inactive(self):
         """
@@ -602,3 +609,98 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Check overall balance
         self.assertEqual(result['balance'], -2000)
+        self.assertEqual(result['loss'], 2000)
+        self.assertEqual(result['profit'], 0)
+
+    def test_balance_between_stocktakings_with_profit_and_loss(self):
+        """
+        This test checks whether the profits and losses and the resulting
+        balance are calculated correctly.
+        """
+        # Manipulate the product price timestamps
+        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        for id in [1, 2, 3, 4]:
+            ProductPrice.query.filter_by(id=id).first().timestamp = ts
+        db.session.commit()
+
+        # Insert the first stocktaking
+        db.session.add(StocktakingCollection(admin_id=1))
+        db.session.flush()
+
+        stocktakings = [
+            {'product_id': 1, 'count': 100},
+            {'product_id': 2, 'count': 100},
+            {'product_id': 3, 'count': 100},
+            {'product_id': 4, 'count': 100}
+        ]
+        for s in stocktakings:
+            db.session.add(Stocktaking(**s, collection_id=1))
+
+        # Manipulate first stocktaking timestamp
+        # First stocktaking: 01.01.2018
+        ts = datetime.strptime('2018-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        StocktakingCollection.query.filter_by(id=1).first().timestamp = ts
+
+        # Insert the second stocktaking
+        db.session.add(StocktakingCollection(admin_id=1))
+        db.session.flush()
+
+        stocktakings = [
+            {'product_id': 1, 'count': 110},  # Products have been added!
+            {'product_id': 2, 'count': 90},   # Products have been lost!
+            {'product_id': 3, 'count': 100},
+            {'product_id': 4, 'count': 100}
+        ]
+        for s in stocktakings:
+            db.session.add(Stocktaking(**s, collection_id=2))
+
+        # Manipulate second stocktaking timestamp
+        # Second stocktaking: 01.02.2018
+        ts = datetime.strptime('2018-02-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        StocktakingCollection.query.filter_by(id=2).first().timestamp = ts
+
+        # Query the stocktakings.
+        start = StocktakingCollection.query.filter_by(id=1).first()
+        end = StocktakingCollection.query.filter_by(id=2).first()
+
+        result = _get_balance_between_stocktakings(start, end)
+        self.assertTrue('products' in result)
+        products = result['products']
+
+        # Check if all products are in the balance
+        self.assertEqual({1, 2, 3, 4}, set(products.keys()))
+
+        # Check purchase count
+        self.assertEqual(products[1]['purchase_count'], 0)
+        self.assertEqual(products[2]['purchase_count'], 0)
+        self.assertEqual(products[3]['purchase_count'], 0)
+        self.assertEqual(products[4]['purchase_count'], 0)
+
+        # Check purchase sum price
+        self.assertEqual(products[1]['purchase_sum_price'], 0)
+        self.assertEqual(products[2]['purchase_sum_price'], 0)
+        self.assertEqual(products[3]['purchase_sum_price'], 0)
+        self.assertEqual(products[4]['purchase_sum_price'], 0)
+
+        # Check replenish count
+        self.assertEqual(products[1]['replenish_count'], 0)
+        self.assertEqual(products[2]['replenish_count'], 0)
+        self.assertEqual(products[3]['replenish_count'], 0)
+        self.assertEqual(products[4]['replenish_count'], 0)
+
+        # Check differences
+        self.assertEqual(products[1]['difference'], 10)
+        self.assertEqual(products[2]['difference'], -10)
+        self.assertEqual(products[3]['difference'], 0)
+        self.assertEqual(products[4]['difference'], 0)
+
+        # Check balance
+        self.assertEqual(products[1]['balance'], 10 * 300)
+        self.assertEqual(products[2]['balance'], -10 * 50)
+        self.assertEqual(products[3]['balance'], 0)
+        self.assertEqual(products[4]['balance'], 0)
+
+        # Check overall balance
+        self.assertEqual(result['balance'], 2500)
+        self.assertEqual(result['loss'], 500)
+        self.assertEqual(result['profit'], 3000)
