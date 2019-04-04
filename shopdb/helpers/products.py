@@ -67,8 +67,11 @@ def _get_product_mean_price_in_time_range(product_id, start, end):
     # Get a list of all product price changes
     changes = [res1] + res2
 
+    # If no price could be determined, take the current price.
+    if not changes or not changes[0]:
+        return Product.query.filter_by(id=product_id).first().price
     # If there are no resulting changes, return the first price.
-    if len(changes) == 1:
+    elif len(changes) == 1:
         return changes[0].price
 
     # Iterate over all days in the time range and calculate the mean price
