@@ -4,7 +4,7 @@ from shopdb.models import *
 import shopdb.exceptions as exc
 from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
 from flask import (Flask, request, g, make_response, jsonify,
-                   send_from_directory)
+                   send_from_directory, render_template)
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import NotFound, MethodNotAllowed
@@ -23,6 +23,7 @@ import os
 import collections
 from PIL import Image
 import shutil
+import pdfkit
 
 app = Flask(__name__)
 
@@ -2651,6 +2652,42 @@ def update_payoff(admin, id):
 
 
 # StocktakingCollection routes ##############################################
+@app.route('/stocktakingcollections/template', methods=['GET'])
+def get_stocktakingcollection_template():
+    """
+    This route can be used to retrieve a template to print out for a
+    stocktaking. It lists all the products that must be included in the
+    stocktaking.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A rendered PDF file with all products for the stocktaking.
+    """
+    # Get a list of all products.
+    products = (Product.query
+                .filter(Product.active.is_(True))
+                .filter(Product.countable.is_(True))
+                .order_by(func.lower(Product.name))
+                .all())
+
+    # If no products exist that are active and countable, an exception must be
+    # made.
+    if not products:
+        raise exc.EntryNotFound()
+
+    # Render the template
+    rendered = render_template('stocktakingcollections_template.html',
+                               products=products)
+    # Create a PDF file from the rendered template.
+    pdf = pdfkit.from_string(rendered, False)
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+
+    # Return the PDF file.
+    return response
+
+
 @app.route('/stocktakingcollections', methods=['GET'])
 @adminRequired
 def list_stocktakingcollections(admin):

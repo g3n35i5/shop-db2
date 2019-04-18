@@ -38,9 +38,10 @@ In order to use shop-db, you need to install the following main dependencies:
   3. pip3
   4. git
   5. nginx
+  6. wkhtmltopdf (For generating pdf templates)
 
 ```bash
-$ sudo apt install python3.7 python3-venv python3-pip git nginx
+$ sudo apt install python3.7 python3-venv python3-pip git nginx wkhtmltopdf
 ```
 
 ### Getting started

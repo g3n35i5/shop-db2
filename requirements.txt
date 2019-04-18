@@ -12,3 +12,4 @@ PyJWT >= 1.6.4
 Pillow >= 5.2.0
 gunicorn >= 19.9.0
 pyfakefs >= 3.5.6
+pdfkit >= 0.6.1
