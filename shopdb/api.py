@@ -2688,6 +2688,39 @@ def get_stocktakingcollection_template():
     return response
 
 
+@app.route('/stocktakingcollections/balance', methods=['GET'])
+@adminRequired
+def get_balance_between_stocktakings(admin):
+    """
+    Returns the balance between two stocktakingcollections.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A dictionary containing all information about the balance
+                  between the stocktakings.
+    """
+    allowed_params = {'start_id': int, 'end_id': int}
+    args = check_allowed_parameters(allowed_params)
+    start_id = args.get('start_id', None)
+    end_id = args.get('end_id', None)
+
+    # Check for all required arguments
+    if not all([start_id, end_id]):
+        raise exc.InvalidData()
+
+    # Check the ids.
+    if end_id <= start_id:
+        raise exc.InvalidData()
+
+    # Query the stocktakingcollections.
+    start = StocktakingCollection.query.filter_by(id=start_id).first()
+    end = StocktakingCollection.query.filter_by(id=end_id).first()
+
+    # Return the balance.
+    balance = _get_balance_between_stocktakings(start, end)
+    return jsonify({'balance': balance}), 200
+
+
 @app.route('/stocktakingcollections', methods=['GET'])
 @adminRequired
 def list_stocktakingcollections(admin):
