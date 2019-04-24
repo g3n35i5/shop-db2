@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 from shopdb.exceptions import *
-
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func
 import datetime
@@ -447,15 +447,19 @@ class ReplenishmentCollection(db.Model):
         return revokehistory
 
 
-class ReplenishmentCollectionRevoke(db.Model):
-    __tablename__ = 'replenishmentcollectionrevoke'
+class Revoke:
+    """
+    All revokes that must be executed by an administrator (Deposit,
+    Replenishment, Refund, ...) had code duplications. For this reason, there
+    is now a class from which all these revokes can inherit to save code.
+    """
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
-    replcoll_id = db.Column(db.Integer,
-                            db.ForeignKey('replenishmentcollections.id'),
-                            nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @declared_attr
+    def admin_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     @validates('admin_id')
     def validate_admin(self, key, admin_id):
@@ -464,6 +468,13 @@ class ReplenishmentCollectionRevoke(db.Model):
             raise UnauthorizedAccess()
 
         return admin_id
+
+
+class ReplenishmentCollectionRevoke(Revoke, db.Model):
+    __tablename__ = 'replenishmentcollectionrevoke'
+    replcoll_id = db.Column(db.Integer,
+                            db.ForeignKey('replenishmentcollections.id'),
+                            nullable=False)
 
 
 class Replenishment(db.Model):
@@ -502,23 +513,11 @@ class Replenishment(db.Model):
         return revokehistory
 
 
-class ReplenishmentRevoke(db.Model):
+class ReplenishmentRevoke(Revoke, db.Model):
     __tablename__ = 'replenishmentrevoke'
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False)
     repl_id = db.Column(db.Integer,
-                            db.ForeignKey('replenishments.id'),
-                            nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    @validates('admin_id')
-    def validate_admin(self, key, admin_id):
-        user = User.query.filter(User.id == admin_id).first()
-        if not user or not user.is_admin:
-            raise UnauthorizedAccess()
-
-        return admin_id
+                        db.ForeignKey('replenishments.id'),
+                        nullable=False)
 
 
 class PurchaseRevoke(db.Model):
@@ -571,22 +570,10 @@ class Deposit(db.Model):
         return revokehistory
 
 
-class DepositRevoke(db.Model):
+class DepositRevoke(Revoke, db.Model):
     __tablename__ = 'depositrevokes'
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False)
     deposit_id = db.Column(db.Integer, db.ForeignKey('deposits.id'),
                            nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    @validates('admin_id')
-    def validate_admin(self, key, admin_id):
-        user = User.query.filter(User.id == admin_id).first()
-        if not user or not user.is_admin:
-            raise UnauthorizedAccess()
-
-        return admin_id
 
 
 class Refund(db.Model):
@@ -630,22 +617,10 @@ class Refund(db.Model):
         return revokehistory
 
 
-class RefundRevoke(db.Model):
+class RefundRevoke(Revoke, db.Model):
     __tablename__ = 'refundrevokes'
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False)
     refund_id = db.Column(db.Integer, db.ForeignKey('refunds.id'),
                           nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    @validates('admin_id')
-    def validate_admin(self, key, admin_id):
-        user = User.query.filter(User.id == admin_id).first()
-        if not user or not user.is_admin:
-            raise UnauthorizedAccess()
-
-        return admin_id
 
 
 class Payoff(db.Model):
@@ -681,22 +656,10 @@ class Payoff(db.Model):
         return revokehistory
 
 
-class PayoffRevoke(db.Model):
+class PayoffRevoke(Revoke, db.Model):
     __tablename__ = 'payoffrevokes'
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False)
     payoff_id = db.Column(db.Integer, db.ForeignKey('payoffs.id'),
                           nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    @validates('admin_id')
-    def validate_admin(self, key, admin_id):
-        user = User.query.filter(User.id == admin_id).first()
-        if not user or not user.is_admin:
-            raise UnauthorizedAccess()
-
-        return admin_id
 
 
 class Stocktaking(db.Model):
@@ -743,12 +706,8 @@ class StocktakingCollection(db.Model):
         return revokehistory
 
 
-class StocktakingCollectionRevoke(db.Model):
+class StocktakingCollectionRevoke(Revoke, db.Model):
     __tablename__ = 'stocktakingcollectionrevokes'
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False)
     collection_id = db.Column(db.Integer,
                               db.ForeignKey('stocktakingcollections.id'),
                               nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
