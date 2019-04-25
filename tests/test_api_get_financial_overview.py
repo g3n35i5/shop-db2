@@ -139,12 +139,14 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         # Incomes are:
         # - Purchases                    with a positive price
         # - Deposits                     with a positive amount
+        # - Turnovers                    with a positive amount
         # - Replenishmentcollections     with a negative price
         # - Refunds                      with a negative amount
         # - Payoffs                      with a negative amount
         # - Profits between stocktakings
         positive_purchase_amount = 750
         positive_deposits_amount = 400
+        positive_turnover_amount = 300
         negative_replenishmentcollections_price = 0
         negative_refunds_amount = 0
         negative_payoffs_amount = 100
@@ -152,6 +154,7 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         incomes = sum([
             positive_purchase_amount,
             positive_deposits_amount,
+            positive_turnover_amount,
             negative_replenishmentcollections_price,
             negative_refunds_amount,
             negative_payoffs_amount,
@@ -161,12 +164,14 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         # Expenses are:
         # - Purchases                with a negative price
         # - Deposits                 with a negative amount
+        # - Turnovers                with a negative amount
         # - Replenishmentcollections with a positive price
         # - Refunds                  with a positive amount
         # - Payoffs                  with a positive amount
         # - Losses between stocktakings
         negative_purchase_amount = 100
         negative_deposits_amount = 100
+        negative_turnover_amount = 600
         positive_replenishmentcollections_price = 3500
         positive_refunds_amount = 850
         positive_payoffs_amount = 200
@@ -174,6 +179,7 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         expenses = sum([
             negative_purchase_amount,
             negative_deposits_amount,
+            negative_turnover_amount,
             positive_replenishmentcollections_price,
             positive_refunds_amount,
             positive_payoffs_amount,
@@ -197,15 +203,17 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(api_incomes[0]['amount'], positive_purchase_amount)
         self.assertEqual(api_incomes[1]['name'], 'Deposits')
         self.assertEqual(api_incomes[1]['amount'], positive_deposits_amount)
-        self.assertEqual(api_incomes[2]['name'], 'Replenishments')
-        self.assertEqual(api_incomes[2]['amount'],
+        self.assertEqual(api_incomes[2]['name'], 'Turnovers')
+        self.assertEqual(api_incomes[2]['amount'], positive_turnover_amount)
+        self.assertEqual(api_incomes[3]['name'], 'Replenishments')
+        self.assertEqual(api_incomes[3]['amount'],
                          negative_replenishmentcollections_price)
-        self.assertEqual(api_incomes[3]['name'], 'Refunds')
-        self.assertEqual(api_incomes[3]['amount'], negative_refunds_amount)
-        self.assertEqual(api_incomes[4]['name'], 'Payoffs')
-        self.assertEqual(api_incomes[4]['amount'], negative_payoffs_amount)
-        self.assertEqual(api_incomes[5]['name'], 'Stocktakings')
-        self.assertEqual(api_incomes[5]['amount'], profit_between_stocktakings)
+        self.assertEqual(api_incomes[4]['name'], 'Refunds')
+        self.assertEqual(api_incomes[4]['amount'], negative_refunds_amount)
+        self.assertEqual(api_incomes[5]['name'], 'Payoffs')
+        self.assertEqual(api_incomes[5]['amount'], negative_payoffs_amount)
+        self.assertEqual(api_incomes[6]['name'], 'Stocktakings')
+        self.assertEqual(api_incomes[6]['amount'], profit_between_stocktakings)
 
         # Check the expenses
         api_incomes = overview['expenses']['items']
@@ -213,13 +221,15 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(api_incomes[0]['amount'], negative_purchase_amount)
         self.assertEqual(api_incomes[1]['name'], 'Deposits')
         self.assertEqual(api_incomes[1]['amount'], negative_deposits_amount)
-        self.assertEqual(api_incomes[2]['name'], 'Replenishments')
-        self.assertEqual(api_incomes[2]['amount'],
+        self.assertEqual(api_incomes[2]['name'], 'Turnovers')
+        self.assertEqual(api_incomes[2]['amount'], negative_turnover_amount)
+        self.assertEqual(api_incomes[3]['name'], 'Replenishments')
+        self.assertEqual(api_incomes[3]['amount'],
                          positive_replenishmentcollections_price)
-        self.assertEqual(api_incomes[3]['name'], 'Refunds')
-        self.assertEqual(api_incomes[3]['amount'], positive_refunds_amount)
-        self.assertEqual(api_incomes[4]['name'], 'Payoffs')
-        self.assertEqual(api_incomes[4]['amount'], positive_payoffs_amount)
-        self.assertEqual(api_incomes[5]['name'], 'Stocktakings')
-        self.assertEqual(api_incomes[5]['amount'], loss_between_stocktakings)
+        self.assertEqual(api_incomes[4]['name'], 'Refunds')
+        self.assertEqual(api_incomes[4]['amount'], positive_refunds_amount)
+        self.assertEqual(api_incomes[5]['name'], 'Payoffs')
+        self.assertEqual(api_incomes[5]['amount'], positive_payoffs_amount)
+        self.assertEqual(api_incomes[6]['name'], 'Stocktakings')
+        self.assertEqual(api_incomes[6]['amount'], loss_between_stocktakings)
 

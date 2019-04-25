@@ -682,6 +682,9 @@ def get_financial_overview(admin):
     # Query all deposits.
     deposits = Deposit.query.filter(Deposit.revoked.is_(False)).all()
 
+    # Query all turnovers.
+    turnovers = Turnover.query.filter(Turnover.revoked.is_(False)).all()
+
     # Query all payoffs.
     payoffs = Payoff.query.filter(Payoff.revoked.is_(False)).all()
 
@@ -714,6 +717,7 @@ def get_financial_overview(admin):
     # Incomes are:
     # - Purchases                    with a positive price
     # - Deposits                     with a positive amount
+    # - Turnovers                    with a positive amount
     # - Replenishmentcollections     with a negative price
     # - Refunds                      with a negative amount
     # - Payoffs                      with a negative amount
@@ -727,6 +731,11 @@ def get_financial_overview(admin):
     pos_dep = sum(
         map(abs, list(filter(lambda x: x >= 0,
                     list(map(lambda x: x.amount, deposits)))))
+    )
+
+    pos_turn = sum(
+        map(abs, list(filter(lambda x: x >= 0,
+                             list(map(lambda x: x.amount, turnovers)))))
     )
 
     neg_rep = sum(
@@ -745,7 +754,7 @@ def get_financial_overview(admin):
     )
 
     sum_incomes = sum([
-        pos_pur, pos_dep, neg_rep, neg_ref, neg_pay, pos_stock
+        pos_pur, pos_dep, pos_turn, neg_rep, neg_ref, neg_pay, pos_stock
     ])
 
     incomes = {
@@ -753,6 +762,7 @@ def get_financial_overview(admin):
         'items': [
             {'name': 'Purchases', 'amount': pos_pur},
             {'name': 'Deposits', 'amount': pos_dep},
+            {'name': 'Turnovers', 'amount': pos_turn},
             {'name': 'Replenishments', 'amount': neg_rep},
             {'name': 'Refunds', 'amount': neg_ref},
             {'name': 'Payoffs', 'amount': neg_pay},
@@ -763,6 +773,7 @@ def get_financial_overview(admin):
     # Expenses are:
     # - Purchases                with a negative price
     # - Deposits                 with a negative amount
+    # - Turnovers                with a negative amount
     # - Replenishmentcollections with a positive price
     # - Refunds                  with a positive amount
     # - Payoffs                  with a positive amount
@@ -775,6 +786,11 @@ def get_financial_overview(admin):
     neg_dep = sum(
         map(abs, list(filter(lambda x: x < 0,
                     list(map(lambda x: x.amount, deposits)))))
+    )
+
+    neg_turn = sum(
+        map(abs, list(filter(lambda x: x < 0,
+                             list(map(lambda x: x.amount, turnovers)))))
     )
 
     pos_rep = sum(
@@ -793,7 +809,7 @@ def get_financial_overview(admin):
     )
 
     sum_expenses = sum([
-        neg_pur, neg_dep, pos_rep, pos_ref, pos_pay, neg_stock
+        neg_pur, neg_dep, neg_turn, pos_rep, pos_ref, pos_pay, neg_stock
     ])
 
     expenses = {
@@ -801,6 +817,7 @@ def get_financial_overview(admin):
         'items': [
             {'name': 'Purchases', 'amount': neg_pur},
             {'name': 'Deposits', 'amount': neg_dep},
+            {'name': 'Turnovers', 'amount': neg_turn},
             {'name': 'Replenishments', 'amount': pos_rep},
             {'name': 'Refunds', 'amount': pos_ref},
             {'name': 'Payoffs', 'amount': pos_pay},
@@ -3003,4 +3020,130 @@ def update_stocktaking(admin, id):
     return jsonify({
         'message': message,
         'updated_fields': updated_fields
+    }), 201
+
+
+# Turnover routes #############################################################
+@app.route('/turnovers', methods=['GET'])
+@adminRequired
+def list_turnovers(admin):
+    """
+    Returns a list of all turnovers.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A list of all turnovers.
+    """
+    turnovers = Turnover.query.all()
+    fields = ['id', 'timestamp', 'amount', 'comment', 'revoked', 'admin_id']
+    return jsonify({'turnovers': convert_minimal(turnovers, fields)}), 200
+
+
+@app.route('/turnovers', methods=['POST'])
+@adminRequired
+def create_turnover(admin):
+    """
+    Insert a new turnover.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+
+    :return:                     A message that the creation was successful.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises InvalidAmount:       If amount is equal to zero.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
+    data = json_body()
+    required = {'amount': int, 'comment': str}
+    check_fields_and_types(data, required)
+
+    # Check amount
+    if data['amount'] == 0:
+        raise exc.InvalidAmount()
+
+    # Create and insert turnover
+    try:
+        turnover = Turnover(**data)
+        turnover.admin_id = admin.id
+        db.session.add(turnover)
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created turnover.'}), 200
+
+
+@app.route('/turnovers/<int:id>', methods=['GET'])
+def get_turnover(id):
+    """
+    Returns the turnover with the requested id.
+
+    :param id:             Is the turnover id.
+
+    :return:               The requested turnover as JSON object.
+
+    :raises EntryNotFound: If the turnover with this ID does not exist.
+    """
+    # Query the turnover
+    res = Turnover.query.filter_by(id=id).first()
+    # If it not exists, return an error
+    if not res:
+        raise exc.EntryNotFound()
+    # Convert the turnover to a JSON friendly format
+    fields = ['id', 'timestamp', 'amount', 'comment', 'revoked',
+              'revokehistory']
+    return jsonify({'turnover': convert_minimal(res, fields)[0]}), 200
+
+
+@app.route('/turnovers/<int:id>', methods=['PUT'])
+@adminRequired
+def update_turnover(admin, id):
+    """
+    Update the turnover with the given id.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+    :param id:                   Is the turnover id.
+
+    :return:                     A message that the update was
+                                 successful and a list of all updated fields.
+
+    :raises EntryNotFound:       If the turnover with this ID does not exist.
+    :raises ForbiddenField:      If a forbidden field is in the request data.
+    :raises UnknownField:        If an unknown parameter exists in the request
+                                 data.
+    :raises InvalidType:         If one or more parameters have an invalid type.
+    :raises NothingHasChanged:   If no change occurred after the update.
+    :raises CouldNotUpdateEntry: If any other error occurs.
+    """
+    # Check turnover
+    turnover = Turnover.query.filter_by(id=id).first()
+    if not turnover:
+        raise exc.EntryNotFound()
+
+    data = json_body()
+
+    if not data:
+        raise exc.NothingHasChanged()
+
+    updateable = {'revoked': bool}
+    check_forbidden(data, updateable, turnover)
+    check_fields_and_types(data, None, updateable)
+
+    # Handle turnover revoke
+    if 'revoked' in data:
+        if turnover.revoked == data['revoked']:
+            raise exc.NothingHasChanged()
+        turnover.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
+
+    # Apply changes
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotUpdateEntry()
+
+    return jsonify({
+        'message': 'Updated turnover.',
     }), 201

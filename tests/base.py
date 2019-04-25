@@ -29,6 +29,14 @@ rank_data = [
 # Default data for product tags
 t_names = ['Food', 'Sweets', 'Drinks', 'Coffee']
 
+# Default data for turnovers
+turnovers = [
+    {'admin_id': 1, 'amount': 200, 'comment': 'Turnover comment 1'},
+    {'admin_id': 1, 'amount': 100, 'comment': 'Turnover comment 2'},
+    {'admin_id': 1, 'amount': -100, 'comment': 'Turnover comment 3'},
+    {'admin_id': 1, 'amount': -500, 'comment': 'Turnover comment 4'}
+]
+
 
 class BaseTestCase(TestCase):
     def create_app(self):
@@ -48,6 +56,7 @@ class BaseTestCase(TestCase):
         self.insert_default_ranks()
         self.insert_default_tags()
         self.insert_default_products()
+        self.insert_default_turnovers()
 
     def tearDown(self):
         db.session.remove()
@@ -196,4 +205,9 @@ class BaseTestCase(TestCase):
         p2 = Payoff(amount=200, admin_id=1, comment='Test payoff 2')
         for p in [p1, p2]:
             db.session.add(p)
+        db.session.commit()
+
+    def insert_default_turnovers(self):
+        for turnover in turnovers:
+            db.session.add(Turnover(**turnover))
         db.session.commit()

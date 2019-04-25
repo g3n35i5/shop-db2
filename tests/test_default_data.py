@@ -1,6 +1,7 @@
 from shopdb.api import *
 from tests.base import BaseTestCase
-from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data
+from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data,\
+                       turnovers
 
 
 class DefaultDataTest(BaseTestCase):
@@ -34,3 +35,10 @@ class DefaultDataTest(BaseTestCase):
         self.assertEqual(users[1].rank_id, 3)
         self.assertEqual(users[2].rank_id, 1)
         self.assertFalse(users[-1].is_verified)
+
+    def test_default_turnovers(self):
+        """Check if all turnovers have been entered correctly"""
+        api_turnovers = Turnover.query.all()
+        self.assertEqual(len(api_turnovers), 4)
+        for i in range(4):
+            self.assertEqual(api_turnovers[i].amount, turnovers[i]['amount'])
