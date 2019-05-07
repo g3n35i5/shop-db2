@@ -248,6 +248,47 @@ def insert_user(data):
         raise exc.CouldNotCreateEntry()
 
 
+def insert_deposit(data, admin):
+    """
+    This help function creates a new deposit with the given data.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises EntryNotFound:       If the user with this ID does not exist.
+    :raises UserIsNotVerified:   If the user has not yet been verified.
+    :raises InvalidAmount:       If amount is equal to zero.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
+
+    required = {'user_id': int, 'amount': int, 'comment': str}
+    check_fields_and_types(data, required)
+
+    # Check user
+    user = User.query.filter_by(id=data['user_id']).first()
+    if not user:
+        raise exc.EntryNotFound()
+
+    # Check if the user has been verified.
+    if not user.is_verified:
+        raise exc.UserIsNotVerified()
+
+    # Check if the user is inactive
+    if not user.rank.active:
+        raise exc.UserIsInactive()
+
+    # Check amount
+    if data['amount'] == 0:
+        raise exc.InvalidAmount()
+
+    # Create and insert deposit
+    try:
+        deposit = Deposit(**data)
+        deposit.admin_id = admin.id
+        db.session.add(deposit)
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+
 def adminRequired(f):
     """
     This function checks whether a valid token is contained in the request.
@@ -2017,36 +2058,56 @@ def create_deposit(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required = {'user_id': int, 'amount': int, 'comment': str}
-    check_fields_and_types(data, required)
 
-    # Check user
-    user = User.query.filter_by(id=data['user_id']).first()
-    if not user:
-        raise exc.EntryNotFound()
+    # Use the insert deposit helper function to create the deposit entry.
+    insert_deposit(data, admin)
 
-    # Check if the user has been verified.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
-
-    # Check if the user is inactive
-    if not user.rank.active:
-        raise exc.UserIsInactive()
-
-    # Check amount
-    if data['amount'] == 0:
-        raise exc.InvalidAmount()
-
-    # Create and insert deposit
+    # Try to commit the deposit.
     try:
-        deposit = Deposit(**data)
-        deposit.admin_id = admin.id
-        db.session.add(deposit)
         db.session.commit()
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
     return jsonify({'message': 'Created deposit.'}), 200
+
+
+@app.route('/deposits/batch', methods=['POST'])
+@adminRequired
+def create_batch_deposit(admin):
+    """
+    Insert a new batch deposit.
+
+    :param admin:                Is the administrator user, determined by
+                                 @adminRequired.
+
+    :return:                     A message that the creation was successful.
+
+    :raises DataIsMissing:       If not all required data is available.
+    :raises WrongType:           If one or more data is of the wrong type.
+    :raises EntryNotFound:       If any user cannot be found.
+    :raises UserIsNotVerified:   If any user is not verified.
+    :raises InvalidAmount:       If amount is equal to zero.
+    :raises CouldNotCreateEntry: If any other error occurs.
+    """
+    data = json_body()
+    required = {'user_ids': list, 'amount': int, 'comment': str}
+    check_fields_and_types(data, required)
+
+    # Call the insert deposit helper function for each user.
+    for user_id in data['user_ids']:
+        data = {
+            'user_id': user_id,
+            'comment': data['comment'],
+            'amount': data['amount']}
+        insert_deposit(data, admin)
+
+    # Try to commit the changes.
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created batch deposit.'}), 200
 
 
 @app.route('/deposits/<int:id>', methods=['GET'])
