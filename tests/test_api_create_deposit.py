@@ -82,7 +82,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         res = self.post(url='/deposits', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsInactive)
-        self.assertEqual(len(Purchase.query.all()), 0)
+        self.assertEqual(len(Deposit.query.all()), 0)
 
     def test_create_deposit_non_existing_user(self):
         """Create a deposit as non existing user."""
