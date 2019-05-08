@@ -19,7 +19,8 @@ class ListProductsAPITestCase(BaseAPITestCase):
         self.assertEqual(len(products), 4)
         for product in products:
             for item in ['id', 'name', 'price', 'barcode', 'active',
-                         'countable', 'revocable', 'imagename', 'tags']:
+                         'countable', 'revocable', 'imagename', 'tags',
+                         'creation_date']:
                 assert item in product
         for i in range(0, 3):
             self.assertTrue(products[i]['active'])

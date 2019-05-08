@@ -1594,7 +1594,7 @@ def list_products(admin):
     """
     result = Product.query.all()
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-              'revocable', 'imagename', 'tags']
+              'revocable', 'imagename', 'tags', 'creation_date']
     products = convert_minimal(result, fields)
 
     for product in products:
