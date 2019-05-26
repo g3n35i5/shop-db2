@@ -41,6 +41,20 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InsufficientCredit)
 
+    def test_create_purchase_insufficient_credit_by_admin(self):
+        """
+        If the purchase is made by an administrator, the credit limit
+        may be exceeded.
+        """
+        data = {'user_id': 3, 'product_id': 3, 'amount': 4}
+        self.assertEqual(User.query.filter_by(id=2).first().rank_id, 3)
+
+        res = self.post(url='/purchases', data=data, role='admin')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'message' in data
+        self.assertEqual(data['message'], 'Purchase created.')
+
     def test_create_purchase_wrong_type(self):
         """Create a purchase with wrong type(s)."""
         data = {'user_id': 2, 'product_id': 3, 'amount': 4}

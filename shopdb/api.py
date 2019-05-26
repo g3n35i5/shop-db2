@@ -1878,7 +1878,8 @@ def list_purchases(admin):
 
 
 @app.route('/purchases', methods=['POST'])
-def create_purchase():
+@adminOptional
+def create_purchase(admin):
     """
     Insert a new purchase.
 
@@ -1924,12 +1925,14 @@ def create_purchase():
     if data['amount'] <= 0:
         raise exc.InvalidAmount()
 
-    # Check credit
-    limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
-    current_credit = user.credit
-    future_credit = current_credit - (product.price * data['amount'])
-    if future_credit < limit:
-        raise exc.InsufficientCredit()
+    # If the purchase is made by an administrator, the credit limit
+    # may be exceeded.
+    if not admin:
+        limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
+        current_credit = user.credit
+        future_credit = current_credit - (product.price * data['amount'])
+        if future_credit < limit:
+            raise exc.InsufficientCredit()
 
     try:
         purchase = Purchase(**data)
