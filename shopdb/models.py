@@ -130,20 +130,22 @@ class User(db.Model):
     def favorites(self):
         """
         Returns the product ids of the user's favorite products in
-        descending order of number.
+        descending order of number. Inactive products are ignored.
 
         Args:
             self: self
         Returns:
             ids: A list of the favorite product ids in descending order.
         """
-        result = (db.session.query(Purchase.product_id)
+        result = (db.session.query(Purchase, Product)
+                  .filter(Product.id == Purchase.product_id)
+                  .filter(Product.active.is_(True))
                   .filter(Purchase.user_id == self.id)
                   .filter(Purchase.revoked.is_(False))
                   .group_by(Purchase.product_id)
                   .order_by(func.sum(Purchase.amount).desc())
                   .all())
-        return [id for id, in result]
+        return [purchase.product_id for purchase, _ in result]
 
 
 class UserVerification(db.Model):

@@ -34,6 +34,22 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['favorites'], [3, 2, 1, 4])
 
+    def test_get_user_favorites_inactive_product(self):
+        """
+        This test ensures that inactive products are not included in the
+        favorites.
+        """
+        self._insert_purchases()
+        # Mark product with id 1 as inactive
+        Product.query.filter_by(id=1).first().active = False
+        db.session.commit()
+
+        # Get the favorites
+        res = self.get(url='/users/1/favorites')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['favorites'], [3, 2, 4])
+
     def test_get_user_favorites_no_purchase(self):
         """
         This test ensures that an empty list is displayed for the user's
