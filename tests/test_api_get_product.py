@@ -18,13 +18,15 @@ class GetProductAPITestCase(BaseAPITestCase):
 
     def test_list_nonactive_product_without_token(self):
         """As None, getting a nonactive product should fail"""
-        inactive_product = (Product.query.filter(Product.id == 4)
-                            .first())
-        inactive_product.active = False
+        Product.query.filter(Product.id == 4).first().active = False
         db.session.commit()
         res = self.get(url='/products/4')
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UnauthorizedAccess)
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'product' in data
+        product = data['product']
+        not_included = ['price', 'countable', 'revocable']
+        assert all(x not in product for x in not_included)
 
     def test_list_nonactive_product_with_token(self):
         """Get a nonactive product as admin"""
@@ -35,7 +37,6 @@ class GetProductAPITestCase(BaseAPITestCase):
         res = self.get(url='/products/4', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'product' in data
         assert 'product' in data
         product = data['product']
         required = ['id', 'name', 'price', 'barcode', 'active', 'creation_date',
