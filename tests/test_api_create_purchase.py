@@ -35,7 +35,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
     def test_create_purchase_insufficient_credit_contender(self):
         """Create a purchase with not enough credit."""
         data = {'user_id': 3, 'product_id': 3, 'amount': 4}
-        self.assertEqual(User.query.filter_by(id=2).first().rank_id, 3)
+        self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
 
         res = self.post(url='/purchases', data=data)
         self.assertEqual(res.status_code, 401)
@@ -47,7 +47,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         may be exceeded.
         """
         data = {'user_id': 3, 'product_id': 3, 'amount': 4}
-        self.assertEqual(User.query.filter_by(id=2).first().rank_id, 3)
+        self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
 
         res = self.post(url='/purchases', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
