@@ -47,6 +47,10 @@ if __name__ == '__main__':
     # Set the gunicorn options.
     options = {
         'bind': '%s:%s' % (app.config['HOST'], app.config['PORT']),
-        'workers': number_of_workers(),
+        # BEGIN OF WARNING
+        # DO NOT CHANGE THIS VALUE, THE APPLICATION IS NOT DESIGNED FOR
+        # MULTITHREADING AND ERRORS MAY OCCUR IN THE DATABASE!!!
+        'workers': 1
+        # END WARNING
     }
     StandaloneApplication(app, options).run()
