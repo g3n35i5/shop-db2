@@ -53,6 +53,31 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.comment, 'FooBar')
 
+    def test_update_replenishmentcollection_timestamp(self):
+        """Update the timestamp of a replenishmentcollection"""
+        self.insert_default_replenishmentcollections()
+        timestamp = 1420070461  # Thursday, January 1, 2015 1:01:01 AM GMT+01:00
+        res = self.put(url='/replenishmentcollections/1',
+                       data={'timestamp': timestamp}, role='admin')
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        assert 'message' in data
+        self.assertEqual(data['message'], 'Updated replenishmentcollection.')
+        replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
+        self.assertEqual(replcoll.timestamp, datetime.datetime.fromtimestamp(timestamp))
+
+    def test_update_replenishmentcollection_invalid_timestamp(self):
+        """Update the timestamp of a replenishmentcollection with a timestamp in the future must fail"""
+        self.insert_default_replenishmentcollections()
+        old_timestamp = ReplenishmentCollection.query.filter_by(id=1).first().timestamp
+        timestamp = (datetime.datetime.now() + datetime.timedelta(days=2)).timestamp()
+        res = self.put(url='/replenishmentcollections/1',
+                       data={'timestamp': int(timestamp)}, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.InvalidData)
+        replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
+        self.assertEqual(replcoll.timestamp, old_timestamp)
+
     def test_revoke_replenishmentcollection_as_user(self):
         """Revoking a replenishmentcollection as user should be forbidden"""
         res = self.put(url='/replenishmentcollections/1',
@@ -80,7 +105,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         """Updating forbidden fields of a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         res = self.put(url='/replenishmentcollections/1',
-                       data={'revoked': True, 'timestamp': ''}, role='admin')
+                       data={'revoked': True, 'admin_id': '1'}, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
 

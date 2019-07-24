@@ -2348,7 +2348,7 @@ def update_replenishmentcollection(admin, id):
     if data == {}:
         raise exc.NothingHasChanged()
 
-    updateable = {'revoked': bool, 'comment': str}
+    updateable = {'revoked': bool, 'comment': str, 'timestamp': int}
     check_forbidden(data, updateable, replcoll)
     check_fields_and_types(data, None, updateable)
 
@@ -2365,6 +2365,24 @@ def update_replenishmentcollection(admin, id):
         replcoll.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
         del data['revoked']
         updated_fields.append('revoked')
+
+    # Handle new timestamp
+    if 'timestamp' in data:
+        try:
+            timestamp = datetime.datetime.fromtimestamp(data['timestamp'])
+            assert timestamp <= datetime.datetime.now()
+            replcoll.timestamp = timestamp
+            updated_fields.append('revoked')
+        except (AssertionError, TypeError, ValueError, OSError, OverflowError):
+            """
+            AssertionError: The timestamp lies in the future.
+            TypeError:      Invalid type for conversion.
+            ValueError:     Timestamp is out of valid range.
+            OSError:        Value exceeds the data type.
+            OverflowError:  Timestamp out of range for platform time_t.
+            """
+            raise exc.InvalidData()
+        del data['timestamp']
 
     # Handle all other fields
     updated_fields = update_fields(data, replcoll, updated_fields)
