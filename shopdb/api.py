@@ -2329,9 +2329,8 @@ def update_replenishmentcollection(admin, id):
             raise exc.NothingHasChanged()
         # Check if the revoke was caused through the replenishment_update and
         # therefor cant be changed
-        if data['revoked'] == False:
-            if not repls:
-                raise exc.EntryNotRevocable()
+        if not data['revoked'] and not repls:
+            raise exc.EntryNotRevocable()
         replcoll.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
         del data['revoked']
         updated_fields.append('revoked')
@@ -2417,11 +2416,9 @@ def update_replenishment(admin, id):
     if 'revoked' in data:
         if repl.revoked == data['revoked']:
             raise exc.NothingHasChanged()
-        if data['revoked'] == False:
-            if not repls_nr:
-                replcoll.toggle_revoke(revoked=False, admin_id=admin.id)
-                message = message + (' Rerevoked ReplenishmentCollection ID: {}'
-                                     .format(replcoll.id))
+        if not data['revoked'] and not repls_nr:
+            replcoll.toggle_revoke(revoked=False, admin_id=admin.id)
+            message = message + (' Rerevoked ReplenishmentCollection ID: {}'.format(replcoll.id))
         repl.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
         del data['revoked']
         updated_fields.append('revoked')
@@ -2431,7 +2428,7 @@ def update_replenishment(admin, id):
 
     # Check if ReplenishmentCollection still has unrevoked Replenishments
     repls = replcoll.replenishments.filter_by(revoked=False).all()
-    if ((not repls) and (replcoll.revoked == False)):
+    if not repls and not replcoll.revoked:
         message = message + (' Revoked ReplenishmentCollection ID: {}'
                              .format(replcoll.id))
         replcoll.toggle_revoke(revoked=True, admin_id=admin.id)
@@ -2721,7 +2718,8 @@ def update_payoff(admin, id):
 
 # StocktakingCollection routes ##############################################
 @app.route('/stocktakingcollections/template', methods=['GET'])
-def get_stocktakingcollection_template():
+@adminRequired
+def get_stocktakingcollection_template(admin):
     """
     This route can be used to retrieve a template to print out for a
     stocktaking. It lists all the products that must be included in the
