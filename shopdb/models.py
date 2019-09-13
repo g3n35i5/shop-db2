@@ -4,7 +4,7 @@ from shopdb.exceptions import *
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, column_property
 import datetime
 from sqlalchemy import select, func, and_
 
@@ -18,6 +18,34 @@ product_tag_assignments = db.Table('product_tag_assignments',
                                    )
 
 
+class Rank(db.Model):
+    __tablename__ = 'ranks'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), unique=True, nullable=False)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+    debt_limit = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return f'<Rank {self.name}>'
+
+
+class RankUpdate(db.Model):
+    __tablename__ = 'rankupdates'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    rank_id = db.Column(db.Integer, db.ForeignKey('ranks.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    @validates('admin_id')
+    def validate_admin(self, key, admin_id):
+        user = User.query.filter(User.id == admin_id).first()
+        if not user or not user.is_admin:
+            raise UnauthorizedAccess()
+
+        return admin_id
+
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -26,6 +54,13 @@ class User(db.Model):
     lastname = db.Column(db.String(32), unique=False, nullable=False)
     password = db.Column(db.String(256), unique=False, nullable=True)
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
+
+    # Column property for the active state
+    active = column_property(select([Rank.active])
+                             .where(and_(RankUpdate.user_id == id, Rank.id == RankUpdate.rank_id))
+                             .order_by(RankUpdate.id.desc())
+                             .limit(1)
+                             .as_scalar())
 
     # Link to all purchases of a user.
     purchases = db.relationship(
@@ -107,21 +142,6 @@ class User(db.Model):
             if rank:
                 return rank
         return None
-
-    @hybrid_property
-    def active(self):
-        try:
-            return Rank.query.filter(Rank.id == self.rank_id).first().active
-        except (TypeError, ValueError):
-            return False
-
-    @active.expression
-    def active(cls):
-        return (select([Rank.active])
-                .where(and_(RankUpdate.user_id == cls.id, Rank.id == RankUpdate.rank_id))
-                .order_by(RankUpdate.id.desc())
-                .limit(1)
-                .as_scalar())
 
     @hybrid_property
     def credit(self):
@@ -209,23 +229,13 @@ class Upload(db.Model):
     filename = db.Column(db.String(64), unique=True, nullable=False)
 
 
-class Rank(db.Model):
-    __tablename__ = 'ranks'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32), unique=True, nullable=False)
-    active = db.Column(db.Boolean, nullable=False, default=True)
-    debt_limit = db.Column(db.Integer, nullable=False)
-
-    def __repr__(self):
-        return f'<Rank {self.name}>'
-
-
-class RankUpdate(db.Model):
-    __tablename__ = 'rankupdates'
+class ProductPrice(db.Model):
+    __tablename__ = 'productprices'
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    rank_id = db.Column(db.Integer, db.ForeignKey('ranks.id'), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
+                           nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     @validates('admin_id')
@@ -253,12 +263,12 @@ class Product(db.Model):
     tags = db.relationship('Tag', secondary=product_tag_assignments,
                            backref=db.backref('products', lazy='dynamic'))
 
-    # Sorted link to all price updates of a product.
-    price_updates = db.relationship(
-        'ProductPrice', lazy='dynamic',
-        foreign_keys='ProductPrice.product_id',
-        order_by='ProductPrice.id.desc()'
-    )
+    # Column property for the price
+    price = column_property(select([ProductPrice.price])
+                            .where(ProductPrice.product_id == id)
+                            .order_by(ProductPrice.id.desc())
+                            .limit(1)
+                            .as_scalar())
 
     @validates('created_by')
     def validate_admin(self, key, created_by):
@@ -274,18 +284,6 @@ class Product(db.Model):
         if upload:
             return upload.filename
         return None
-
-    @hybrid_property
-    def price(self):
-        return self.price_updates[0].price
-
-    @price.expression
-    def price(cls):
-        return (select([ProductPrice.price])
-                .where(ProductPrice.product_id == cls.id)
-                .order_by(ProductPrice.id.desc())
-                .limit(1)
-                .as_scalar())
 
     @hybrid_method
     def get_pricehistory(self, start_date=None, end_date=None):
@@ -334,24 +332,6 @@ class Product(db.Model):
 
     def __repr__(self):
         return f'<Product {self.name}>'
-
-
-class ProductPrice(db.Model):
-    __tablename__ = 'productprices'
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
-                           nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    @validates('admin_id')
-    def validate_admin(self, key, admin_id):
-        user = User.query.filter(User.id == admin_id).first()
-        if not user or not user.is_admin:
-            raise UnauthorizedAccess()
-
-        return admin_id
 
 
 class Tag(db.Model):
