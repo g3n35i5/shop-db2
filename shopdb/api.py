@@ -289,6 +289,40 @@ def insert_deposit(data, admin):
         raise exc.CouldNotCreateEntry()
 
 
+def checkIfUserIsValid(f):
+    """
+    This function checks whether the requested user exists, has been verified and is active.
+    If this is not the case the request will be blocked.
+
+    :param f:                  Is the wrapped function.
+
+    :return:                   The wrapped function f with the additional parameter user.
+
+    :raises EntryNotFound:     If the user with this ID does not exist.
+    :raises UserIsNotVerified: If the user with this ID has not been verified yet.
+    :raises UserIsInactive:    If the user with this ID is inactive.
+    """
+
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        user = User.query.filter_by(id=kwargs['id']).first()
+        if not user:
+            raise exc.EntryNotFound()
+
+        # Check if the user has been verified.
+        if not user.is_verified:
+            raise exc.UserIsNotVerified()
+
+        # Check if the user is inactive
+        if not user.active:
+            raise exc.UserIsInactive()
+
+        # If all criteria are met, the requested function can be executed.
+        return f(user, *args, **kwargs)
+
+    return decorator
+
+
 def adminRequired(f):
     """
     This function checks whether a valid token is contained in the request.
@@ -1040,159 +1074,92 @@ def list_users(admin):
 
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])
-def get_user_favorites(id):
+@checkIfUserIsValid
+def get_user_favorites(user, id):
     """
     Returns a list with the IDs of a user's favorite products. The list is
     empty if no favourite products exist.
 
+    :param user:               Is the user, determined by @checkIfUserIsValid.
     :param id:                 Is the user id.
 
     :return:                   A list with the IDs of the favorite products.
-
-    :raises EntryNotFound:     If the user with this ID does not exist.
-    :raises UserIsNotVerified: If the user has not yet been verified.
     """
-    user = User.query.filter_by(id=id).first()
-    if not user:
-        raise exc.EntryNotFound()
 
-    # Check if the user has been verified.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
+    return jsonify({'favorites': user.favorites}), 200
 
-    # Check if the user is inactive
-    if not user.rank.active:
-        raise exc.UserIsInactive()
 
-    favorites = user.favorites
 
     return jsonify({'favorites': favorites}), 200
 
 
 @app.route('/users/<int:id>/deposits', methods=['GET'])
-def get_user_deposits(id):
+@checkIfUserIsValid
+def get_user_deposits(user, id):
     """
     Returns a list with all deposits of a user.
 
+    :param user:               Is the user, determined by @checkIfUserIsValid.
     :param id:                 Is the user id.
 
     :return:                   A list with all deposits of the user.
-
-    :raises EntryNotFound:     If the user with this ID does not exist.
-    :raises UserIsNotVerified: If the user has not yet been verified.
     """
-    user = User.query.filter_by(id=id).first()
-    if not user:
-        raise exc.EntryNotFound()
-
-    # Check if the user has been verified.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
-
-    # Check if the user is inactive
-    if not user.rank.active:
-        raise exc.UserIsInactive()
-
-    deposits = user.deposits.all()
 
     fields = ['id', 'timestamp', 'admin_id', 'amount', 'revoked', 'comment']
-    new_deposits = convert_minimal(deposits, fields)
+    new_deposits = convert_minimal(user.deposits.all(), fields)
 
     return jsonify({'deposits': new_deposits}), 200
 
 
 @app.route('/users/<int:id>/refunds', methods=['GET'])
-def get_user_refunds(id):
+@checkIfUserIsValid
+def get_user_refunds(user, id):
     """
     Returns a list with all refunds of a user.
 
+    :param user:               Is the user, determined by @checkIfUserIsValid.
     :param id:                 Is the user id.
 
     :return:                   A list with all refunds of the user.
-
-    :raises EntryNotFound:     If the user with this ID does not exist.
-    :raises UserIsNotVerified: If the user has not yet been verified.
     """
-    user = User.query.filter_by(id=id).first()
-    if not user:
-        raise exc.EntryNotFound()
 
-    # Check if the user has been verified.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
-
-    # Check if the user is inactive
-    if not user.rank.active:
-        raise exc.UserIsInactive()
-
-    result = user.refunds.all()
-
-    fields = ['id', 'timestamp', 'admin_id', 'total_price', 'revoked',
-              'comment']
-    refunds = convert_minimal(result, fields)
+    fields = ['id', 'timestamp', 'admin_id', 'total_price', 'revoked', 'comment']
+    refunds = convert_minimal(user.refunds.all(), fields)
 
     return jsonify({'refunds': refunds}), 200
 
 
 @app.route('/users/<int:id>/purchases', methods=['GET'])
-def get_user_purchases(id):
+@checkIfUserIsValid
+def get_user_purchases(user, id):
     """
     Returns a list with all purchases of a user.
 
+    :param user:               Is the user, determined by @checkIfUserIsValid.
     :param id:                 Is the user id.
 
     :return:                   A list with all purchases of the user.
-
-    :raises EntryNotFound:     If the user with this ID does not exist.
-    :raises UserIsNotVerified: If the user has not yet been verified.
     """
-    user = User.query.filter_by(id=id).first()
-    if not user:
-        raise exc.EntryNotFound()
 
-    # Check if the user has been verified.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
+    fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount', 'revoked', 'price']
+    purchases = convert_minimal(user.purchases.all(), fields)
 
-    # Check if the user is inactive
-    if not user.rank.active:
-        raise exc.UserIsInactive()
-
-    purchases = user.purchases.all()
-
-    fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount',
-              'revoked', 'price']
-    new_purchases = convert_minimal(purchases, fields)
-
-    return jsonify({'purchases': new_purchases}), 200
+    return jsonify({'purchases': purchases}), 200
 
 
 @app.route('/users/<int:id>', methods=['GET'])
-def get_user(id):
+@checkIfUserIsValid
+def get_user(user, id):
     """
     Returns the user with the requested id.
 
+    :param user:               Is the user, determined by @checkIfUserIsValid.
     :param id:                 Is the user id.
 
     :return:                   The requested user as JSON object.
-
-    :raises EntryNotFound:     If the user with this ID does not exist.
-    :raises UserIsNotVerified: If the user has not yet been verified.
     """
-    user = User.query.filter_by(id=id).first()
-    if not user:
-        raise exc.EntryNotFound()
 
-    # Check if the user has been verified.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
-
-    # Check if the user is inactive
-    if not user.rank.active:
-        raise exc.UserIsInactive()
-
-    fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id',
-              'is_admin', 'creation_date', 'verification_date']
+    fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'is_admin', 'creation_date', 'verification_date']
     user = convert_minimal(user, fields)[0]
     return jsonify({'user': user}), 200
 
@@ -1885,6 +1852,8 @@ def create_purchase(admin):
     """
     Insert a new purchase.
 
+    :param admin:                Is the administrator user, determined by @adminOptional.
+
     :return:                     A message that the creation was successful.
 
     :raises DataIsMissing:       If not all required data is available.
@@ -1913,7 +1882,7 @@ def create_purchase(admin):
         raise exc.UserIsNotVerified()
 
     # Check if the user is inactive
-    if not user.rank.active:
+    if not user.active:
         raise exc.UserIsInactive()
 
     # Check product
@@ -2524,8 +2493,7 @@ def create_refund(admin):
     """
     Insert a new refund.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
+    :param admin:                Is the administrator user, determined by @adminRequired.
 
     :return:                     A message that the creation was successful.
 
@@ -2540,7 +2508,6 @@ def create_refund(admin):
     required = {'user_id': int, 'total_price': int, 'comment': str}
     check_fields_and_types(data, required)
 
-    # Check user
     user = User.query.filter_by(id=data['user_id']).first()
     if not user:
         raise exc.EntryNotFound()
@@ -2550,7 +2517,7 @@ def create_refund(admin):
         raise exc.UserIsNotVerified()
 
     # Check if the user is inactive
-    if not user.rank.active:
+    if not user.active:
         raise exc.UserIsInactive()
 
     # Check amount
