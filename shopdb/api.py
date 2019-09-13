@@ -766,12 +766,12 @@ def get_financial_overview(admin):
 
     pos_pur = sum(
         map(abs, list(filter(lambda x: x >= 0,
-                    list(map(lambda x: x.price, purchases)))))
+                             list(map(lambda x: x.price, purchases)))))
     )
 
     pos_dep = sum(
         map(abs, list(filter(lambda x: x >= 0,
-                    list(map(lambda x: x.amount, deposits)))))
+                             list(map(lambda x: x.amount, deposits)))))
     )
 
     pos_turn = sum(
@@ -781,17 +781,17 @@ def get_financial_overview(admin):
 
     neg_rep = sum(
         map(abs, list(filter(lambda x: x < 0,
-                    list(map(lambda x: x.price, replcolls)))))
+                             list(map(lambda x: x.price, replcolls)))))
     )
 
     neg_ref = sum(
         map(abs, list(filter(lambda x: x < 0,
-                    list(map(lambda x: x.total_price, refunds)))))
+                             list(map(lambda x: x.total_price, refunds)))))
     )
 
     neg_pay = sum(
         map(abs, list(filter(lambda x: x < 0,
-                    list(map(lambda x: x.amount, payoffs)))))
+                             list(map(lambda x: x.amount, payoffs)))))
     )
 
     sum_incomes = sum([
@@ -821,12 +821,12 @@ def get_financial_overview(admin):
     # - Losses between stocktakings
     neg_pur = sum(
         map(abs, list(filter(lambda x: x < 0,
-                    list(map(lambda x: x.price, purchases)))))
+                             list(map(lambda x: x.price, purchases)))))
     )
 
     neg_dep = sum(
         map(abs, list(filter(lambda x: x < 0,
-                    list(map(lambda x: x.amount, deposits)))))
+                             list(map(lambda x: x.amount, deposits)))))
     )
 
     neg_turn = sum(
@@ -836,17 +836,17 @@ def get_financial_overview(admin):
 
     pos_rep = sum(
         map(abs, list(filter(lambda x: x >= 0,
-                    list(map(lambda x: x.price, replcolls)))))
+                             list(map(lambda x: x.price, replcolls)))))
     )
 
     pos_ref = sum(
         map(abs, list(filter(lambda x: x >= 0,
-                    list(map(lambda x: x.total_price, refunds)))))
+                             list(map(lambda x: x.total_price, refunds)))))
     )
 
     pos_pay = sum(
         map(abs, list(filter(lambda x: x >= 0,
-                    list(map(lambda x: x.amount, payoffs)))))
+                             list(map(lambda x: x.amount, payoffs)))))
     )
 
     sum_expenses = sum([
