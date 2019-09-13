@@ -131,7 +131,6 @@ class User(db.Model):
         """
         Returns the product ids of the user's favorite products in
         descending order of number. Inactive products are ignored.
-
         Args:
             self: self
         Returns:
@@ -235,7 +234,7 @@ class Product(db.Model):
     countable = db.Column(db.Boolean, nullable=False, default=True)
     revocable = db.Column(db.Boolean, nullable=False, default=True)
     image_upload_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
-                         nullable=True)
+                                nullable=True)
     tags = db.relationship('Tag', secondary=product_tag_assignments,
                            backref=db.backref('products', lazy='dynamic'))
 
