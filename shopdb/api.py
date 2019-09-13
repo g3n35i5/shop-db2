@@ -653,15 +653,15 @@ def upload(admin):
 # Backups route ###################################################
 @app.route('/backups', methods=['GET'])
 @adminRequired
-def get_backups(admin):
+def list_backups(admin):
     """
     Returns a dictionary with all backups in the backup folder.
     The following backup directory structure is assumed for this function:
 
-    [Year]/[Month]/[Day]/shop-db_[Year]-[Month]-[Day]_[Hour]-[Minute].db
+    [Year]/[Month]/[Day]/shop-db_[Year]-[Month]-[Day]_[Hour]-[Minute].dump
 
     For example:
-    2019/02/07/shop-db_2019-02-07_15-00.db
+    2019/02/07/shop-db_2019-02-07_15-00.dump
 
     :return: A dictionary containing all backups and the timestamp of the
              latest backup.
@@ -692,7 +692,7 @@ def get_backups(admin):
             parent[folders[-1]] = subdir
 
     # Get the timestamp of the latest backup
-    all_files = glob.glob(root_dir + '**/*.db', recursive=True)
+    all_files = glob.glob(root_dir + '**/*.dump', recursive=True)
     if all_files:
         latest = os.path.getctime(max(all_files, key=os.path.getctime))
         data['latest'] = datetime.datetime.fromtimestamp(latest)

@@ -42,20 +42,20 @@ class TestListBackups(BaseAPITestCase, fake_filesystem_unittest.TestCase):
             '2019': {
                 '01': {
                     '01': [
-                        'shop-db_2019-01-01_10-00.db',
-                        'shop-db_2019-01-01_15-00.db',
-                        'shop-db_2019-01-01_20-00.db'
+                        'shop-db_2019-01-01_10-00.dump',
+                        'shop-db_2019-01-01_15-00.dump',
+                        'shop-db_2019-01-01_20-00.dump'
                     ]
                 },
                 '02': {
                     '03': [
-                        'shop-db_2019-02-03_10-00.db',
-                        'shop-db_2019-02-03_15-00.db',
-                        'shop-db_2019-02-03_20-00.db'
+                        'shop-db_2019-02-03_10-00.dump',
+                        'shop-db_2019-02-03_15-00.dump',
+                        'shop-db_2019-02-03_20-00.dump'
                     ]
                 },
                 '03': {
-                    '01': ['shop-db_2019-03-01_18-00.db']
+                    '01': ['shop-db_2019-03-01_18-00.dump']
                 }
             }
         }
