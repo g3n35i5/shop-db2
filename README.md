@@ -88,6 +88,16 @@ server {
     listen 443 ssl;
     server_name shopdb;
 
+    # New: gzip compression
+    gzip on;
+    gzip_static on;
+    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+    gzip_proxied  any;
+    gzip_vary on;
+    gzip_comp_level 6;
+    gzip_buffers 16 8k;
+    gzip_http_version 1.1;
+
     # location of the SSL certificates
     ssl_certificate <PATH_TO_THE_CERTS>/cert.pem;
     ssl_certificate_key <PATH_TO_THE_CERTS>/key.pem;
