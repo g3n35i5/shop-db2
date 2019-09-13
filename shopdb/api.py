@@ -273,7 +273,7 @@ def insert_deposit(data, admin):
         raise exc.UserIsNotVerified()
 
     # Check if the user is inactive
-    if not user.rank.active:
+    if not user.active:
         raise exc.UserIsInactive()
 
     # Check amount
@@ -912,7 +912,7 @@ def login():
         raise exc.UserIsNotVerified()
 
     # Check if the user is inactive
-    if not user.rank.active:
+    if not user.active:
         raise exc.UserIsInactive()
 
     # Check if the user has set a password.
@@ -1027,15 +1027,16 @@ def list_users(admin):
 
     :return:      A list of all users.
     """
-    result = User.query.filter(User.is_verified.is_(True)).all()
+
+    query = User.query.filter(User.is_verified.is_(True))
     if not admin:
+        query = query.filter(User.active.is_(True))
         fields = ['id', 'firstname', 'lastname', 'rank_id']
-        result = list(filter(lambda user: user.rank.active, result))
-        return jsonify({'users': convert_minimal(result, fields)}), 200
+        return jsonify({'users': convert_minimal(query.all(), fields)}), 200
 
     fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin',
               'creation_date', 'rank_id']
-    return jsonify({'users': convert_minimal(result, fields)}), 200
+    return jsonify({'users': convert_minimal(query.all(), fields)}), 200
 
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])

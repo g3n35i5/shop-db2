@@ -109,6 +109,21 @@ class User(db.Model):
         return None
 
     @hybrid_property
+    def active(self):
+        try:
+            return Rank.query.filter(Rank.id == self.rank_id).first().active
+        except (TypeError, ValueError):
+            return False
+
+    @active.expression
+    def active(cls):
+        return (select([Rank.active])
+                .where(and_(RankUpdate.user_id == cls.id, Rank.id == RankUpdate.rank_id))
+                .order_by(RankUpdate.id.desc())
+                .limit(1)
+                .as_scalar())
+
+    @hybrid_property
     def credit(self):
         p_amount = (db.session.query(func.sum(Purchase.price))
                     .filter(Purchase.user_id == self.id)

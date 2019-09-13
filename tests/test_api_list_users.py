@@ -11,7 +11,7 @@ class ListUsersAPITestCase(BaseAPITestCase):
         rank = Rank.query.filter(Rank.active.is_(False)).first()
         User.query.filter_by(id=3).first().set_rank_id(rank.id, 1)
         db.session.commit()
-        self.assertFalse(User.query.filter_by(id=3).first().rank.active)
+        self.assertFalse(User.query.filter_by(id=3).first().active)
         for role in ['user', None]:
             res = self.get(url='/users', role=role)
             self.assertEqual(res.status_code, 200)
