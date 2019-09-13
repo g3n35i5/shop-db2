@@ -5,8 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import validates
-from sqlalchemy.sql import func
 import datetime
+from sqlalchemy import select, func, and_
 
 db = SQLAlchemy()
 
@@ -238,6 +238,13 @@ class Product(db.Model):
     tags = db.relationship('Tag', secondary=product_tag_assignments,
                            backref=db.backref('products', lazy='dynamic'))
 
+    # Sorted link to all price updates of a product.
+    price_updates = db.relationship(
+        'ProductPrice', lazy='dynamic',
+        foreign_keys='ProductPrice.product_id',
+        order_by='ProductPrice.id.desc()'
+    )
+
     @validates('created_by')
     def validate_admin(self, key, created_by):
         user = User.query.filter(User.id == created_by).first()
@@ -255,10 +262,15 @@ class Product(db.Model):
 
     @hybrid_property
     def price(self):
-        return (ProductPrice.query
-                .filter(ProductPrice.product_id == self.id)
+        return self.price_updates[0].price
+
+    @price.expression
+    def price(cls):
+        return (select([ProductPrice.price])
+                .where(ProductPrice.product_id == cls.id)
                 .order_by(ProductPrice.id.desc())
-                .first().price)
+                .limit(1)
+                .as_scalar())
 
     @hybrid_method
     def get_pricehistory(self, start_date=None, end_date=None):
