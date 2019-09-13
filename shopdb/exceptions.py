@@ -8,7 +8,9 @@ Base exception for all exceptions (needed for instance check)
 
 
 class ShopdbException(Exception, DontWrapMixin):
-    pass
+    type: str = None
+    message: str = None
+    code: int = None
 
 
 """
