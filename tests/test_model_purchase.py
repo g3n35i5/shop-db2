@@ -125,15 +125,19 @@ class PurchaseModelTestCase(BaseTestCase):
         t6 = datetime.datetime.now() - datetime.timedelta(seconds=5)
         # Update product price
         pp = ProductPrice(product_id=1, price=300, admin_id=1, timestamp=t1)
+        db.session.add(pp)
+        db.session.commit()
         # Get the first product price
         product = Product.query.filter_by(id=1).first()
         pr_1 = copy(product.price)
         # Do first purchase
         purchase = Purchase(user_id=1, product_id=1, amount=1, timestamp=t2)
         db.session.add(purchase)
+        db.session.commit()
         # Update product price
         pp = ProductPrice(product_id=1, price=100, admin_id=1, timestamp=t3)
         db.session.add(pp)
+        db.session.commit()
         # Get the second product price
         product = Product.query.filter_by(id=1).first()
         pr_2 = copy(product.price)
@@ -143,12 +147,14 @@ class PurchaseModelTestCase(BaseTestCase):
         # Update product price
         pp = ProductPrice(product_id=1, price=600, admin_id=1, timestamp=t5)
         db.session.add(pp)
+        db.session.commit()
         # Get the third product price
         product = Product.query.filter_by(id=1).first()
         pr_3 = copy(product.price)
         # Do third purchase
         purchase = Purchase(user_id=1, product_id=1, amount=1, timestamp=t6)
         db.session.add(purchase)
+        db.session.commit()
 
         # Check the product prices
         self.assertEqual(pr_1, 300)
