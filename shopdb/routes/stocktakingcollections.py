@@ -11,8 +11,8 @@ import collections
 import shopdb.exceptions as exc
 from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
 from shopdb.helpers.decorators import adminRequired
-from shopdb.api import (app, convert_minimal, db, check_fields_and_types, check_forbidden, json_body,
-                        check_allowed_parameters, update_fields)
+from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
+from shopdb.api import (app, convert_minimal, db, json_body, update_fields)
 from shopdb.models import StocktakingCollection, Stocktaking, Product
 
 

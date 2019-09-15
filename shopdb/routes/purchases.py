@@ -7,8 +7,8 @@ from sqlalchemy.sql import exists
 from flask import jsonify
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminOptional
-from shopdb.api import (app, convert_minimal, db, check_allowed_parameters,
-                        check_fields_and_types, check_forbidden, update_fields, json_body)
+from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
+from shopdb.api import (app, convert_minimal, db, update_fields, json_body)
 from shopdb.models import Purchase, Product, User, Rank, PurchaseRevoke
 
 

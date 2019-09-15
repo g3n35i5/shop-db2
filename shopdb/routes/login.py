@@ -6,7 +6,8 @@ import datetime
 from flask import jsonify
 import shopdb.exceptions as exc
 import jwt
-from shopdb.api import (app, convert_minimal, check_fields_and_types, json_body, bcrypt)
+from shopdb.helpers.validators import check_fields_and_types
+from shopdb.api import (app, convert_minimal, json_body, bcrypt)
 from shopdb.models import User
 
 

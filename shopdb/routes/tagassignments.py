@@ -6,7 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from flask import jsonify
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
-from shopdb.api import (app, db, check_fields_and_types, json_body)
+from shopdb.helpers.validators import check_fields_and_types
+from shopdb.api import (app, db, json_body)
 from shopdb.models import Tag, Product
 
 

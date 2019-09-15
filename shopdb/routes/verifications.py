@@ -6,7 +6,8 @@ from flask import jsonify
 import shopdb.exceptions as exc
 from sqlalchemy.sql import exists
 from shopdb.helpers.decorators import adminRequired
-from shopdb.api import (app, convert_minimal, db, check_fields_and_types, json_body)
+from shopdb.helpers.validators import check_fields_and_types
+from shopdb.api import (app, convert_minimal, db, json_body)
 from shopdb.models import UserVerification, User, Rank
 
 
