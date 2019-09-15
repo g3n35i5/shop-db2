@@ -522,25 +522,10 @@ def index():
 from shopdb.routes.maintenance import *  # noqa: E40
 
 
+# Image routes
+from shopdb.routes.images import *  # noqa: E402
 
-@app.route('/images', methods=['GET'], defaults={'imagename': None})
-@app.route('/images/<imagename>', methods=['GET'])
-def get_image(imagename):
-    """
-    A picture can be requested via this route. If the image is not found or if
-    the image name is empty, a default image will be returned.
 
-    :param imagename: Is the name of the requested image.
-
-    :return:          The requested image or the default image, if applicable.
-    """
-    if not imagename:
-        return send_from_directory(app.config['UPLOAD_FOLDER'], 'default.png')
-    else:
-        if os.path.isfile(app.config['UPLOAD_FOLDER'] + imagename):
-            return send_from_directory(app.config['UPLOAD_FOLDER'], imagename)
-        else:
-            raise exc.EntryNotFound()
 
 
 @app.route('/upload', methods=['POST'])
