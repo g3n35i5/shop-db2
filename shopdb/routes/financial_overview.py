@@ -4,7 +4,8 @@ __author__ = 'g3n35i5'
 
 from flask import jsonify
 from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
-from shopdb.api import (app, adminRequired)
+from shopdb.api import app
+from shopdb.helpers.decorators import adminRequired
 from shopdb.models import Purchase, Deposit, Turnover, Payoff, Refund, ReplenishmentCollection, StocktakingCollection
 
 

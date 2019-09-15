@@ -10,7 +10,8 @@ from PIL import Image
 from sqlalchemy.exc import IntegrityError
 import shopdb.exceptions as exc
 from flask import jsonify, request
-from shopdb.api import (app, db, adminRequired)
+from shopdb.helpers.decorators import adminRequired
+from shopdb.api import app, db
 from shopdb.models import Upload
 
 

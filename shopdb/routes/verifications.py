@@ -5,7 +5,8 @@ __author__ = 'g3n35i5'
 from flask import jsonify
 import shopdb.exceptions as exc
 from sqlalchemy.sql import exists
-from shopdb.api import (app, adminRequired, convert_minimal, db, check_fields_and_types, json_body)
+from shopdb.helpers.decorators import adminRequired
+from shopdb.api import (app, convert_minimal, db, check_fields_and_types, json_body)
 from shopdb.models import UserVerification, User, Rank
 
 

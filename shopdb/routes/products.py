@@ -5,8 +5,8 @@ __author__ = 'g3n35i5'
 from sqlalchemy.exc import IntegrityError
 from flask import jsonify, request
 import shopdb.exceptions as exc
-from shopdb.api import (app, adminOptional, adminRequired, convert_minimal, db,
-                        check_fields_and_types, check_forbidden, update_fields, json_body)
+from shopdb.helpers.decorators import adminRequired, adminOptional
+from shopdb.api import (app, convert_minimal, db, check_fields_and_types, check_forbidden, update_fields, json_body)
 from shopdb.models import Product, Tag, Upload
 
 

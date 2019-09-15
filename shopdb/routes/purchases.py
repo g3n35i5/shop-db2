@@ -6,7 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import exists
 from flask import jsonify
 import shopdb.exceptions as exc
-from shopdb.api import (app, adminOptional, convert_minimal, db, check_allowed_parameters,
+from shopdb.helpers.decorators import adminOptional
+from shopdb.api import (app, convert_minimal, db, check_allowed_parameters,
                         check_fields_and_types, check_forbidden, update_fields, json_body)
 from shopdb.models import Purchase, Product, User, Rank, PurchaseRevoke
 

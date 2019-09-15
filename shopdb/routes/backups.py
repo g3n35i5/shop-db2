@@ -7,7 +7,8 @@ import glob
 import datetime
 from functools import reduce
 from flask import jsonify
-from shopdb.api import (app, adminRequired)
+from shopdb.helpers.decorators import adminRequired
+from shopdb.api import app
 
 
 @app.route('/backups', methods=['GET'])
