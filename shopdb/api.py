@@ -1053,16 +1053,7 @@ from shopdb.routes.users import *  # noqa: E402
 
 
 # Rank routes #############################################################
-@app.route('/ranks', methods=['GET'])
-def list_ranks():
-    """
-    Returns a list of all ranks.
-
-    :return: A list of all ranks.
-    """
-    result = Rank.query.all()
-    ranks = convert_minimal(result, ['id', 'name', 'debt_limit'])
-    return jsonify({'ranks': ranks}), 200
+from shopdb.routes.ranks import *  # noqa: E402
 
 
 # Tag routes #############################################################
