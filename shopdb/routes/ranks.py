@@ -3,7 +3,8 @@
 __author__ = 'g3n35i5'
 
 from flask import jsonify
-from shopdb.api import (app, convert_minimal)
+from shopdb.api import app
+from shopdb.helpers.utils import convert_minimal
 from shopdb.models import Rank
 
 

@@ -7,7 +7,8 @@ from flask import jsonify
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired, adminOptional, checkIfUserIsValid
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from shopdb.api import (app, convert_minimal, db, update_fields, bcrypt, json_body)
+from shopdb.helpers.utils import convert_minimal, update_fields
+from shopdb.api import (app, db, bcrypt, json_body)
 from shopdb.models import User
 
 

@@ -5,7 +5,8 @@ __author__ = 'g3n35i5'
 from flask import jsonify
 from sqlalchemy.exc import IntegrityError
 import shopdb.exceptions as exc
-from shopdb.api import (app, db, json_body, insert_user)
+from shopdb.helpers.users import insert_user
+from shopdb.api import (app, db, json_body)
 
 
 @app.route('/register', methods=['POST'])

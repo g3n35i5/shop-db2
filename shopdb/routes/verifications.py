@@ -7,7 +7,8 @@ import shopdb.exceptions as exc
 from sqlalchemy.sql import exists
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.api import (app, convert_minimal, db, json_body)
+from shopdb.helpers.utils import convert_minimal
+from shopdb.api import (app, db, json_body)
 from shopdb.models import UserVerification, User, Rank
 
 
