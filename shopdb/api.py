@@ -543,22 +543,7 @@ from shopdb.routes.login import *  # noqa: E402
 
 
 # Register route #############################################################
-@app.route('/register', methods=['POST'])
-def register():
-    """
-    Registration of new users.
-
-    :return:                     A message that the registration was successful.
-
-    :raises CouldNotCreateEntry: If the new user cannot be created.
-    """
-    insert_user(json_body())
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotCreateEntry()
-
-    return jsonify({'message': 'Created user.'}), 200
+from shopdb.routes.register import *  # noqa: E402
 
 
 # Verification routes #########################################################
