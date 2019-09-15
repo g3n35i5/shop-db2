@@ -1,29 +1,14 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
 
-from shopdb.models import *
-import shopdb.exceptions as exc
-from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
-from flask import (Flask, request, g, make_response, jsonify,
-                   send_from_directory, render_template)
-from flask_sqlalchemy import SQLAlchemy
+from shopdb.models import db
+from flask import Flask, g
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import NotFound, MethodNotAllowed
-import jwt
-import base64
-import sqlite3
-import sqlalchemy
-import glob
-from sqlalchemy.sql import exists
-from sqlalchemy.exc import *
-from functools import wraps, reduce
-import datetime
+import werkzeug.exceptions as werkzeug_exceptions
+import logging
+import time
 import configuration as config
-import random
-import os
-import collections
-from PIL import Image
-import shutil
-import pdfkit
 
 app = Flask(__name__)
 
@@ -92,11 +77,11 @@ def handle_error(error):
     db.session.rollback()
 
     # Catch the 404-error.
-    if isinstance(error, NotFound):
+    if isinstance(error, werkzeug_exceptions.NotFound):
         return jsonify(result='error', message='Page does not exist.'), 404
 
     # Catch the 'MethodNotAllowed' exception
-    if isinstance(error, MethodNotAllowed):
+    if isinstance(error, werkzeug_exceptions.MethodNotAllowed):
         return jsonify(result='error', message='Method not allowed.'), 405
 
     # As long as the application is in debug mode, all other exceptions

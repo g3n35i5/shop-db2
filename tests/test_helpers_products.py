@@ -1,4 +1,9 @@
-from shopdb.api import *
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
+
+from shopdb.models import *
+from shopdb.api import db
 import shopdb.exceptions as exc
 from shopdb.helpers.products import _get_product_mean_price_in_time_range
 from tests.base_api import BaseAPITestCase

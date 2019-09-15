@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
+
 from tests.base_api import BaseAPITestCase
 from tests.base import rank_data
 from flask import json

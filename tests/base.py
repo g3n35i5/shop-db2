@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
 
-from shopdb.api import *
 from shopdb.models import *
+from shopdb.api import db, set_app, app, bcrypt
 from flask_testing import TestCase
 import configuration as config
 

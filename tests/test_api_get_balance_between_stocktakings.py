@@ -1,4 +1,7 @@
-from shopdb.api import *
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
+
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from flask import json
@@ -105,4 +108,3 @@ class GetBalanceBetweenStocktakingsAPITestCase(BaseAPITestCase):
         params = {'end_id': 1, 'start_id': 2}
         res = self.get(url, role='admin', params=params)
         self.assertException(res, exc.InvalidData)
-

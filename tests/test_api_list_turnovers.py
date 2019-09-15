@@ -1,5 +1,7 @@
-from shopdb.api import *
-import shopdb.exceptions as exc
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
+
 from tests.base_api import BaseAPITestCase
 from flask import json
 

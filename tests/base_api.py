@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
 
-from shopdb.api import *
 from tests.base import BaseTestCase, u_passwords
 from flask import json
 import sys

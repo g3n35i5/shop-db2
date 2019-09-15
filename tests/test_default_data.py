@@ -1,7 +1,11 @@
-from shopdb.api import *
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
+
+from shopdb.models import *
+from shopdb.api import bcrypt
 from tests.base import BaseTestCase
-from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data,\
-                       turnovers
+from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data, turnovers
 
 
 class DefaultDataTest(BaseTestCase):

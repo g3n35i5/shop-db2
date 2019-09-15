@@ -1,4 +1,10 @@
-from shopdb.api import *
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
+
+import base64
+from shopdb.models import *
+from shopdb.api import db, app
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from flask import json
