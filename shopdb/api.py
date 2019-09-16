@@ -3,8 +3,10 @@
 __author__ = 'g3n35i5'
 
 from shopdb.models import db
-from flask import Flask, g
+import shopdb.exceptions as exc
+from flask import Flask, g, jsonify, request
 from flask_bcrypt import Bcrypt
+import datetime
 import logging
 import time
 import configuration as config
@@ -65,83 +67,90 @@ def index():
     return jsonify({'message': 'Backend is online.'})
 
 
-# Error handler
-import shopdb.helpers.errors  # noqa: E402
-# Maintenance routes
-from shopdb.routes.maintenance import *  # noqa: E40
+"""
+Below this comment are the imports of all used routes defined in "shopdb.routes"
+"""
 
+# Error handler
+# noinspection PyUnresolvedReferences
+import shopdb.helpers.errors  # noqa: E402
+
+# Maintenance routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.maintenance  # noqa: E402
 
 # Image routes
-from shopdb.routes.images import *  # noqa: E402
-
+# noinspection PyUnresolvedReferences
+import shopdb.routes.images  # noqa: E402
 
 # Upload routes
-from shopdb.routes.uploads import *  # noqa: E402
-
+# noinspection PyUnresolvedReferences
+import shopdb.routes.uploads  # noqa: E402
 
 # Backup routes
-from shopdb.routes.backups import *  # noqa: E402
+# noinspection PyUnresolvedReferences
+import shopdb.routes.backups  # noqa: E402
 
+# Financial overview route
+# noinspection PyUnresolvedReferences
+import shopdb.routes.financial_overview  # noqa: E402
 
-# Financial overview route ###################################################
-from shopdb.routes.financial_overview import *  # noqa: E402
+# Login route
+# noinspection PyUnresolvedReferences
+import shopdb.routes.login  # noqa: E402
 
+# Register route
+# noinspection PyUnresolvedReferences
+import shopdb.routes.register  # noqa: E402
 
-# Login route ################################################################
-from shopdb.routes.login import *  # noqa: E402
+# Verification routes#
+# noinspection PyUnresolvedReferences
+import shopdb.routes.verifications  # noqa: E402
 
+# User routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.users  # noqa: E402
 
-# Register route #############################################################
-from shopdb.routes.register import *  # noqa: E402
+# Rank routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.ranks  # noqa: E402
 
+# Tag routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.tags  # noqa: E402
 
-# Verification routes #########################################################
-from shopdb.routes.verifications import *  # noqa: E402
+# Tag assignment routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.tagassignments  # noqa: E402
 
+# Product routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.products  # noqa: E402
 
-# User routes ################################################################
-from shopdb.routes.users import *  # noqa: E402
+# Purchase routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.purchases  # noqa: E402
 
+# Deposit routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.deposits  # noqa: E402
 
-# Rank routes #############################################################
-from shopdb.routes.ranks import *  # noqa: E402
+# ReplenishmentCollection routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.replenishmentcollections  # noqa: E402
 
+# Refund routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.refunds  # noqa: E402
 
-# Tag routes #############################################################
-from shopdb.routes.tags import *  # noqa: E402
+# Payoff routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.payoffs  # noqa: E402
 
+# StocktakingCollection routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.stocktakingcollections  # noqa: E402
 
-# Tag assignment routes ######################################################
-from shopdb.routes.tagassignments import *  # noqa: E402
-
-
-# Product routes #############################################################
-from shopdb.routes.products import *  # noqa: E402
-
-
-# Purchase routes ############################################################
-from shopdb.routes.purchases import *  # noqa: E402
-
-
-# Deposit routes #############################################################
-from shopdb.routes.deposits import *  # noqa: E402
-
-
-# ReplenishmentCollection routes ##############################################
-from shopdb.routes.replenishmentcollections import *  # noqa: E402
-
-
-# Refund routes ##############################################################
-from shopdb.routes.refunds import *  # noqa: E402
-
-
-# Payoff routes ##############################################################
-from shopdb.routes.payoffs import *  # noqa: E402
-
-
-# StocktakingCollection routes ##############################################
-from shopdb.routes.stocktakingcollections import *  # noqa: E402
-
-
-# Turnover routes #############################################################
-from shopdb.routes.turnovers import *  # noqa: E402
+# Turnover routes
+# noinspection PyUnresolvedReferences
+import shopdb.routes.turnovers  # noqa: E402
