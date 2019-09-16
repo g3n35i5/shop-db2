@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
 
 import sys
 
@@ -10,7 +12,7 @@ except ModuleNotFoundError:
              'configuration.example.py and adapted it to your needs.')
 
 import argparse
-from shopdb.api import *
+from shopdb.api import app, db, set_app
 from dev import insert_dev_data
 
 parser = argparse.ArgumentParser(description='Starting script shop.db')

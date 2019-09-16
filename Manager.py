@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
 
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand

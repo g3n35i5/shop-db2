@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'g3n35i5'
 
 import sys
 import os
@@ -6,7 +8,8 @@ import getpass
 import getopt
 from sqlalchemy.exc import IntegrityError
 from shopdb.models import User, Rank
-from shopdb.api import app, db, set_app, insert_user
+from shopdb.helpers.users import insert_user
+from shopdb.api import app, db, set_app
 import shopdb.exceptions as exc
 import configuration as config
 
