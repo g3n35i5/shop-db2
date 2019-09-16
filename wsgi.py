@@ -2,12 +2,11 @@
 
 from __future__ import unicode_literals
 
+from argparse import ArgumentParser
 import multiprocessing
-
 import gunicorn.app.base
-
+import logging
 from gunicorn.six import iteritems
-
 import os
 import sys
 from shopdb.api import app, set_app
@@ -41,8 +40,18 @@ if __name__ == '__main__':
         sys.exit('No database found. Please read the documentation and use '
                  'the setupdb.py script to initialize shop-db.')
 
+    parser = ArgumentParser(description='Starting shop-db2 with a gunicorn server')
+    parser.add_argument('--loglevel', help='select the log level', default='WARNING',
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+
+    args = parser.parse_args()
+
     # Overwrite the app configuration with the productive settings.
     set_app(config.ProductiveConfig)
+
+    # Logging
+    app.logger.handlers = logging.getLogger('gunicorn.error').handlers
+    app.logger.setLevel(logging.getLevelName(args.loglevel))
 
     # Set the gunicorn options.
     options = {
@@ -50,7 +59,8 @@ if __name__ == '__main__':
         # BEGIN OF WARNING
         # DO NOT CHANGE THIS VALUE, THE APPLICATION IS NOT DESIGNED FOR
         # MULTITHREADING AND ERRORS MAY OCCUR IN THE DATABASE!!!
-        'workers': 1
+        'workers': 1,
         # END WARNING
     }
+
     StandaloneApplication(app, options).run()

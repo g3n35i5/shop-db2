@@ -50,11 +50,30 @@ def before_request_hook():
     :raises MaintenanceMode: if the application is in maintenance mode.
     """
 
+    # Debug timer
+    g.start = time.time()
+
     # Check for maintenance mode.
     exceptions = ['maintenance', 'login']
 
     if app.config.get('MAINTENANCE') and request.endpoint not in exceptions:
         raise exc.MaintenanceMode()
+
+
+@app.after_request
+def after_request_hook(response):
+    """
+    This functions gets executed each time a request is finished.
+
+    :param response: is the response to be returned.
+    :return:         The request response.
+    """
+    # If the app is in DEBUG mode, log the request execution time
+    if app.logger.level == logging.DEBUG:
+        execution_time = datetime.timedelta(seconds=(time.time() - g.start))
+        app.logger.debug("Request execution time for '{}': {}".format(request.endpoint, execution_time))
+
+    return response
 
 
 @app.route('/', methods=['GET'])
