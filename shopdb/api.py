@@ -5,7 +5,6 @@ __author__ = 'g3n35i5'
 from shopdb.models import db
 from flask import Flask, g
 from flask_bcrypt import Bcrypt
-import werkzeug.exceptions as werkzeug_exceptions
 import logging
 import time
 import configuration as config
@@ -54,20 +53,6 @@ def before_request_hook():
 
     if app.config.get('MAINTENANCE') and request.endpoint not in exceptions:
         raise exc.MaintenanceMode()
-
-
-def json_body():
-    """
-    Returns the json data from the current request.
-
-    :return:             The json body from the current request.
-
-    :raises InvalidJSON: If the json data cannot be interpreted.
-    """
-    jb = request.get_json()
-    if jb is None:
-        raise exc.InvalidJSON()
-    return jb
 
 
 @app.route('/', methods=['GET'])

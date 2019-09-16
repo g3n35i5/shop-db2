@@ -6,7 +6,8 @@ import shopdb.exceptions as exc
 from flask import jsonify
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.api import (app, json_body)
+from shopdb.helpers.utils import json_body
+from shopdb.api import app
 
 
 @app.route('/maintenance', methods=['POST'], endpoint='maintenance')

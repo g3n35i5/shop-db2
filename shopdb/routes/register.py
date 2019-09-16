@@ -6,7 +6,8 @@ from flask import jsonify
 from sqlalchemy.exc import IntegrityError
 import shopdb.exceptions as exc
 from shopdb.helpers.users import insert_user
-from shopdb.api import (app, db, json_body)
+from shopdb.helpers.utils import json_body
+from shopdb.api import app, db
 
 
 @app.route('/register', methods=['POST'])

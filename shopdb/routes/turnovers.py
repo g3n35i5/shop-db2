@@ -7,8 +7,8 @@ from flask import jsonify
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from shopdb.helpers.utils import convert_minimal
-from shopdb.api import (app, db, json_body)
+from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.api import app, db
 from shopdb.models import Turnover
 
 

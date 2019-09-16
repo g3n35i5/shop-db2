@@ -5,7 +5,8 @@ __author__ = 'g3n35i5'
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from flask import json
-from shopdb.api import app, Purchase
+from shopdb.api import app
+from shopdb.models import Purchase
 
 
 class MiscAPITestCase(BaseAPITestCase):

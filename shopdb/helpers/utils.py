@@ -2,7 +2,22 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
+from flask import request
 import shopdb.exceptions as exc
+
+
+def json_body():
+    """
+    Returns the json data from the current request.
+
+    :return:             The json body from the current request.
+
+    :raises InvalidJSON: If the json data cannot be interpreted.
+    """
+    jb = request.get_json()
+    if jb is None:
+        raise exc.InvalidJSON()
+    return jb
 
 
 def convert_minimal(data, fields):

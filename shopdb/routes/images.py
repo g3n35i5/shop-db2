@@ -5,7 +5,7 @@ __author__ = 'g3n35i5'
 import os
 import shopdb.exceptions as exc
 from flask import send_from_directory
-from shopdb.api import (app)
+from shopdb.api import app
 
 
 @app.route('/images', methods=['GET'], defaults={'imagename': None})

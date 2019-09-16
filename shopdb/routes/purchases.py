@@ -8,8 +8,8 @@ from flask import jsonify
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminOptional
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
-from shopdb.helpers.utils import convert_minimal, update_fields
-from shopdb.api import (app, db, json_body)
+from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.api import app, db
 from shopdb.models import Purchase, Product, User, Rank, PurchaseRevoke
 
 
