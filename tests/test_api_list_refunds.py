@@ -15,9 +15,7 @@ class ListRefundsAPITestCase(BaseAPITestCase):
         self.insert_default_refunds()
         res = self.get(url='/refunds', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'refunds' in data
-        refunds = data['refunds']
+        refunds = json.loads(res.data)
         self.assertEqual(len(refunds), 5)
         self.assertEqual(refunds[0]['user_id'], 1)
         self.assertEqual(refunds[1]['user_id'], 2)

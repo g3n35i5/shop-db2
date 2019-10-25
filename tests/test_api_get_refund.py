@@ -15,9 +15,7 @@ class GetRefundsAPITestCase(BaseAPITestCase):
         self.insert_default_refunds()
         res = self.get(url='/refunds/2', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'refund' in data
-        refund = data['refund']
+        refund = json.loads(res.data)
         self.assertEqual(refund['id'], 2)
         self.assertEqual(refund['user_id'], 2)
         self.assertEqual(refund['total_price'], 200)

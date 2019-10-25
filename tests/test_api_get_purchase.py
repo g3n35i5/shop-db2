@@ -15,9 +15,7 @@ class GetPurchaseAPITestCase(BaseAPITestCase):
         self.insert_default_purchases()
         res = self.get(url='/purchases/3')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'purchase' in data
-        purchase = data['purchase']
+        purchase = json.loads(res.data)
         self.assertEqual(purchase['id'], 3)
         self.assertEqual(purchase['user_id'], 2)
         self.assertEqual(purchase['product_id'], 2)

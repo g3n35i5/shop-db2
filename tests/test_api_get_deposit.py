@@ -17,9 +17,7 @@ class GetDepositAPITestCase(BaseAPITestCase):
         self.insert_default_deposits()
         res = self.get(url='/deposits/3')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'deposit' in data
-        deposit = data['deposit']
+        deposit = json.loads(res.data)
         self.assertEqual(deposit['id'], 3)
         self.assertEqual(deposit['user_id'], 2)
         self.assertEqual(deposit['amount'], 500)
@@ -42,9 +40,7 @@ class GetDepositAPITestCase(BaseAPITestCase):
         db.session.add(deprevoke)
 
         res = self.get(url='/deposits/1')
-        data = json.loads(res.data)
-        deposit = data['deposit']
-        assert 'revokehistory' in deposit
+        deposit = json.loads(res.data)
         self.assertEqual(len(deposit['revokehistory']), 3)
         self.assertTrue(deposit['revokehistory'][0]['revoked'])
         self.assertFalse(deposit['revokehistory'][1]['revoked'])

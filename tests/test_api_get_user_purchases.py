@@ -16,11 +16,10 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         self.insert_default_purchases()
         res = self.get(url='/users/2/purchases')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'purchases' in data
+        purchases = json.loads(res.data)
         fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount',
                   'revoked', 'price']        
-        for i in data['purchases']:
+        for i in purchases:
             for x in fields:
                 assert x in i
 
@@ -48,9 +47,8 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         """
         res = self.get(url='/users/2/purchases')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'purchases' in data
-        self.assertEqual(data['purchases'], [])
+        purchases = json.loads(res.data)
+        self.assertEqual(purchases, [])
 
     def test_get_user_purchases_inactive_user(self):
         """

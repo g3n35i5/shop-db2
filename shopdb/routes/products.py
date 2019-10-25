@@ -29,7 +29,7 @@ def list_products(admin):
 
     for product in products:
         product['tags'] = [t.id for t in product['tags']]
-    return jsonify({'products': products}), 200
+    return jsonify(products), 200
 
 
 @app.route('/products', methods=['POST'])
@@ -138,7 +138,7 @@ def get_product(admin, id):
     # Convert the product tags
     product['tags'] = [t.id for t in product['tags']]
 
-    return jsonify({'product': product}), 200
+    return jsonify(product), 200
 
 
 @app.route('/products/<int:id>/pricehistory', methods=['GET'])
@@ -183,7 +183,7 @@ def get_product_pricehistory(admin, id):
 
     history = product.get_pricehistory(start, end)
 
-    return jsonify({'pricehistory': history}), 200
+    return jsonify(history), 200
 
 
 @app.route('/products/<int:id>', methods=['PUT'])

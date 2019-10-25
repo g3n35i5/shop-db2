@@ -17,9 +17,7 @@ class ListDepositsAPITestCase(BaseAPITestCase):
         self.insert_default_deposits()
         res = self.get(url='/deposits', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'deposits' in data
-        deposits = data['deposits']
+        deposits = json.loads(res.data)
         self.assertEqual(len(deposits), 5)
         self.assertEqual(deposits[0]['user_id'], 1)
         self.assertEqual(deposits[1]['user_id'], 2)

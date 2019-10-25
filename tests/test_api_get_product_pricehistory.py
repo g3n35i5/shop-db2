@@ -90,8 +90,8 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         start = int(datetime(year=2019, month=1, day=3).timestamp())
         url = f'/products/1/pricehistory?start_date={start}'
         res = self.get(url=url, role='admin')
-        data = json.loads(res.data)
-        self.assertEqual(len(data['pricehistory']), 3)
+        pricehistory = json.loads(res.data)
+        self.assertEqual(len(pricehistory), 3)
 
     def test_get_pricehistory_defining_only_end_date(self):
         """
@@ -111,9 +111,9 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         end = int(datetime(year=2019, month=1, day=2).timestamp())
         url = f'/products/1/pricehistory?end_date={end}'
         res = self.get(url=url, role='admin')
-        data = json.loads(res.data)
+        pricehistory = json.loads(res.data)
         # There should be only the entries [01.01.19 and 02.01.19]
-        self.assertEqual(len(data['pricehistory']), 2)
+        self.assertEqual(len(pricehistory), 2)
 
     def test_get_pricehistory_defining_start_and_end_date(self):
         """
@@ -134,9 +134,9 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         end = int(datetime(year=2019, month=1, day=8).timestamp())
         url = f'/products/1/pricehistory?start_date={start}&end_date={end}'
         res = self.get(url=url, role='admin')
-        data = json.loads(res.data)
+        pricehistory = json.loads(res.data)
         # There should be only the entries [02.01.19, 03.01.19 and 08.01.19]
-        self.assertEqual(len(data['pricehistory']), 3)
+        self.assertEqual(len(pricehistory), 3)
 
 
 

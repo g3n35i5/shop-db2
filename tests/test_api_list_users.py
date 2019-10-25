@@ -20,9 +20,7 @@ class ListUsersAPITestCase(BaseAPITestCase):
         for role in ['user', None]:
             res = self.get(url='/users', role=role)
             self.assertEqual(res.status_code, 200)
-            data = json.loads(res.data)
-            assert 'users' in data
-            users = data['users']
+            users = json.loads(res.data)
             self.assertEqual(len(users), 2)
             for user in users:
                 self.assertEqual(len(user), 4)
@@ -35,9 +33,7 @@ class ListUsersAPITestCase(BaseAPITestCase):
            header."""
         res = self.get(url='/users', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'users' in data
-        users = data['users']
+        users = json.loads(res.data)
         self.assertEqual(len(users), 3)
         for user in users:
             self.assertEqual(len(user), 7)

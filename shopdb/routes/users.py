@@ -29,11 +29,11 @@ def list_users(admin):
     if not admin:
         query = query.filter(User.active.is_(True))
         fields = ['id', 'firstname', 'lastname', 'rank_id']
-        return jsonify({'users': convert_minimal(query.all(), fields)}), 200
+        return jsonify(convert_minimal(query.all(), fields)), 200
 
     fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin',
               'creation_date', 'rank_id']
-    return jsonify({'users': convert_minimal(query.all(), fields)}), 200
+    return jsonify(convert_minimal(query.all(), fields)), 200
 
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])
@@ -49,7 +49,7 @@ def get_user_favorites(user, id):
     :return:                   A list with the IDs of the favorite products.
     """
 
-    return jsonify({'favorites': user.favorites}), 200
+    return jsonify(user.favorites), 200
 
 
 @app.route('/users/<int:id>/deposits', methods=['GET'])
@@ -65,9 +65,9 @@ def get_user_deposits(user, id):
     """
 
     fields = ['id', 'timestamp', 'admin_id', 'amount', 'revoked', 'comment']
-    new_deposits = convert_minimal(user.deposits.all(), fields)
+    deposits = convert_minimal(user.deposits.all(), fields)
 
-    return jsonify({'deposits': new_deposits}), 200
+    return jsonify(deposits), 200
 
 
 @app.route('/users/<int:id>/refunds', methods=['GET'])
@@ -85,7 +85,7 @@ def get_user_refunds(user, id):
     fields = ['id', 'timestamp', 'admin_id', 'total_price', 'revoked', 'comment']
     refunds = convert_minimal(user.refunds.all(), fields)
 
-    return jsonify({'refunds': refunds}), 200
+    return jsonify(refunds), 200
 
 
 @app.route('/users/<int:id>/purchases', methods=['GET'])
@@ -103,7 +103,7 @@ def get_user_purchases(user, id):
     fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount', 'revoked', 'price']
     purchases = convert_minimal(user.purchases.all(), fields)
 
-    return jsonify({'purchases': purchases}), 200
+    return jsonify(purchases), 200
 
 
 @app.route('/users/<int:id>', methods=['GET'])
@@ -120,7 +120,7 @@ def get_user(user, id):
 
     fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'is_admin', 'creation_date', 'verification_date']
     user = convert_minimal(user, fields)[0]
-    return jsonify({'user': user}), 200
+    return jsonify(user), 200
 
 
 @app.route('/users/<int:id>', methods=['PUT'])

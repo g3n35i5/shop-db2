@@ -26,7 +26,7 @@ def list_replenishmentcollections(admin):
     data = ReplenishmentCollection.query.all()
     fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked', 'comment']
     response = convert_minimal(data, fields)
-    return jsonify({'replenishmentcollections': response}), 200
+    return jsonify(response), 200
 
 
 @app.route('/replenishmentcollections/<int:id>', methods=['GET'])
@@ -60,7 +60,7 @@ def get_replenishmentcollection(admin, id):
 
     result = convert_minimal(replcoll, fields_replcoll)[0]
     result['replenishments'] = convert_minimal(repls, fields_repl)
-    return jsonify({'replenishmentcollection': result}), 200
+    return jsonify(result), 200
 
 
 @app.route('/replenishmentcollections', methods=['POST'])

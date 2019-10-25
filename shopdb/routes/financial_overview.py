@@ -182,4 +182,4 @@ def get_financial_overview(admin):
         'incomes': incomes,
         'expenses': expenses
     }
-    return jsonify({'financial_overview': financial_overview}), 200
+    return jsonify(financial_overview), 200

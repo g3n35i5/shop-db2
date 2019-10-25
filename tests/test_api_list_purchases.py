@@ -17,9 +17,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         self.insert_default_purchases()
         res = self.get(url='/purchases', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'purchases' in data
-        purchases = data['purchases']
+        purchases = json.loads(res.data)
         self.assertEqual(len(purchases), 5)
         self.assertEqual(purchases[0]['user_id'], 1)
         self.assertEqual(purchases[1]['user_id'], 2)
@@ -43,9 +41,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         db.session.commit()
         res = self.get(url='/purchases')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'purchases' in data
-        purchases = data['purchases']
+        purchases = json.loads(res.data)
         self.assertEqual(len(purchases), 4)
         self.assertEqual(purchases[0]['user_id'], 1)
         self.assertEqual(purchases[1]['user_id'], 2)
@@ -72,9 +68,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
 
         res = self.get(url='/purchases', params={'limit': 3})
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'purchases' in data
-        purchases = data['purchases']
+        purchases = json.loads(res.data)
         self.assertEqual(len(purchases), 3)
         self.assertEqual(purchases[0]['id'], 5)
         self.assertEqual(purchases[1]['id'], 4)  # <- Third purchase is revoked!

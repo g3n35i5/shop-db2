@@ -26,7 +26,7 @@ def list_pending_validations(admin):
            .filter(~exists().where(UserVerification.user_id == User.id))
            .all())
     fields = ['id', 'firstname', 'lastname']
-    return jsonify({'pending_validations': convert_minimal(res, fields)}), 200
+    return jsonify(convert_minimal(res, fields)), 200
 
 
 @app.route('/verify/<int:id>', methods=['POST'])

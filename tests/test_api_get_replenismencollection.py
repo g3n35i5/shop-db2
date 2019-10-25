@@ -14,9 +14,7 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         self.insert_default_replenishmentcollections()
         res = self.get(url='/replenishmentcollections/1', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'replenishmentcollection' in data
-        replcoll = data['replenishmentcollection']
+        replcoll = json.loads(res.data)
         required_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'comment',
                              'replenishments', 'revoked', 'revokehistory']
         required_repl = ['id', 'replcoll_id', 'product_id', 'amount',

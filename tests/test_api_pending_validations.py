@@ -21,9 +21,7 @@ class PendingVerificationsAPITestCase(BaseAPITestCase):
 
         res = self.get(url='/verifications', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'pending_validations' in data
-        pending_validations = data['pending_validations']
+        pending_validations = json.loads(res.data)
         self.assertEqual(len(pending_validations), 1)
         self.assertEqual(pending_validations[0]['id'], 4)
         self.assertEqual(pending_validations[0]['firstname'], 'Daniel')

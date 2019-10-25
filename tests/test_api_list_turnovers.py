@@ -12,9 +12,7 @@ class ListTurnoversAPITestCase(BaseAPITestCase):
         """Test for listing all turnovers as admin"""
         res = self.get(url='/turnovers', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'turnovers' in data
-        turnovers = data['turnovers']
+        turnovers = json.loads(res.data)
         self.assertEqual(len(turnovers), 4)
         self.assertEqual(turnovers[0]['amount'], 200)
         self.assertEqual(turnovers[1]['amount'], 100)

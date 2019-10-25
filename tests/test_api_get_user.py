@@ -15,15 +15,14 @@ class GetUserAPITestCase(BaseAPITestCase):
         """Test for getting a single user"""
         res = self.get(url='/users/1')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'user' in data
-        assert 'password' not in data
-        self.assertEqual(data['user']['id'], 1)
-        self.assertEqual(data['user']['firstname'], u_firstnames[0])
-        self.assertEqual(data['user']['lastname'], u_lastnames[0])
-        self.assertEqual(data['user']['credit'], 0)
-        self.assertTrue(isinstance(data['user']['creation_date'], str))
-        self.assertTrue(isinstance(data['user']['verification_date'], str))
+        user = json.loads(res.data)
+        assert 'password' not in user
+        self.assertEqual(user['id'], 1)
+        self.assertEqual(user['firstname'], u_firstnames[0])
+        self.assertEqual(user['lastname'], u_lastnames[0])
+        self.assertEqual(user['credit'], 0)
+        self.assertTrue(isinstance(user['creation_date'], str))
+        self.assertTrue(isinstance(user['verification_date'], str))
 
     def test_get_non_existing_user(self):
         """Getting a non existing user should raise an error."""

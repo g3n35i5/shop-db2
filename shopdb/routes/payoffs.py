@@ -24,7 +24,7 @@ def list_payoffs(admin):
     """
     payoffs = Payoff.query.all()
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked', 'admin_id']
-    return jsonify({'payoffs': convert_minimal(payoffs, fields)}), 200
+    return jsonify(convert_minimal(payoffs, fields)), 200
 
 
 @app.route('/payoffs/<int:id>', methods=['GET'])
@@ -49,7 +49,7 @@ def get_payoff(admin, id):
     # Convert the payoff to a JSON friendly format
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked',
               'revokehistory']
-    return jsonify({'payoff': convert_minimal(res, fields)[0]}), 200
+    return jsonify(convert_minimal(res, fields)[0]), 200
 
 
 @app.route('/payoffs', methods=['POST'])

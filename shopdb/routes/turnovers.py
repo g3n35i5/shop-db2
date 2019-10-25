@@ -24,7 +24,7 @@ def list_turnovers(admin):
     """
     turnovers = Turnover.query.all()
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked', 'admin_id']
-    return jsonify({'turnovers': convert_minimal(turnovers, fields)}), 200
+    return jsonify(convert_minimal(turnovers, fields)), 200
 
 
 @app.route('/turnovers', methods=['POST'])
@@ -82,7 +82,7 @@ def get_turnover(id):
     # Convert the turnover to a JSON friendly format
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked',
               'revokehistory']
-    return jsonify({'turnover': convert_minimal(res, fields)[0]}), 200
+    return jsonify(convert_minimal(res, fields)[0]), 200
 
 
 @app.route('/turnovers/<int:id>', methods=['PUT'])

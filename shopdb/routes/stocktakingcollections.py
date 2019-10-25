@@ -84,7 +84,7 @@ def get_balance_between_stocktakings(admin):
 
     # Return the balance.
     balance = _get_balance_between_stocktakings(start, end)
-    return jsonify({'balance': balance}), 200
+    return jsonify(balance), 200
 
 
 @app.route('/stocktakingcollections', methods=['GET'])
@@ -101,8 +101,7 @@ def list_stocktakingcollections(admin):
             .order_by(StocktakingCollection.timestamp)
             .all())
     fields = ['id', 'timestamp', 'admin_id', 'revoked']
-    response = convert_minimal(data, fields)
-    return jsonify({'stocktakingcollections': response}), 200
+    return jsonify(convert_minimal(data, fields)), 200
 
 
 @app.route('/stocktakingcollections/<int:id>', methods=['GET'])
@@ -135,7 +134,7 @@ def get_stocktakingcollections(admin, id):
 
     result = convert_minimal(collection, fields_collection)[0]
     result['stocktakings'] = convert_minimal(stocktakings, fields_stocktaking)
-    return jsonify({'stocktakingcollection': result}), 200
+    return jsonify(result), 200
 
 
 @app.route('/stocktakingcollections', methods=['POST'])

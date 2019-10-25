@@ -14,9 +14,7 @@ class GetStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.insert_default_stocktakingcollections()
         res = self.get(url='/stocktakingcollections/1', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'stocktakingcollection' in data
-        collection = data['stocktakingcollection']
+        collection = json.loads(res.data)
         required_collection = ['id', 'timestamp', 'admin_id',
                                'stocktakings', 'revoked', 'revokehistory']
         required_stocktaking = ['id', 'collection_id', 'product_id', 'count']

@@ -50,7 +50,7 @@ def list_purchases(admin):
     # Finish the query
     res = res.all()
 
-    return jsonify({'purchases': convert_minimal(res, fields)}), 200
+    return jsonify(convert_minimal(res, fields)), 200
 
 
 @app.route('/purchases', methods=['POST'])
@@ -138,7 +138,7 @@ def get_purchase(id):
         raise exc.EntryNotFound()
     fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount', 'price',
               'productprice', 'revoked', 'revokehistory']
-    return jsonify({'purchase': convert_minimal(purchase, fields)[0]}), 200
+    return jsonify(convert_minimal(purchase, fields)[0]), 200
 
 
 @app.route('/purchases/<int:id>', methods=['PUT'])

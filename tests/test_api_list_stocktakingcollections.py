@@ -14,9 +14,7 @@ class ListStocktakingCollectionsAPITestCase(BaseAPITestCase):
         self.insert_default_stocktakingcollections()
         res = self.get(url='/stocktakingcollections', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'stocktakingcollections' in data
-        collecttions = data['stocktakingcollections']
+        collecttions = json.loads(res.data)
         required = ['id', 'timestamp', 'admin_id', 'revoked']
         for collection in collecttions:
             assert all(x in collection for x in required)

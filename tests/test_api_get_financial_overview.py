@@ -195,9 +195,7 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
 
         res = self.get(url='/financial_overview', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'financial_overview' in data
-        overview = data['financial_overview']
+        overview = json.loads(res.data)
         self.assertEqual(overview['total_balance'], total_balance)
         self.assertEqual(overview['incomes']['amount'], incomes)
         self.assertEqual(overview['expenses']['amount'], expenses)

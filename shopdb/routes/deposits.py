@@ -26,7 +26,7 @@ def list_deposits(admin):
     deposits = Deposit.query.all()
     fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
               'admin_id']
-    return jsonify({'deposits': convert_minimal(deposits, fields)}), 200
+    return jsonify(convert_minimal(deposits, fields)), 200
 
 
 @app.route('/deposits', methods=['POST'])
@@ -119,7 +119,7 @@ def get_deposit(id):
     # Convert the deposit to a JSON friendly format
     fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
               'revokehistory']
-    return jsonify({'deposit': convert_minimal(res, fields)[0]}), 200
+    return jsonify(convert_minimal(res, fields)[0]), 200
 
 
 @app.route('/deposits/<int:id>', methods=['PUT'])

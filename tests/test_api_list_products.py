@@ -17,9 +17,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
         db.session.commit()
         res = self.get(url='/products', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'products' in data
-        products = data['products']
+        products = json.loads(res.data)
         self.assertEqual(len(products), 4)
         for product in products:
             for item in ['id', 'name', 'price', 'barcode', 'active',

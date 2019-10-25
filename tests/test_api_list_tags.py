@@ -12,9 +12,7 @@ class ListTagsAPITestCase(BaseAPITestCase):
         """Test for listing all tags"""
         res = self.get(url='/tags')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'tags' in data
-        tags = data['tags']
+        tags = json.loads(res.data)
         self.assertEqual(len(tags), 4)
         for i in range(4):
             self.assertEqual(tags[i]['name'], t_names[i])

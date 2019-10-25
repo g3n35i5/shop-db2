@@ -26,9 +26,7 @@ class GetPayoffAPITestCase(BaseAPITestCase):
         self.insert_default_payoffs()
         res = self.get(url='/payoffs/2', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'payoff' in data
-        payoff = data['payoff']
+        payoff = json.loads(res.data)
         self.assertEqual(payoff['id'], 2)
         self.assertEqual(payoff['amount'], 200)
         self.assertFalse(payoff['revoked'])

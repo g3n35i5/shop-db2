@@ -27,11 +27,10 @@ class GetUserRefundsAPITestCase(BaseAPITestCase):
         self._insert_refunds()
         res = self.get(url='/users/2/refunds')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'refunds' in data
+        refunds = json.loads(res.data)
         fields = ['id', 'timestamp', 'admin_id', 'total_price', 'revoked',
                   'comment']
-        for i in data['refunds']:
+        for i in refunds:
             for x in fields:
                 assert x in i
 
@@ -42,9 +41,8 @@ class GetUserRefundsAPITestCase(BaseAPITestCase):
         """
         res = self.get(url='/users/2/refunds')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'refunds' in data
-        self.assertEqual(data['refunds'], [])
+        refunds = json.loads(res.data)
+        self.assertEqual(refunds, [])
 
     def test_get_refunds_non_existing_user(self):
         """

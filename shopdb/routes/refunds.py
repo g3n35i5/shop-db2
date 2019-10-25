@@ -25,7 +25,7 @@ def list_refunds(admin):
     refunds = Refund.query.all()
     fields = ['id', 'timestamp', 'user_id', 'total_price', 'comment',
               'revoked', 'admin_id']
-    return jsonify({'refunds': convert_minimal(refunds, fields)}), 200
+    return jsonify(convert_minimal(refunds, fields)), 200
 
 
 @app.route('/refunds/<int:id>', methods=['GET'])
@@ -47,7 +47,7 @@ def get_refund(id):
     # Convert the refund to a JSON friendly format
     fields = ['id', 'timestamp', 'user_id', 'total_price', 'comment', 'revoked',
               'revokehistory']
-    return jsonify({'refund': convert_minimal(res, fields)[0]}), 200
+    return jsonify(convert_minimal(res, fields)[0]), 200
 
 
 @app.route('/refunds', methods=['POST'])

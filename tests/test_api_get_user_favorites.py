@@ -35,9 +35,9 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         """
         self._insert_purchases()
         res = self.get(url='/users/1/favorites')
-        data = json.loads(res.data)
+        favorites = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['favorites'], [3, 2, 1, 4])
+        self.assertEqual(favorites, [3, 2, 1, 4])
 
     def test_get_user_favorites_inactive_product(self):
         """
@@ -51,9 +51,9 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
 
         # Get the favorites
         res = self.get(url='/users/1/favorites')
-        data = json.loads(res.data)
+        favorites = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['favorites'], [3, 2, 4])
+        self.assertEqual(favorites, [3, 2, 4])
 
     def test_get_user_favorites_no_purchase(self):
         """
@@ -61,9 +61,9 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         favorites if no purchases have yet been made.
         """
         res = self.get(url='/users/1/favorites')
-        data = json.loads(res.data)
+        favorites = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['favorites'], [])
+        self.assertEqual(favorites, [])
 
     def test_get_user_favorites_non_existing_user(self):
         """

@@ -27,9 +27,7 @@ class GetBalanceBetweenStocktakingsAPITestCase(BaseAPITestCase):
         # Do the API request.
         res = self.get(url, role='admin', params=params)
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'balance' in data
-        balance = data['balance']
+        balance = json.loads(res.data)
 
         # Check the data
         self.assertTrue('products' in balance)

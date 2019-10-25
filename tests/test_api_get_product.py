@@ -14,9 +14,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         """Get a single active product as None"""
         res = self.get(url='/products/1')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'product' in data
-        product = data['product']
+        product = json.loads(res.data)
         required = ['id', 'name', 'price', 'barcode', 'active', 'creation_date',
                     'countable', 'revocable', 'imagename', 'tags']
         assert all(x in product for x in required)
@@ -27,9 +25,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         db.session.commit()
         res = self.get(url='/products/4')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'product' in data
-        product = data['product']
+        product = json.loads(res.data)
         not_included = ['price', 'countable', 'revocable']
         assert all(x not in product for x in not_included)
 
@@ -41,9 +37,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         db.session.commit()
         res = self.get(url='/products/4', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'product' in data
-        product = data['product']
+        product = json.loads(res.data)
         required = ['id', 'name', 'price', 'barcode', 'active', 'creation_date',
                     'countable', 'revocable', 'imagename', 'tags']
         assert all(x in product for x in required)
@@ -61,9 +55,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         db.session.commit()
         res = self.get(url='/products/1')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'product' in data
-        product = data['product']
+        product = json.loads(res.data)
         assert 'tags' in product
         self.assertEqual(1, len(product['tags']))
         self.assertEqual(1, product['tags'][0])

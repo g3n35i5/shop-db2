@@ -21,7 +21,7 @@ def list_tags():
     """
     result = Tag.query.all()
     tags = convert_minimal(result, ['id', 'name', 'created_by'])
-    return jsonify({'tags': tags}), 200
+    return jsonify(tags), 200
 
 
 @app.route('/tags/<int:id>', methods=['GET'])
@@ -40,7 +40,7 @@ def get_tag(id):
         raise exc.EntryNotFound()
 
     tag = convert_minimal(result, ['id', 'name', 'created_by'])[0]
-    return jsonify({'tag': tag}), 200
+    return jsonify(tag), 200
 
 
 @app.route('/tags/<int:id>', methods=['DELETE'])

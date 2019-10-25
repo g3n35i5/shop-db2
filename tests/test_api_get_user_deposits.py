@@ -26,10 +26,9 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         self._insert_deposits()
         res = self.get(url='/users/2/deposits')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'deposits' in data
+        deposits = json.loads(res.data)
         fields = ['id', 'timestamp', 'admin_id', 'amount', 'revoked', 'comment']
-        for i in data['deposits']:
+        for i in deposits:
             for x in fields:
                 assert x in i
 
@@ -40,9 +39,8 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         """
         res = self.get(url='/users/2/deposits')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'deposits' in data
-        self.assertEqual(data['deposits'], [])
+        deposits = json.loads(res.data)
+        self.assertEqual(deposits, [])
 
     def test_get_deposit_non_existing_user(self):
         """

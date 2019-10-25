@@ -17,9 +17,7 @@ class GetTurnoverAPITestCase(BaseAPITestCase):
         self.insert_default_turnovers()
         res = self.get(url='/turnovers/3')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'turnover' in data
-        turnover = data['turnover']
+        turnover = json.loads(res.data)
         self.assertEqual(turnover['id'], 3)
         self.assertEqual(turnover['amount'], -100)
         self.assertFalse(turnover['revoked'])
@@ -41,8 +39,7 @@ class GetTurnoverAPITestCase(BaseAPITestCase):
         db.session.add(trevoke)
 
         res = self.get(url='/turnovers/1')
-        data = json.loads(res.data)
-        turnover = data['turnover']
+        turnover = json.loads(res.data)
         assert 'revokehistory' in turnover
         self.assertEqual(len(turnover['revokehistory']), 3)
         self.assertTrue(turnover['revokehistory'][0]['revoked'])

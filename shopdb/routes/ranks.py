@@ -17,4 +17,4 @@ def list_ranks():
     """
     result = Rank.query.all()
     ranks = convert_minimal(result, ['id', 'name', 'debt_limit'])
-    return jsonify({'ranks': ranks}), 200
+    return jsonify(ranks), 200

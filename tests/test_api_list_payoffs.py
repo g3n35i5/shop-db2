@@ -25,9 +25,7 @@ class ListPayoffsAPITestCase(BaseAPITestCase):
         self.insert_default_payoffs()
         res = self.get(url='/payoffs', role='admin')
         self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        assert 'payoffs' in data
-        payoffs = data['payoffs']
+        payoffs = json.loads(res.data)
         self.assertEqual(len(payoffs), 2)
         self.assertEqual(payoffs[0]['amount'], 100)
         self.assertEqual(payoffs[1]['amount'], 200)
