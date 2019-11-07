@@ -129,10 +129,8 @@ def adminOptional(f):
         # Is the token valid?
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
-        except jwt.exceptions.DecodeError:
-            raise exc.TokenIsInvalid()
-        except jwt.ExpiredSignatureError:
-            raise exc.TokenHasExpired()
+        except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError):
+            return f(None, *args, **kwargs)
 
         # If there is no admin object in the token and does the user does have
         # admin rights?

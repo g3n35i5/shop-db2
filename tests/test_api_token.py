@@ -28,8 +28,7 @@ class TokenAPITestCase(BaseAPITestCase):
 
         # Do request on a route which optionally requires an admin
         res = self.client.get('/users', data=json.dumps({}), headers=headers)
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.TokenIsInvalid)
+        self.assertEqual(res.status_code, 200)
 
     def test_token_expired(self):
         """An expired token should raise an error."""
@@ -53,8 +52,7 @@ class TokenAPITestCase(BaseAPITestCase):
         # Do request on a route which optionally requires an admin
         headers = {'content-type': 'application/json', 'token': new_token}
         res = self.client.get('/users', data=json.dumps({}), headers=headers)
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.TokenHasExpired)
+        self.assertEqual(res.status_code, 200)
 
     def test_token_missing_user(self):
         """Each token contains a user dictionary. If it is missing, an error
