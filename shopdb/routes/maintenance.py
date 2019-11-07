@@ -2,17 +2,31 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-import shopdb.exceptions as exc
+import re
+import os
 from flask import jsonify
+import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.helpers.utils import json_body
+from configuration import PATH
 from shopdb.api import app
+
+
+@app.route('/maintenance', methods=['GET'])
+def get_maintenance_mode():
+    """
+    This route returns whether the app is in maintenance mode.
+
+    :return: A message with the maintenance mode.
+    """
+
+    return jsonify(app.config['MAINTENANCE'])
 
 
 @app.route('/maintenance', methods=['POST'], endpoint='maintenance')
 @adminRequired
-def set_maintenance(admin):
+def set_maintenance_mode(admin):
     """
     This route can be used by an administrator to switch the maintenance mode
     on or off.
@@ -46,6 +60,15 @@ def set_maintenance(admin):
     if current_state == new_state:
         raise exc.NothingHasChanged()
 
+    # Change the config file persistently
+    RE_MAINENTANCE_PATTERN = r"(.*)(MAINTENANCE)([^\w]*)(True|False)"
+    with open(os.path.join(PATH, "configuration.py"), "r") as config_file:
+        config_file_content = config_file.read()
+    new_config_file = re.sub(RE_MAINENTANCE_PATTERN, r"\1\2\3{}".format(str(new_state)), config_file_content)
+    with open(os.path.join(PATH, "configuration.py"), "w") as config_file:
+        config_file.write(new_config_file)
+
+    # Change the current app state
     app.config['MAINTENANCE'] = new_state
 
     message = 'Turned maintenance mode ' + ('on.' if new_state else 'off.')

@@ -12,21 +12,32 @@ import datetime
 
 
 @app.before_request
-def before_request_hook():
+@adminOptional
+def before_request_hook(admin):
     """
     This function is executed before each request is processed. Its purpose is
     to check whether the application is currently in maintenance mode. If this
     is the case, the current request is aborted and a corresponding exception
-    is raised. An exception to this is a request on the route
+    is raised.
+
+    An exception to this is a request on the route
     "/maintenance" [POST]: Via this route the maintenance mode can be switched
     on and off (by an administrator) or on the route "/login", so that one can
     log in as administrator.
+
+    The maintenance mode has no effect, when the request is made by an administrator.
+
+    :param admin: Is the administrator user, determined by @adminOptional.
 
     :raises MaintenanceMode: if the application is in maintenance mode.
     """
 
     # Debug timer
     g.start = time.time()
+
+    # If the request is done by an administrator, return.
+    if admin:
+        return
 
     # Check for maintenance mode.
     exceptions = ['maintenance', 'login']
