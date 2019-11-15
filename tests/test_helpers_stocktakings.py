@@ -339,7 +339,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Insert the second stocktaking.
         stocktakings = [
-            {'product_id': 1, 'count': 0, 'set_inactive': True},
+            {'product_id': 1, 'count': 0},
             {'product_id': 2, 'count': 50},
             {'product_id': 3, 'count': 25},
             {'product_id': 4, 'count': 33}
@@ -540,7 +540,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
             {'product_id': 2, 'count': 50},
             {'product_id': 3, 'count': 25},
             {'product_id': 4, 'count': 33},
-            {'product_id': 5, 'count': 0, 'set_inactive': True}
+            {'product_id': 5, 'count': 0}
         ]
         t = datetime.strptime('2018-05-01 09:00:00', '%Y-%m-%d %H:%M:%S')
         data = {

@@ -160,7 +160,7 @@ def create_stocktakingcollections(admin):
     data = json_body()
     required = {'stocktakings': list, 'timestamp': int}
     required_s = {'product_id': int, 'count': int}
-    optional_s = {'set_inactive': bool}
+    optional_s = {'keep_active': bool}
 
     # Check all required fields
     check_fields_and_types(data, required)
@@ -222,7 +222,7 @@ def create_stocktakingcollections(admin):
         # Get all fields
         product_id = stocktaking.get('product_id')
         count = stocktaking.get('count')
-        set_inactive = stocktaking.get('set_inactive', False)
+        keep_active = stocktaking.get('keep_active', False)
 
         # Check amount
         if count < 0:
@@ -230,11 +230,8 @@ def create_stocktakingcollections(admin):
 
         # Does the product changes its active state?
         product = Product.query.filter_by(id=product_id).first()
-        if set_inactive:
-            if count == 0 and product.active:
-                product.active = False
-            else:
-                raise exc.CouldNotUpdateEntry()
+        if count == 0 and keep_active is False:
+            product.active = False
 
     # Create and insert stocktakingcollection
     try:

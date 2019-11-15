@@ -105,9 +105,9 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         """
         stocktakings = [
             {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 0, 'set_inactive': True},
+            {'product_id': 2, 'count': 0, 'keep_active': True},
             {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {'product_id': 4, 'count': 0}
         ]
         data = {
             'stocktakings': stocktakings,
@@ -115,26 +115,8 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         }
         res = self.post(url='/stocktakingcollections', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
-        self.assertFalse(Product.query.filter_by(id=2).first().active)
-
-    def test_create_stocktakingcollection_set_product_inactive_wrong_count(self):
-        """
-        This test ensures that a product can only be set to inactive if the
-        count is 0.
-        """
-        stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 10, 'set_inactive': True},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
-        ]
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
-        }
-        res = self.post(url='/stocktakingcollections', data=data, role='admin')
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.CouldNotUpdateEntry)
+        self.assertTrue(Product.query.filter_by(id=2).first().active)
+        self.assertFalse(Product.query.filter_by(id=4).first().active)
 
     def test_create_stocktakingcollection_with_missing_data_I(self):
         """Creating a StocktakingCollection with missing data"""
