@@ -73,7 +73,7 @@ def create_payoff(admin):
     check_fields_and_types(data, required)
 
     # Check amount
-    if data['amount'] <= 0:
+    if data['amount'] == 0:
         raise exc.InvalidAmount()
 
     # Create and insert payoff

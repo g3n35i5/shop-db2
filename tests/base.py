@@ -205,7 +205,8 @@ class BaseTestCase(TestCase):
     def insert_default_payoffs(self):
         p1 = Payoff(amount=100, admin_id=1, comment='Test payoff 1')
         p2 = Payoff(amount=200, admin_id=1, comment='Test payoff 2')
-        for p in [p1, p2]:
+        p3 = Payoff(amount=-50, admin_id=1, comment='Test payoff 3')
+        for p in [p1, p2, p3]:
             db.session.add(p)
         db.session.commit()
 

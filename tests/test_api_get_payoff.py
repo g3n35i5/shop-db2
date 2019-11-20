@@ -38,6 +38,6 @@ class GetPayoffAPITestCase(BaseAPITestCase):
     def test_get_non_existing_payoff(self):
         """Getting a non existing payoff should raise an exception"""
         self.insert_default_payoffs()
-        res = self.get(url='/payoffs/3', role='admin')
+        res = self.get(url='/payoffs/4', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
