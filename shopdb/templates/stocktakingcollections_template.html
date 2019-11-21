@@ -38,10 +38,10 @@
     </li>
     <li>
         Please make sure that no products are purchased during the stocktaking.
-        If a  product no longer exists, i.e. the count is 0, and you do not want
-        to buy it again in the future (for the time being), you can check "Set
-        inactive?". When entering the stocktaking in shop-db2-admin you can
-        then take this into account.
+        If a  product no longer exists, i.e. the count is 0, it will be marked
+        as inactive automatically. To avoid this, you can check "Keep active?".
+        When entering the stocktaking in shop-db2-admin you can then take this
+        into account.
     </li>
 </ul>
 
@@ -60,7 +60,7 @@
     <tr>
         <th>Name</th>
         <th>Count</th>
-        <th>Set inactive?</th>
+        <th>Keep active?</th>
     </tr>
     {% for product in products %}
         <tr>
