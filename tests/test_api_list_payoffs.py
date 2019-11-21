@@ -26,9 +26,10 @@ class ListPayoffsAPITestCase(BaseAPITestCase):
         res = self.get(url='/payoffs', role='admin')
         self.assertEqual(res.status_code, 200)
         payoffs = json.loads(res.data)
-        self.assertEqual(len(payoffs), 2)
+        self.assertEqual(len(payoffs), 3)
         self.assertEqual(payoffs[0]['amount'], 100)
         self.assertEqual(payoffs[1]['amount'], 200)
+        self.assertEqual(payoffs[2]['amount'], -50)
 
         required = ['id', 'timestamp', 'amount', 'comment', 'admin_id',
                     'revoked']

@@ -24,13 +24,26 @@ class CreatePayoffAPITestCase(BaseAPITestCase):
         self.assertEqual(payoffs[0].comment, 'Test payoff')
         self.assertFalse(payoffs[0].revoked)
 
+    def test_create_payoff_negative_amount(self):
+        """Create a payoff with negative amount"""
+        data = {'amount': -1000, 'comment': 'Test payoff'}
+        res = self.post(url='/payoffs', data=data, role='admin')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'message' in data
+        self.assertEqual(data['message'], 'Created payoff.')
+        payoffs = Payoff.query.all()
+        self.assertEqual(len(payoffs), 1)
+        self.assertEqual(payoffs[0].amount, -1000)
+        self.assertEqual(payoffs[0].comment, 'Test payoff')
+        self.assertFalse(payoffs[0].revoked)
+
     def test_create_payoff_invalid_amount(self):
-        """Create a payoff with a negative should raise an exception."""
-        for amount in [-1000, 0]:
-            data = {'amount': amount, 'comment': 'Test payoff'}
-            res = self.post(url='/payoffs', data=data, role='admin')
-            self.assertEqual(res.status_code, 401)
-            self.assertException(res, exc.InvalidAmount)
+        """Create a payoff with zero amount should raise an exception."""
+        data = {'amount': 0, 'comment': 'Test payoff'}
+        res = self.post(url='/payoffs', data=data, role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.InvalidAmount)
 
     def test_create_payoff_wrong_type(self):
         """Create a payoff with wrong type(s)."""

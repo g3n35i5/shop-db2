@@ -154,7 +154,7 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         positive_turnover_amount = 300
         negative_replenishmentcollections_price = 0
         negative_refunds_amount = 0
-        negative_payoffs_amount = 100
+        negative_payoffs_amount = 150
         profit_between_stocktakings = 600
         incomes = sum([
             positive_purchase_amount,
@@ -235,4 +235,3 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(api_incomes[5]['amount'], positive_payoffs_amount)
         self.assertEqual(api_incomes[6]['name'], 'Stocktakings')
         self.assertEqual(api_incomes[6]['amount'], loss_between_stocktakings)
-
