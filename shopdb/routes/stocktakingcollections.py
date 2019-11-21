@@ -18,14 +18,11 @@ from shopdb.models import StocktakingCollection, Stocktaking, Product
 
 
 @app.route('/stocktakingcollections/template', methods=['GET'])
-@adminRequired
-def get_stocktakingcollection_template(admin):
+def get_stocktakingcollection_template():
     """
     This route can be used to retrieve a template to print out for a
     stocktaking. It lists all the products that must be included in the
     stocktaking.
-
-    :param admin: Is the administrator user, determined by @adminRequired.
 
     :return:      A rendered PDF file with all products for the stocktaking.
     """
