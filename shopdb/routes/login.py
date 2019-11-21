@@ -58,7 +58,7 @@ def login():
         raise exc.InvalidCredentials()
 
     # Create a dictionary object of the user.
-    fields = ['id', 'firstname', 'lastname', 'credit']
+    fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin']
     d_user = convert_minimal(user, fields)[0]
 
     # Create a token.
