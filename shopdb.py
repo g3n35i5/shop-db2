@@ -16,7 +16,7 @@ from shopdb.api import app, db, set_app
 from dev import insert_dev_data
 
 parser = argparse.ArgumentParser(description='Starting script shop.db')
-parser.add_argument('--mode', choices=['development'])
+parser.add_argument('--mode', choices=['development', 'local'])
 args = parser.parse_args()
 
 if args.mode == 'development':
@@ -25,6 +25,11 @@ if args.mode == 'development':
     app.app_context().push()
     db.create_all()
     insert_dev_data(db)
+
+elif args.mode == 'local':
+    print('Starting shop-db on the local database')
+    set_app(config.ProductiveConfig)
+    app.app_context().push()
 
 else:
     parser.print_help()
