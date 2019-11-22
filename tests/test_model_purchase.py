@@ -11,21 +11,6 @@ import datetime
 
 
 class PurchaseModelTestCase(BaseTestCase):
-    def test_insert_purchase_with_inactive_product(self):
-        """It must be ensured that non-active products cannot be bought."""
-        product = Product.query.filter_by(id=1).first()
-        self.assertTrue(product.active)
-        product.active = False
-        db.session.commit()
-        product = Product.query.filter_by(id=1).first()
-        self.assertFalse(product.active)
-        with self.assertRaises(exc.EntryIsInactive):
-            purchase = Purchase(user_id=1, product_id=1, amount=1)
-        db.session.rollback()
-        # No purchase may have been made at this point
-        purchases = Purchase.query.all()
-        self.assertEqual(len(purchases), 0)
-
     def test_insert_simple_purchase(self):
         """Testing a simple purchase"""
         user = User.query.filter_by(id=1).first()

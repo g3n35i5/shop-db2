@@ -380,15 +380,6 @@ class Purchase(db.Model):
 
         return user_id
 
-    @validates('product_id')
-    def validate_product(self, key, product_id):
-        """Make sure that the product is active"""
-        product = Product.query.filter(Product.id == product_id).first()
-        if not product or not product.active:
-            raise EntryIsInactive()
-
-        return product_id
-
     @hybrid_method
     def toggle_revoke(self, revoked):
         if self.revoked == revoked:
