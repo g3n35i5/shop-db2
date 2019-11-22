@@ -96,8 +96,9 @@ def create_purchase(admin):
     product = Product.query.filter_by(id=data['product_id']).first()
     if not product:
         raise exc.EntryNotFound()
-    if not product.active:
-        raise exc.EntryIsInactive()
+    if not admin:
+        if not product.active:
+            raise exc.EntryIsInactive()
 
     # Check amount
     if data['amount'] <= 0:
