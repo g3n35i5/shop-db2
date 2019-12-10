@@ -680,6 +680,13 @@ class Stocktaking(db.Model):
                               db.ForeignKey('stocktakingcollections.id'),
                               nullable=False)
 
+    # Link to the stocktakingcollection
+    stocktakingcollection = db.relationship(
+        'StocktakingCollection',
+        back_populates='stocktakings',
+        foreign_keys=[collection_id]
+    )
+
 
 class StocktakingCollection(db.Model):
     __tablename__ = 'stocktakingcollections'
@@ -747,6 +754,7 @@ class Turnover(db.Model):
         revokehistory = []
         for revoke in res:
             revokehistory.append({
+                'id': revoke.id,
                 'id': revoke.id,
                 'timestamp': revoke.timestamp,
                 'revoked': revoke.revoked

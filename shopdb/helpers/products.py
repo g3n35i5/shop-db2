@@ -4,6 +4,9 @@
 from shopdb.models import Product, ProductPrice
 import shopdb.exceptions as exc
 from sqlalchemy import and_
+import shopdb.helpers.stocktakings as stocktaking_helpers
+import shopdb.helpers.purchases as purchase_helpers
+import shopdb.helpers.replenishments as replenishment_helpers
 import datetime
 
 
@@ -108,3 +111,36 @@ def _get_product_mean_price_in_time_range(product_id, start, end):
 
         # Return the mean product price as integer.
         return int(round(sum_price / day_count))
+
+
+def get_theoretical_stock_of_product(product_id: int) -> int:
+    """
+    Returns the theoretical stock level of a product.
+
+    The theoretical stock level of a product is the result of the number
+    determined in the last stocktaking minus the sum of the amount of purchases
+    that were not revoked plus the sum of the amount of replenishments since then.
+    """
+
+    # Get the latest stocktaking of a product
+    latest_stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(product_id)
+
+    # If there has been a stocktaking, it defines the start timestamp.
+    # Otherwise, we have to take all purchases of this product into account.
+    if latest_stocktaking is not None:
+        start = latest_stocktaking.stocktakingcollection.timestamp
+        stocktaking_count = latest_stocktaking.count
+    else:
+        start = datetime.datetime.min
+        stocktaking_count = 0
+
+    end = datetime.datetime.utcnow()
+
+    # Get the sum of all purchase amounts in the selected interval
+    sum_purchase_amount = purchase_helpers.get_purchase_amount_in_interval(product_id, start, end)
+
+    # Get the sum of all refund amounts in the selected interval
+    sum_replenishment_amount = replenishment_helpers.get_replenishment_amount_in_interval(product_id, start, end)
+
+    # Theoretical stock level
+    return stocktaking_count - sum_purchase_amount + sum_replenishment_amount

@@ -13,6 +13,7 @@ from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
 from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+import shopdb.helpers.products as product_helpers
 from shopdb.api import app, db
 from shopdb.models import StocktakingCollection, Stocktaking, Product
 
@@ -21,8 +22,7 @@ from shopdb.models import StocktakingCollection, Stocktaking, Product
 def get_stocktakingcollection_template():
     """
     This route can be used to retrieve a template to print out for a
-    stocktaking. It lists all the products that must be included in the
-    stocktaking.
+    stocktaking. It lists all the products that must be included in the stocktaking.
 
     :return:      A rendered PDF file with all products for the stocktaking.
     """
@@ -38,9 +38,14 @@ def get_stocktakingcollection_template():
     if not products:
         raise exc.EntryNotFound()
 
+    rows = []
+    for product in products:
+        product_name = product.name
+        theoretical_stock = product_helpers.get_theoretical_stock_of_product(product.id)
+        rows.append({'product_name': product_name, 'theoretical_stock': theoretical_stock})
+
     # Render the template
-    rendered = render_template('stocktakingcollections_template.html',
-                               products=products)
+    rendered = render_template('stocktakingcollections_template.html', rows=rows)
     # Create a PDF file from the rendered template.
     pdf = pdfkit.from_string(rendered, False)
     response = make_response(pdf)
