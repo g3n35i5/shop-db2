@@ -9,6 +9,7 @@ from shopdb.helpers.decorators import adminRequired, adminOptional
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import update_fields, convert_minimal, json_body
 from shopdb.api import app, db
+import shopdb.helpers.products as product_helpers
 from shopdb.models import Product, Tag, Upload
 
 
@@ -139,6 +140,39 @@ def get_product(admin, id):
     product['tags'] = [t.id for t in product['tags']]
 
     return jsonify(product), 200
+
+
+@app.route('/products/<int:id>/stock', methods=['GET'])
+def get_product_stock(id):
+    """
+    Returns the theoretical stock level of a product.
+
+    The theoretical stock level of a product is the result of the number
+    determined in the last stocktaking minus the number of purchases
+    that were not revoked since then.
+
+    If the requested product is not countable, None will be returned.
+
+    :param id:                  Is the product id.
+
+    :return:                    The theoretical stock level
+
+    :raises EntryNotFound:      If the product with this ID does not exist.
+    """
+
+    # Check, whether the requested product exists
+    product = Product.query.filter(Product.id == id).first()
+    if not product:
+        raise exc.EntryNotFound()
+
+    # If the product is not countable, return None
+    if not product.countable:
+        return jsonify(None), 200
+
+    # Get the theoretical stock level
+    theoretical_stock = product_helpers.get_theoretical_stock_of_product(id)
+
+    return jsonify(theoretical_stock), 200
 
 
 @app.route('/products/<int:id>/pricehistory', methods=['GET'])

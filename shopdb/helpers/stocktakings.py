@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-from shopdb.models import (Purchase, Replenishment, Product, ProductPrice,
+from shopdb.models import (Purchase, Replenishment, Product, StocktakingCollection, Stocktaking,
                            ReplenishmentCollection)
 from shopdb.api import db
 from shopdb.helpers.products import _get_product_mean_price_in_time_range
-import shopdb.exceptions as exc
-from sqlalchemy.sql import func
-from sqlalchemy import and_
-import datetime
+from typing import Optional
+from sqlalchemy import func, and_
 
 
 def _get_balance_between_stocktakings(start, end):
@@ -113,3 +111,29 @@ def _get_balance_between_stocktakings(start, end):
         }
 
     return out
+
+
+def get_latest_non_revoked_stocktakingcollection() -> StocktakingCollection:
+    """
+    This helper function returns the latest, non revoked stocktakingcollection.
+    """
+    return (db.session.query(StocktakingCollection)
+            .order_by(StocktakingCollection.id.desc())
+            .filter(StocktakingCollection.revoked.is_(False))
+            .first())
+
+
+def get_latest_stocktaking_of_product(product_id: int) -> Optional[Stocktaking]:
+    """
+    This helper function returns the latest stocktaking of a product.
+    """
+
+    # Get the stocktaking count of the product
+    result = (db.session.query(Stocktaking)
+              .join(StocktakingCollection, StocktakingCollection.id == Stocktaking.collection_id)
+              .filter(Stocktaking.product_id == product_id)
+              .filter(StocktakingCollection.revoked.is_(False))
+              .order_by(Stocktaking.id.desc())
+              .first())
+
+    return result

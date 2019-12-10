@@ -4,7 +4,7 @@ __author__ = 'g3n35i5'
 
 from shopdb.models import *
 from shopdb.api import db
-from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
+import shopdb.helpers.stocktakings as stocktaking_helpers
 from tests.base_api import BaseAPITestCase
 from datetime import datetime
 
@@ -35,7 +35,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         # Query the first stocktaking
         start = StocktakingCollection.query.first()
 
-        result = _get_balance_between_stocktakings(start, None)
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, None)
         self.assertEqual(result, None)
 
     def test_balance_between_stocktakings_two_stocktakings(self):
@@ -136,7 +136,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         # Product 3:  22 - 12 = 10
         # Product 4:  33 -  3 = 30
 
-        result = _get_balance_between_stocktakings(start, end)
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
         self.assertTrue('products' in result)
         products = result['products']
 
@@ -261,7 +261,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         # Product 3:  17 -  5 = 12
         # Product 4:  33 -  2 = 31
 
-        result = _get_balance_between_stocktakings(start, end)
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
         self.assertTrue('products' in result)
         products = result['products']
 
@@ -371,7 +371,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertTrue(1 in [s.product_id for s in start.stocktakings])
         self.assertFalse(1 in [s.product_id for s in end.stocktakings])
 
-        result = _get_balance_between_stocktakings(start, end)
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
         self.assertTrue('products' in result)
         products = result['products']
 
@@ -477,7 +477,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertFalse(5 in [s.product_id for s in start.stocktakings])
         self.assertTrue(5 in [s.product_id for s in end.stocktakings])
 
-        result = _get_balance_between_stocktakings(start, end)
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
         self.assertTrue('products' in result)
         products = result['products']
 
@@ -570,7 +570,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertFalse(5 in [s.product_id for s in start.stocktakings])
         self.assertFalse(5 in [s.product_id for s in end.stocktakings])
 
-        result = _get_balance_between_stocktakings(start, end)
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
         self.assertTrue('products' in result)
         products = result['products']
 
@@ -668,7 +668,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         start = StocktakingCollection.query.filter_by(id=1).first()
         end = StocktakingCollection.query.filter_by(id=2).first()
 
-        result = _get_balance_between_stocktakings(start, end)
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
         self.assertTrue('products' in result)
         products = result['products']
 
@@ -709,3 +709,50 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertEqual(result['balance'], 2500)
         self.assertEqual(result['loss'], 500)
         self.assertEqual(result['profit'], 3000)
+
+    def test_get_latest_non_revoked_stocktakingcollection(self):
+        """
+        This test checks the "get_latest_non_revoked_stocktakingcollection" helper function.
+        """
+        # Insert the default stocktaking collections.
+        self.insert_default_stocktakingcollections()
+
+        # Check the latest collection
+        collection = stocktaking_helpers.get_latest_non_revoked_stocktakingcollection()
+        self.assertEqual(2, collection.id)
+
+        # Revoke the latest stocktakingcollection
+        StocktakingCollection.query.filter(StocktakingCollection.id == 2).first().revoked = True
+        db.session.commit()
+
+        # Check the latest collection again
+        collection = stocktaking_helpers.get_latest_non_revoked_stocktakingcollection()
+        self.assertEqual(1, collection.id)
+
+        # Revoke the last remaining non revoked stocktakingcollection
+        StocktakingCollection.query.filter(StocktakingCollection.id == 1).first().revoked = True
+        collection = stocktaking_helpers.get_latest_non_revoked_stocktakingcollection()
+
+        # The result should be None
+        self.assertIsNone(collection)
+
+    def test_get_latest_stocktaking_of_product(self):
+        """
+        This test checks the "get_latest_stocktaking_of_product" helper function.
+        """
+        # Insert the default stocktaking collections.
+        self.insert_default_stocktakingcollections()
+
+        # Check the latest stock
+        stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(product_id=1)
+        self.assertEqual(50, stocktaking.count)
+
+        # Revoke the latest stocktakingcollection
+        StocktakingCollection.query.filter(StocktakingCollection.id == 2).first().revoked = True
+        db.session.commit()
+
+        # Check the latest stock again
+        stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(product_id=1)
+        self.assertEqual(100, stocktaking.count)
+
+

@@ -5,7 +5,7 @@ __author__ = 'g3n35i5'
 from shopdb.models import *
 from shopdb.api import db
 import shopdb.exceptions as exc
-from shopdb.helpers.products import _get_product_mean_price_in_time_range
+import shopdb.helpers.products as product_helpers
 from tests.base_api import BaseAPITestCase
 from datetime import datetime
 
@@ -45,7 +45,7 @@ class TestHelpersProductsTestCase(BaseAPITestCase):
         # Case 1: Mean price at one day.
         start = datetime.strptime('2017-02-01 09:00:00', '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime('2017-02-01 10:00:00', '%Y-%m-%d %H:%M:%S')
-        mean = _get_product_mean_price_in_time_range(1, start, end)
+        mean = product_helpers._get_product_mean_price_in_time_range(1, start, end)
         self.assertEqual(mean, 100)
 
         # Case 2: Mean price at two days
@@ -54,7 +54,7 @@ class TestHelpersProductsTestCase(BaseAPITestCase):
         # Mean price: (1x100 + 1*50) / 2 = 75
         start = datetime.strptime('2017-02-03 09:00:00', '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime('2017-02-04 10:00:00', '%Y-%m-%d %H:%M:%S')
-        mean = _get_product_mean_price_in_time_range(1, start, end)
+        mean = product_helpers._get_product_mean_price_in_time_range(1, start, end)
         self.assertEqual(mean, 75)
 
         # Case 2: Mean price at three days
@@ -64,7 +64,7 @@ class TestHelpersProductsTestCase(BaseAPITestCase):
         # Mean price: (1x100 + 1*50 + 1*50) / 3 = 66.6666 ~= 67
         start = datetime.strptime('2017-02-03 09:00:00', '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime('2017-02-05 10:00:00', '%Y-%m-%d %H:%M:%S')
-        mean = _get_product_mean_price_in_time_range(1, start, end)
+        mean = product_helpers._get_product_mean_price_in_time_range(1, start, end)
         self.assertEqual(mean, 67)
 
         # Case 3: All days
@@ -82,7 +82,7 @@ class TestHelpersProductsTestCase(BaseAPITestCase):
         # Mean price: (300 + 3x100 + 2*50 + 2*150 + 3*200) / 11
         start = datetime.strptime('2017-01-31 09:00:00', '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime('2017-02-10 10:00:00', '%Y-%m-%d %H:%M:%S')
-        mean = _get_product_mean_price_in_time_range(1, start, end)
+        mean = product_helpers._get_product_mean_price_in_time_range(1, start, end)
         self.assertEqual(mean, 145)
 
     def test_get_product_mean_price_in_range_invalid_params(self):
@@ -92,16 +92,41 @@ class TestHelpersProductsTestCase(BaseAPITestCase):
         """
         # Invalid dates
         with self.assertRaises(exc.InvalidData):
-            _get_product_mean_price_in_time_range(1, '01.01.2018', '02.01.2018')
+            product_helpers._get_product_mean_price_in_time_range(1, '01.01.2018', '02.01.2018')
 
         # Invalid product
         start = datetime.strptime('2017-01-31 09:00:00', '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime('2017-02-10 10:00:00', '%Y-%m-%d %H:%M:%S')
         with self.assertRaises(exc.EntryNotFound):
-            _get_product_mean_price_in_time_range(42, start, end)
+            product_helpers._get_product_mean_price_in_time_range(42, start, end)
 
         # End timestamp lies before start timestamp
         start = datetime.strptime('2017-01-31 09:00:00', '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime('2017-01-30 10:00:00', '%Y-%m-%d %H:%M:%S')
         with self.assertRaises(exc.InvalidData):
-            _get_product_mean_price_in_time_range(1, start, end)
+            product_helpers._get_product_mean_price_in_time_range(1, start, end)
+
+    def test_get_theoretical_stock_of_product(self):
+        """
+        This test checks the "get_theoretical_stock_of_product" helper function.
+        """
+        # Insert the default stocktaking collections.
+        self.insert_default_stocktakingcollections()
+
+        # Insert the default purchases.
+        self.insert_default_purchases()
+
+        # Change timestamps
+        ts1 = datetime.strptime('2018-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts2 = datetime.strptime('2018-03-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        StocktakingCollection.query.filter_by(id=1).first().timestamp = ts1
+        StocktakingCollection.query.filter_by(id=2).first().timestamp = ts2
+        ts = datetime.strptime('2018-04-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        for purchase in Purchase.query.all():
+            purchase.timestamp = ts
+
+        # Last stocktaking count of product 1: 50
+        # Purchases in between: 7
+        # Theoretical stock: 43
+        stock = product_helpers.get_theoretical_stock_of_product(1)
+        self.assertEqual(43, stock)

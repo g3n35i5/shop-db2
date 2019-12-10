@@ -1,48 +1,69 @@
 <!doctype html>
 <head>
-    <meta charset="utf-8">
-    <style>
-        body {
-            font-family: arial, sans-serif;
-            margin: 0 4rem;
-        }
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: arial, sans-serif;
+      margin: 0 4rem;
+    }
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            padding-top: 2rem;
-        }
+    .red {
+      color: red;
+    }
 
-        td, th {
-            border: 1px solid #e0e0e0;
-            text-align: left;
-            padding: 8px;
-        }
+    .bordered {
+      border: solid red;
+    }
 
-        tr:nth-child(even) {
-            background-color: #e0e0e0;
-        }
-    </style>
+    table {
+      font-family: monospace;
+      border-collapse: collapse;
+      width: 100%;
+      padding-top: 2rem;
+    }
+
+    td, th {
+      border: 1px solid #e0e0e0;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #e0e0e0;
+    }
+  </style>
 </head>
 <body>
-<h1>Stocktaking</h1>
+<h1>shop.db stocktaking</h1>
 
-<h3>Please note the following information</h3>
+<h3 class="red">Please read the following information carefully</h3>
 
-<ul>
-    <li>
-        If a product does not exist in this list, but does exist, it has not
-        yet been entered in the system. Make sure that the product is created
-        before this stocktaking is entered <b>and</b> that the replenishment is
-        also entered before it is entered.
-    </li>
-    <li>
-        Please make sure that no products are purchased during the stocktaking.
-        If a  product no longer exists, i.e. the count is 0, it will be marked
-        as inactive automatically. To avoid this, you can check "Keep active?".
-        When entering the stocktaking in shop-db2-admin you can then take this
-        into account.
-    </li>
+<ul class="bordered">
+  <li>
+    If a product does not exist in this list, but does exist, it has not
+    yet been entered in the system. Make sure that the product is created
+    before this stocktaking is entered <b>and</b> that the replenishment is
+    also entered before it is entered.
+  </li>
+  <li>
+    Make sure <b>all offline lists</b> of purchases are entered
+    in the system <b>before</b> you enter the stocktaking!
+  </li>
+  <li>
+    Make sure that <b>all invoices</b> are entered in the system!
+  </li>
+  <li>
+    Please make sure that no products are purchased during the stocktaking.
+    If a product no longer exists, i.e. the count is 0, it will be marked
+    as inactive automatically. To avoid this, you can check "Keep active?".
+    When entering the stocktaking in shop-db2-admin you can then take this
+    into account.
+  </li>
+  <li>
+    The field "Theoretical Stock" indicates how many products should
+    theoretically be there. <b>Please check carefully if there are any
+    deviations in the count or if you have miscounted!</b>
+  </li>
 </ul>
 
 
@@ -57,18 +78,20 @@
 
 
 <table>
+  <tr>
+    <th>Name</th>
+    <th>Theoretical Stock</th>
+    <th>Count</th>
+    <th>Keep active?</th>
+  </tr>
+  {% for item in rows %}
     <tr>
-        <th>Name</th>
-        <th>Count</th>
-        <th>Keep active?</th>
+      <td>{{ item['product_name'] }}</td>
+      <td>{{ item['theoretical_stock'] }}</td>
+      <td></td>
+      <td></td>
     </tr>
-    {% for product in products %}
-        <tr>
-            <td>{{ product['name'] }}</td>
-            <td></td>
-            <td></td>
-        </tr>
-    {% endfor %}
+  {% endfor %}
 </table>
 
 </body>
