@@ -205,11 +205,16 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
             {'product_id': 1, 'count': 40},
             {'product_id': 2, 'count': 5},
             {'product_id': 3, 'count': 5},
-            {'product_id': 4, 'count': 2}
+            {'product_id': 4, 'count': 0}
         ]
 
         for s in stocktakings:
             db.session.add(Stocktaking(collection_id=3, **s))
+
+        # The count of product 4 is 0 so the product will be set inactive!
+        Product.query.filter_by(id=4).first().active = False
+
+        db.session.commit()
 
         # Query the stocktakings.
         start = StocktakingCollection.query.filter_by(id=1).first()
@@ -247,7 +252,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         #                   - Product 1: 40
         #                   - Product 2:  5
         #                   - Product 3:  5
-        #                   - Product 4:  2
+        #                   - Product 4:  0
         # -----------------------------------
         # Balance:
         # Product 1: 100 (start) -  9 (purchase) + 10 (replenishment) = 101
@@ -259,7 +264,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         # Product 1: 101 - 40 = 61
         # Product 2:  35 -  5 = 30
         # Product 3:  17 -  5 = 12
-        # Product 4:  33 -  2 = 31
+        # Product 4:  33 -  0 = 33
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
         self.assertTrue('products' in result)
@@ -279,6 +284,81 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertEqual(products[2]['purchase_sum_price'], 750)
         self.assertEqual(products[3]['purchase_sum_price'], 1300)
         self.assertEqual(products[4]['purchase_sum_price'], 0)
+
+        # Check replenish count
+        self.assertEqual(products[1]['replenish_count'], 10)
+        self.assertEqual(products[2]['replenish_count'], 0)
+        self.assertEqual(products[3]['replenish_count'], 5)
+        self.assertEqual(products[4]['replenish_count'], 0)
+
+        # Check differences
+        self.assertEqual(products[1]['difference'], -61)
+        self.assertEqual(products[2]['difference'], -30)
+        self.assertEqual(products[3]['difference'], -12)
+        self.assertEqual(products[4]['difference'], -33)
+
+        # Check balance
+        self.assertEqual(products[1]['balance'], -61 * 300)
+        self.assertEqual(products[2]['balance'], -30 * 50)
+        self.assertEqual(products[3]['balance'], -12 * 100)
+        self.assertEqual(products[4]['balance'], -33 * 200)
+
+        # Check overall balance
+        self.assertEqual(result['balance'], -27600)
+        self.assertEqual(result['loss'], 27600)
+        self.assertEqual(result['profit'], 0)
+
+    def test_balance_between_stocktakings_forgotten_purchases_inactive_products(self):
+        """
+        TODO
+        """
+        # Since the start of this test is the same as the previous one, it
+        # can be run again to generate the required data.
+        self.test_balance_between_stocktakings_multiple_stocktakings()
+
+        # Ooops. We forgot to insert some two purchases (inactive products). Lets do it now (AFTER THIRD STOCKTAKING!)
+        self.assertFalse(Product.query.filter_by(id=4).first().active)
+        t = datetime.strptime('2018-04-02 09:00:00', '%Y-%m-%d %H:%M:%S')
+        db.session.add(Purchase(user_id=3, product_id=4, amount=2, timestamp=t))
+
+        # Insert the fourth stocktaking.
+        t = datetime.strptime('2018-04-05 09:00:00', '%Y-%m-%d %H:%M:%S')
+        db.session.add(StocktakingCollection(admin_id=1, timestamp=t))
+        db.session.flush()
+        stocktakings = [
+            {'product_id': 1, 'count': 40},
+            {'product_id': 2, 'count': 5},
+            {'product_id': 3, 'count': 5},
+            {'product_id': 4, 'count': 0}
+        ]
+
+        for s in stocktakings:
+            db.session.add(Stocktaking(collection_id=4, **s))
+
+        db.session.commit()
+
+        # Query the stocktakings.
+        start = StocktakingCollection.query.filter_by(id=1).first()
+        end = StocktakingCollection.query.filter_by(id=4).first()
+
+        result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
+        self.assertTrue('products' in result)
+        products = result['products']
+
+        # Check if all products are in the balance
+        self.assertEqual({1, 2, 3, 4}, set(products.keys()))
+
+        # Check purchase count
+        self.assertEqual(products[1]['purchase_count'], 9)
+        self.assertEqual(products[2]['purchase_count'], 15)
+        self.assertEqual(products[3]['purchase_count'], 13)
+        self.assertEqual(products[4]['purchase_count'], 2)
+
+        # Check purchase sum price
+        self.assertEqual(products[1]['purchase_sum_price'], 2700)
+        self.assertEqual(products[2]['purchase_sum_price'], 750)
+        self.assertEqual(products[3]['purchase_sum_price'], 1300)
+        self.assertEqual(products[4]['purchase_sum_price'], 400)
 
         # Check replenish count
         self.assertEqual(products[1]['replenish_count'], 10)
