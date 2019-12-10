@@ -121,10 +121,25 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         product.active = False
         db.session.commit()
         data = {'user_id': 1, 'product_id': 4, 'amount': 2}
-        res = self.post(url='/purchases', role='admin', data=data)
+        res = self.post(url='/purchases', role='user', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryIsInactive)
         self.assertEqual(len(Purchase.query.all()), 0)
+
+    def test_create_purchase_inactive_product_by_admin(self):
+        """
+        If the purchase is made by an administrator, the product is allowed
+        to be inactive.
+        """
+        product = Product.query.filter_by(id=4).first()
+        product.active = False
+        db.session.commit()
+        data = {'user_id': 1, 'product_id': 4, 'amount': 2}
+        res = self.post(url='/purchases', role='admin', data=data)
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        assert 'message' in data
+        self.assertEqual(data['message'], 'Purchase created.')
 
     def test_create_purchase_invalid_amount(self):
         """Create a purchase with an invalid amount."""
