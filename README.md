@@ -368,13 +368,13 @@ the Upload and the image.
 
 #### Rank
 
-Depending on the rank, a User has can have different dept limits to his credit.
+Depending on the rank, a User has can have different debt limits to his credit.
 
 | Name | TYPE | Explanation
 | --- | --- | --- |
 | id | *Integer* | The Rank id is unique and is used for Identification in the application. It is created automatically with a new Rank.
 | name | *String(32)* | The Rank name is unique and is used for identification in the frontend.
-| dept_limit | *Integer* | This specifies the dept limit a user with given Rank can have in his credit.
+| debt_limit | *Integer* | This specifies the debt limit a user with given Rank can have in his credit.
 
 ### RankUpdate
 
