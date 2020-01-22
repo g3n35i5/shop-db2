@@ -4,6 +4,7 @@ __author__ = 'g3n35i5'
 
 from tests.base import BaseTestCase, u_passwords
 from flask import json
+import urllib
 import sys
 
 
@@ -44,6 +45,8 @@ class BaseAPITestCase(BaseTestCase):
         elif type == 'PUT':
             res = self.client.put(url, data=data, headers=headers)
         elif type == 'GET':
+            if params is not None:
+                params = urllib.parse.urlencode(params)
             res = self.client.get(url, data=data, headers=headers, query_string=params)
         elif type == 'DELETE':
             res = self.client.delete(url, data=data, headers=headers)

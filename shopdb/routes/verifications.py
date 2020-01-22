@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from flask import jsonify
+from flask import jsonify, request
 import shopdb.exceptions as exc
 from sqlalchemy.sql import exists
 from shopdb.helpers.decorators import adminRequired
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.api import app, db
@@ -22,11 +23,13 @@ def list_pending_validations(admin):
 
     :return:      A list of all non verified users.
     """
-    res = (db.session.query(User)
-           .filter(~exists().where(UserVerification.user_id == User.id))
-           .all())
+    query = QueryFromRequestParameters(User, request.args)
+    query = query.filter(~exists().where(UserVerification.user_id == User.id))
     fields = ['id', 'firstname', 'lastname']
-    return jsonify(convert_minimal(res, fields)), 200
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/verify/<int:id>', methods=['POST'])

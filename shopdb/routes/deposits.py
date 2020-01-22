@@ -3,7 +3,7 @@
 __author__ = 'g3n35i5'
 
 from sqlalchemy.exc import IntegrityError
-from flask import jsonify
+from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.deposits import insert_deposit
 from shopdb.api import app, db
@@ -11,6 +11,7 @@ from shopdb.models import Deposit
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
 
 
 @app.route('/deposits', methods=['GET'])
@@ -23,10 +24,12 @@ def list_deposits(admin):
 
     :return:      A list of all deposits.
     """
-    deposits = Deposit.query.all()
-    fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
-              'admin_id']
-    return jsonify(convert_minimal(deposits, fields)), 200
+    query = QueryFromRequestParameters(Deposit, request.args)
+    fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked', 'admin_id']
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/deposits', methods=['POST'])

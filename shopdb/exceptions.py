@@ -62,6 +62,12 @@ class UnknownField(ShopdbException):
     code = 401
 
 
+class InvalidQueryParameters(ShopdbException):
+    type = 'error'
+    message = 'Invalid query parameters.'
+    code = 400
+
+
 class InvalidJSON(ShopdbException):
     type = 'error'
     message = 'The JSON data is corrupt.'

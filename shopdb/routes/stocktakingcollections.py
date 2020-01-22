@@ -5,7 +5,7 @@ __author__ = 'g3n35i5'
 import datetime
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from flask import jsonify, render_template, make_response
+from flask import jsonify, render_template, make_response, request
 import pdfkit
 import collections
 import shopdb.exceptions as exc
@@ -13,6 +13,7 @@ from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
 from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
 import shopdb.helpers.products as product_helpers
 from shopdb.api import app, db
 from shopdb.models import StocktakingCollection, Stocktaking, Product
@@ -99,11 +100,12 @@ def list_stocktakingcollections(admin):
 
     :return:      A list of all stocktakingcollections.
     """
-    data = (StocktakingCollection.query
-            .order_by(StocktakingCollection.timestamp)
-            .all())
+    query = QueryFromRequestParameters(StocktakingCollection, request.args)
     fields = ['id', 'timestamp', 'admin_id', 'revoked']
-    return jsonify(convert_minimal(data, fields)), 200
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/stocktakingcollections/<int:id>', methods=['GET'])

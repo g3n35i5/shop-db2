@@ -3,7 +3,7 @@
 __author__ = 'g3n35i5'
 
 from functools import wraps
-from flask import request
+from flask import request, Response
 import jwt
 import shopdb.exceptions as exc
 from shopdb.api import app
@@ -150,3 +150,27 @@ def adminOptional(f):
         return f(admin, *args, **kwargs)
 
     return decorated
+
+
+def deprecate_route(message=''):
+    """
+    This decorator adds a warning message to the response header when the route is marked as deprecated.
+
+    :param message: The message to be added to the response header.
+    """
+    def _decorator(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            data = func(*args, **kwargs)
+            # Case 1: Tuple with (Response object, Status code)
+            if isinstance(data, tuple):
+                response: Response = data[0]
+            # Case 2: Plain response object
+            elif isinstance(data, Response):
+                response: Response = data
+            else:
+                return data
+            response.headers['Warning'] = message
+            return data
+        return _wrapper
+    return _decorator

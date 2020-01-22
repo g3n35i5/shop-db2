@@ -3,11 +3,12 @@
 __author__ = 'g3n35i5'
 
 from sqlalchemy.exc import IntegrityError
-from flask import jsonify
+from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 from shopdb.models import Turnover
 
@@ -22,9 +23,12 @@ def list_turnovers(admin):
 
     :return:      A list of all turnovers.
     """
-    turnovers = Turnover.query.all()
+    query = QueryFromRequestParameters(Turnover, request.args)
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked', 'admin_id']
-    return jsonify(convert_minimal(turnovers, fields)), 200
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/turnovers', methods=['POST'])
