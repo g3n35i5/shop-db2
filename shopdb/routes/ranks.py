@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from flask import jsonify
+from flask import jsonify, request
 from shopdb.api import app
 from shopdb.helpers.utils import convert_minimal
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.models import Rank
 
 
@@ -15,6 +16,9 @@ def list_ranks():
 
     :return: A list of all ranks.
     """
-    result = Rank.query.all()
-    ranks = convert_minimal(result, ['id', 'name', 'debt_limit'])
-    return jsonify(ranks), 200
+    query = QueryFromRequestParameters(Rank, request.args)
+    fields = ['id', 'name', 'debt_limit']
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response

@@ -3,11 +3,12 @@
 __author__ = 'g3n35i5'
 
 from sqlalchemy.exc import IntegrityError
-from flask import jsonify
+from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 from shopdb.models import Refund, User
 
@@ -22,10 +23,13 @@ def list_refunds(admin):
 
     :return:      A list of all refunds.
     """
-    refunds = Refund.query.all()
+    query = QueryFromRequestParameters(Refund, request.args)
     fields = ['id', 'timestamp', 'user_id', 'total_price', 'comment',
               'revoked', 'admin_id']
-    return jsonify(convert_minimal(refunds, fields)), 200
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/refunds/<int:id>', methods=['GET'])

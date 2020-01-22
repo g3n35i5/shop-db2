@@ -4,11 +4,12 @@ __author__ = 'g3n35i5'
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import exists
-from flask import jsonify
+from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminOptional
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
 from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 from shopdb.models import Purchase, Product, User, Rank, PurchaseRevoke
 
@@ -25,32 +26,16 @@ def list_purchases(admin):
 
     :return:      A list of all purchases.
     """
-
-    allowed_params = {'limit': int}
-    args = check_allowed_parameters(allowed_params)
-
-    # All optional params
-    limit = args.get('limit')
-
-    res = Purchase.query
-    # Create a list for an admin
-    if admin:
-        fields = ['id', 'timestamp', 'user_id', 'product_id', 'productprice',
-                  'amount', 'revoked', 'price']
+    query = QueryFromRequestParameters(Purchase, request.args)
+    if admin is not None:
+        fields = ['id', 'timestamp', 'user_id', 'product_id', 'productprice', 'amount', 'revoked', 'price']
     else:
-        # Only list non-revoked purchases
-        res = res.filter(
-            ~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
+        query = query.filter(~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
         fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount']
-
-    # Apply the limit if given
-    if limit:
-        res = res.order_by(Purchase.id.desc()).limit(limit)
-
-    # Finish the query
-    res = res.all()
-
-    return jsonify(convert_minimal(res, fields)), 200
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/purchases', methods=['POST'])

@@ -3,11 +3,13 @@
 __author__ = 'g3n35i5'
 
 from sqlalchemy.exc import IntegrityError
-from flask import jsonify
+from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired, adminOptional, checkIfUserIsValid
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
+from shopdb.helpers.users import insert_user
 from shopdb.api import app, db, bcrypt
 from shopdb.models import User
 
@@ -25,15 +27,20 @@ def list_users(admin):
     :return:      A list of all users.
     """
 
-    query = User.query.filter(User.is_verified.is_(True))
-    if not admin:
-        query = query.filter(User.active.is_(True))
+    query = QueryFromRequestParameters(User, request.args)
+    # Hide non verified and inactive users for non-administrators
+    if admin is None:
         fields = ['id', 'firstname', 'lastname', 'rank_id']
-        return jsonify(convert_minimal(query.all(), fields)), 200
+        query = (query
+                 .filter(User.is_verified.is_(True))
+                 .filter(User.active.is_(True)))
+    else:
+        fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin', 'creation_date', 'rank_id', 'is_verified']
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
-    fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin',
-              'creation_date', 'rank_id']
-    return jsonify(convert_minimal(query.all(), fields)), 200
 
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])

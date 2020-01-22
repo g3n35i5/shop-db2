@@ -4,11 +4,12 @@ __author__ = 'g3n35i5'
 
 import datetime
 from sqlalchemy.exc import IntegrityError
-from flask import jsonify
+from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 from shopdb.models import Replenishment, ReplenishmentCollection, Product
 
@@ -23,10 +24,12 @@ def list_replenishmentcollections(admin):
 
     :return:      A list of all replenishmentcollections.
     """
-    data = ReplenishmentCollection.query.all()
+    query = QueryFromRequestParameters(ReplenishmentCollection, request.args)
     fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked', 'comment']
-    response = convert_minimal(data, fields)
-    return jsonify(response), 200
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/replenishmentcollections/<int:id>', methods=['GET'])

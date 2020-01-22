@@ -330,6 +330,10 @@ class Product(db.Model):
         )
         db.session.add(productprice)
 
+    @property
+    def tag_ids(self):
+        return [tag.id for tag in self.tags]
+
     def __repr__(self):
         return f'<Product {self.name}>'
 

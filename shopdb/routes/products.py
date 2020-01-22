@@ -8,6 +8,7 @@ import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired, adminOptional
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import update_fields, convert_minimal, json_body
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 import shopdb.helpers.products as product_helpers
 from shopdb.models import Product, Tag, Upload
@@ -23,14 +24,17 @@ def list_products(admin):
 
     :return:      A list of all products
     """
-    result = Product.query.all()
+    query = QueryFromRequestParameters(Product, request.args)
+    # Hide non verified and inactive users for non-administrators
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
               'revocable', 'imagename', 'tags', 'creation_date']
+    result, content_range = query.result()
     products = convert_minimal(result, fields)
-
     for product in products:
         product['tags'] = [t.id for t in product['tags']]
-    return jsonify(products), 200
+    response = jsonify(products)
+    response.headers['Content-Range'] = content_range
+    return response
 
 
 @app.route('/products', methods=['POST'])

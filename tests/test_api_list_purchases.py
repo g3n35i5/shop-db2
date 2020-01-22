@@ -65,8 +65,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         purchase = Purchase.query.filter_by(id=3).first()
         purchase.toggle_revoke(revoked=True)
         db.session.commit()
-
-        res = self.get(url='/purchases', params={'limit': 3})
+        res = self.get(url='/purchases', params={"sort": {"field": "id", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 3}})
         self.assertEqual(res.status_code, 200)
         purchases = json.loads(res.data)
         self.assertEqual(len(purchases), 3)
@@ -76,10 +75,10 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
 
     def test_invalid_parameter(self):
         res = self.get(url='/purchases', params={'unknown': 2})
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.UnauthorizedAccess)
+        self.assertEqual(res.status_code, 400)
+        self.assertException(res, exc.InvalidQueryParameters)
 
     def test_wrong_parameter_type(self):
         res = self.get(url='/purchases', params={'limit': 'two'})
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.WrongType)
+        self.assertEqual(res.status_code, 400)
+        self.assertException(res, exc.InvalidQueryParameters)
