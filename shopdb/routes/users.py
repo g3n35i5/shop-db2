@@ -31,7 +31,8 @@ def list_users(admin):
     if admin is None:
         fields = ['id', 'firstname', 'lastname', 'rank_id']
     else:
-        fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'is_admin', 'creation_date', 'verification_date']
+        fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id',
+                  'is_admin', 'creation_date', 'verification_date', 'is_verified']
 
     query = QueryFromRequestParameters(User, request.args, fields=fields)
 
