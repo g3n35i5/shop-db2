@@ -25,16 +25,18 @@ class UpdateUserAPITestCase(BaseAPITestCase):
 
     def test_update_user_non_verified(self):
         """
-        This test ensures that an exception is made when attempting to modify
-        an unverified user.
+        This test ensures that a non verified user can only be updated if the required data is given
         """
         user = User.query.filter_by(id=4).first()
         self.assertEqual(user.firstname, u_firstnames[3])
-        data = {'firstname': 'Bob'}
+        data = {'firstname': 'Bob', 'rank_id': 2}
         res = self.put(url='/users/4', data=data, role='admin')
-        self.assertException(res, UserIsNotVerified)
-        user = User.query.filter_by(id=4).first()
-        self.assertEqual(user.firstname, u_firstnames[3])
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        self.assertEqual(data['message'], 'Updated user.')
+        self.assertEqual(data['updated_fields'], ['rank_id', 'firstname'])
+        self.assertTrue(User.query.filter_by(id=4).first().is_verified)
+        self.assertEqual(2, User.query.filter_by(id=4).first().rank_id)
 
     def test_promote_user_to_admin(self):
         """Update the admin state of a user."""

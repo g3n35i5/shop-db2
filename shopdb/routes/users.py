@@ -177,7 +177,6 @@ def update_user(admin, id):
                                  successful and a list of all updated fields.
 
     :raises EntryNotFound:        If the user with this ID does not exist.
-    :raises UserIsNotVerified:   If the user has not yet been verified.
     :raises ForbiddenField:      If a forbidden field is in the request data.
     :raises UnknownField:        If an unknown parameter exists in the request
                                  data.
@@ -195,10 +194,6 @@ def update_user(admin, id):
     if not user:
         raise exc.EntryNotFound()
 
-    # Raise an exception if the user has not been verified yet.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
-
     allowed = {
         'firstname': str,
         'lastname': str,
@@ -214,6 +209,19 @@ def update_user(admin, id):
 
     updated_fields = []
 
+    # Check if user has been verified
+    if not user.is_verified and 'rank_id' not in data:
+        raise exc.UserIsNotVerified()
+
+    # Update rank
+    if 'rank_id' in data:
+        if user.is_verified:
+            user.set_rank_id(rank_id=data['rank_id'], admin_id=admin.id)
+        else:
+            user.verify(admin_id=admin.id, rank_id=data['rank_id'])
+        updated_fields.append('rank_id')
+        del data['rank_id']
+
     # Update admin role
     if 'is_admin' in data:
         user.set_admin(is_admin=data['is_admin'], admin_id=admin.id)
@@ -225,12 +233,6 @@ def update_user(admin, id):
 
         updated_fields.append('is_admin')
         del data['is_admin']
-
-    # Update rank
-    if 'rank_id' in data:
-        user.set_rank_id(rank_id=data['rank_id'], admin_id=admin.id)
-        updated_fields.append('rank_id')
-        del data['rank_id']
 
     # Check password
     if 'password' in data:
