@@ -62,6 +62,13 @@ class User(db.Model):
                              .limit(1)
                              .as_scalar())
 
+    # Column property for the active state
+    rank_id = column_property(select([Rank.id])
+                              .where(and_(RankUpdate.user_id == id, Rank.id == RankUpdate.rank_id))
+                              .order_by(RankUpdate.id.desc())
+                              .limit(1)
+                              .as_scalar())
+
     # Link to all purchases of a user.
     purchases = db.relationship(
         'Purchase', lazy='dynamic',
@@ -117,16 +124,6 @@ class User(db.Model):
         uv = UserVerification(user_id=self.id, admin_id=admin_id)
         self.set_rank_id(rank_id, admin_id)
         db.session.add(uv)
-
-    @hybrid_property
-    def rank_id(self):
-        ru = (RankUpdate.query
-              .filter_by(user_id=self.id)
-              .order_by(RankUpdate.id.desc())
-              .first())
-        if ru:
-            return ru.rank_id
-        return None
 
     @hybrid_method
     def set_rank_id(self, rank_id, admin_id):
