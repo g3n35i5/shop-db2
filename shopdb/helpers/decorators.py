@@ -95,7 +95,7 @@ def adminRequired(f):
         # admin and the request is executed. In addition, the user is
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
-        return f(admin, *args, **kwargs)
+        return f(admin=admin, *args, **kwargs)
 
     return decorated
 
@@ -124,13 +124,13 @@ def adminOptional(f):
         try:
             token = request.headers['token']
         except KeyError:
-            return f(None, *args, **kwargs)
+            return f(admin=None, *args, **kwargs)
 
         # Is the token valid?
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError):
-            return f(None, *args, **kwargs)
+            return f(admin=None, *args, **kwargs)
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
@@ -141,13 +141,13 @@ def adminOptional(f):
         except KeyError:
             raise exc.TokenIsInvalid()
         except AssertionError:
-            return f(None, *args, **kwargs)
+            return f(admin=None, *args, **kwargs)
 
         # At this point it was verified that the request comes from an
         # admin and the request is executed. In addition, the user is
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
-        return f(admin, *args, **kwargs)
+        return f(admin=admin, *args, **kwargs)
 
     return decorated
 
