@@ -25,7 +25,7 @@ def list_products(admin):
     :return:      A list of all products
     """
     query = QueryFromRequestParameters(Product, request.args)
-    # Hide non verified and inactive users for non-administrators
+
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
               'revocable', 'imagename', 'tags', 'creation_date']
     result, content_range = query.result()
