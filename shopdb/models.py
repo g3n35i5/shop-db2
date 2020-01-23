@@ -261,7 +261,7 @@ class Product(db.Model):
     image_upload_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
                                 nullable=True)
     tags = db.relationship('Tag', secondary=product_tag_assignments,
-                           backref=db.backref('products', lazy='dynamic'))
+                            backref=db.backref('products', lazy='dynamic'))
 
     # Column property for the price
     price = column_property(select([ProductPrice.price])
