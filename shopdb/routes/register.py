@@ -7,10 +7,12 @@ from sqlalchemy.exc import IntegrityError
 import shopdb.exceptions as exc
 from shopdb.helpers.users import insert_user
 from shopdb.helpers.utils import json_body
+from shopdb.helpers.decorators import deprecate_route
 from shopdb.api import app, db
 
 
 @app.route('/register', methods=['POST'])
+@deprecate_route("The register route has been replaced with a POST request to the /users route")
 def register():
     """
     Registration of new users.
