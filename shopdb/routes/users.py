@@ -27,20 +27,42 @@ def list_users(admin):
     :return:      A list of all users.
     """
 
-    query = QueryFromRequestParameters(User, request.args)
-    # Hide non verified and inactive users for non-administrators
+    # Define fields
     if admin is None:
         fields = ['id', 'firstname', 'lastname', 'rank_id']
+    else:
+        fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'is_admin', 'creation_date', 'verification_date']
+
+    query = QueryFromRequestParameters(User, request.args, fields=fields)
+
+    # Hide non verified and inactive users for non-administrators
+    if admin is None:
         query = (query
                  .filter(User.is_verified.is_(True))
                  .filter(User.active.is_(True)))
-    else:
-        fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin', 'creation_date', 'rank_id', 'is_verified']
+
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range
     return response
 
+
+@app.route('/users', methods=['POST'])
+def create_user():
+    """
+    Registration of new users.
+
+    :return:                     A message that the registration was successful.
+
+    :raises CouldNotCreateEntry: If the new user cannot be created.
+    """
+    insert_user(json_body())
+    try:
+        db.session.commit()
+    except IntegrityError:
+        raise exc.CouldNotCreateEntry()
+
+    return jsonify({'message': 'Created user.'}), 200
 
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])

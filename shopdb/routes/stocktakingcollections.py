@@ -100,8 +100,8 @@ def list_stocktakingcollections(admin):
 
     :return:      A list of all stocktakingcollections.
     """
-    query = QueryFromRequestParameters(StocktakingCollection, request.args)
     fields = ['id', 'timestamp', 'admin_id', 'revoked']
+    query = QueryFromRequestParameters(StocktakingCollection, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range

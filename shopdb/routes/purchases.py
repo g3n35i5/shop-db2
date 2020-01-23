@@ -26,12 +26,15 @@ def list_purchases(admin):
 
     :return:      A list of all purchases.
     """
-    query = QueryFromRequestParameters(Purchase, request.args)
     if admin is not None:
         fields = ['id', 'timestamp', 'user_id', 'product_id', 'productprice', 'amount', 'revoked', 'price']
     else:
-        query = query.filter(~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
         fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount']
+
+    query = QueryFromRequestParameters(Purchase, request.args, fields)
+    if admin is None:
+        query = query.filter(~exists().where(PurchaseRevoke.purchase_id == Purchase.id))
+
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range

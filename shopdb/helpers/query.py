@@ -16,13 +16,13 @@ from sqlalchemy.sql.expression import BinaryExpression
 class QueryFromRequestParameters:
     __valid_fields_and_types__ = {'filter': dict, 'pagination': dict, 'sort': dict}
 
-    def __init__(self, model: db.Model, arguments: ImmutableMultiDict) -> None:
+    def __init__(self, model: db.Model, arguments: ImmutableMultiDict, fields=List[str]) -> None:
         # Database table
         self._model: db.Model = model
         # Column mapper for validation and column access
         self._column_mapper = self._model.__table__.columns
         # List of all valid columns for filtering and sorting
-        self._valid_columns = self._column_mapper.keys()
+        self._valid_columns = fields
         # Request query arguments
         self._arguments: dict = arguments.to_dict()
         # Parse request arguments

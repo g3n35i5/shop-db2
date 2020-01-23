@@ -16,8 +16,8 @@ def list_ranks():
 
     :return: A list of all ranks.
     """
-    query = QueryFromRequestParameters(Rank, request.args)
     fields = ['id', 'name', 'debt_limit']
+    query = QueryFromRequestParameters(Rank, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range

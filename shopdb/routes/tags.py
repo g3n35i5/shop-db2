@@ -20,8 +20,8 @@ def list_tags():
 
     :return: A list of all tags.
     """
-    query = QueryFromRequestParameters(Tag, request.args)
     fields = ['id', 'name', 'created_by']
+    query = QueryFromRequestParameters(Tag, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range

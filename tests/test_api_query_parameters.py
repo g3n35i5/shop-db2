@@ -75,6 +75,8 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         param_list = [
             # Invalid sort column foo
             {"sort": {"field": "foo", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 1}},
+            # Invalid sort column password
+            {"sort": {"field": "password", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 1}},
             # Invalid parameter "foo"
             {"sort": {"field": "id", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 1}, "foo": "bar"},
             # Second pagination parameter is a string

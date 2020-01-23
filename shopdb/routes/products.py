@@ -24,10 +24,10 @@ def list_products(admin):
 
     :return:      A list of all products
     """
-    query = QueryFromRequestParameters(Product, request.args)
-
     fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
               'revocable', 'imagename', 'tags', 'creation_date']
+
+    query = QueryFromRequestParameters(Product, request.args, fields)
     result, content_range = query.result()
     products = convert_minimal(result, fields)
     for product in products:

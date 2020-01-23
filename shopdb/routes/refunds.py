@@ -23,9 +23,9 @@ def list_refunds(admin):
 
     :return:      A list of all refunds.
     """
-    query = QueryFromRequestParameters(Refund, request.args)
     fields = ['id', 'timestamp', 'user_id', 'total_price', 'comment',
               'revoked', 'admin_id']
+    query = QueryFromRequestParameters(Refund, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range

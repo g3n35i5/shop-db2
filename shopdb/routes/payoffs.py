@@ -23,8 +23,8 @@ def list_payoffs(admin):
 
     :return:      A list of all payoffs.
     """
-    query = QueryFromRequestParameters(Payoff, request.args)
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked', 'admin_id']
+    query = QueryFromRequestParameters(Payoff, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range

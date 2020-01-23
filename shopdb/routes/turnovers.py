@@ -23,8 +23,8 @@ def list_turnovers(admin):
 
     :return:      A list of all turnovers.
     """
-    query = QueryFromRequestParameters(Turnover, request.args)
     fields = ['id', 'timestamp', 'amount', 'comment', 'revoked', 'admin_id']
+    query = QueryFromRequestParameters(Turnover, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
     response.headers['Content-Range'] = content_range
