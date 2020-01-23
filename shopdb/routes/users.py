@@ -136,8 +136,8 @@ def get_user_purchases(user, id):
 
 
 @app.route('/users/<int:id>', methods=['GET'])
-@checkIfUserIsValid
-def get_user(user, id):
+@adminOptional
+def get_user(admin, id):
     """
     Returns the user with the requested id.
 
@@ -146,6 +146,18 @@ def get_user(user, id):
 
     :return:                   The requested user as JSON object.
     """
+    # Query user
+    user = User.query.filter(User.id == id).first()
+    if not user:
+        raise exc.EntryNotFound()
+
+    if admin is None:
+        # Check if the user has been verified.
+        if not user.is_verified:
+            raise exc.UserIsNotVerified()
+        # Check if the user is inactive
+        if not user.active:
+            raise exc.UserIsInactive()
 
     fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'is_admin', 'creation_date', 'verification_date']
     user = convert_minimal(user, fields)[0]
