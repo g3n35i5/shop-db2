@@ -20,7 +20,7 @@ class QueryFromRequestParameters:
         # Database table
         self._model: db.Model = model
         # Column mapper for validation and column access
-        self._column_mapper = self._model.__table__.columns
+        self._column_mapper = self._model.__mapper__.columns
         # List of all valid columns for filtering and sorting
         self._valid_columns = fields
         # Request query arguments
@@ -59,6 +59,8 @@ class QueryFromRequestParameters:
             # Clean possible non-JSON conforming quoting
             try:
                 argument_value = argument_value.strip("'<>() ").replace('\'', '\"')
+                argument_value = argument_value.replace('False', 'false')
+                argument_value = argument_value.replace('True', 'true')
             except AttributeError:
                 # Maybe there is a chance to parse it anyway
                 pass
@@ -103,16 +105,16 @@ class QueryFromRequestParameters:
                     # Valid cases are:
                     #   - One value: {str, int, float}
                     #   - Multiple values: List of {str, int, float}, but all of the same type
-                    assert isinstance(filter_value, (str, list, int, float))
+                    assert isinstance(filter_value, (str, list, int, float, bool))
                     # Case 1: Single value
-                    if isinstance(filter_value, (str, int, float)):
+                    if isinstance(filter_value, (str, int, float, bool)):
                         if isinstance(filter_value, str):
                             assert re.fullmatch(regex_sanitize_pattern, filter_value)
                     # Case 2: Multiple values
                     elif isinstance(filter_value, list):
                         all_types = [type(x) for x in filter_value]
                         # All types must be {str, int, float}
-                        assert all([isinstance(x, (str, int, float)) for x in filter_value])
+                        assert all([isinstance(x, (str, int, float, bool)) for x in filter_value])
                         # With this condition it is assured that all types are equal
                         assert all_types.count(all_types[0]) == len(all_types)
                         # All filter values must match the regex_sanitize_pattern to avoid injections
@@ -195,10 +197,13 @@ class QueryFromRequestParameters:
         # Apply all filters
         if self.filters is not None:
             for filter_field, filter_value in self.filters.items():
-                # Case 1: One filter value
-                if isinstance(filter_value, (int, str, float)):
+                # Case 1: One filter value and string. We use the contains method for this
+                if isinstance(filter_value, str):
+                    self._query = self._query.filter(self._column_mapper[filter_field].contains(filter_value))
+                # Case 2: One filter value and int/float. We use the is_ method for this
+                elif isinstance(filter_value, (int, float, bool)):
                     self._query = self._query.filter(self._column_mapper[filter_field].is_(filter_value))
-                # Case 2: Multiple filter values
+                # Case 3: Multiple filter values
                 else:
                     self._query = self._query.filter(self._column_mapper[filter_field].in_(tuple(filter_value)))
 

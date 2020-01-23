@@ -36,6 +36,12 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         self.assertEqual('Mary', users[0]['firstname'])
         self.assertEqual(2, users[0]['id'])
 
+        # List by boolean values
+        users = json.loads(self.get('/users', role='admin', params={'filter': {'is_verified': False}}).data)
+        self.assertEqual(1, len(users))
+        self.assertEqual('Lee', users[0]['lastname'])
+        self.assertEqual('Daniel', users[0]['firstname'])
+
         # List all users filtered by two lastnames 'Smith' and 'Lee'
         users = json.loads(self.get('/users', role='admin', params={'filter': {'lastname': ['Smith', 'Lee']}}).data)
         # There should be two users
@@ -46,6 +52,13 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         self.assertEqual('Lee', users[1]['lastname'])
         self.assertEqual('Daniel', users[1]['firstname'])
         self.assertEqual(4, users[1]['id'])
+
+        # List all users with the rank_id 1
+        users = json.loads(self.get('/users', role='admin', params={'filter': {'rank_id': 1}}).data)
+        # There should only be Bryce Jones
+        self.assertEqual(1, len(users))
+        self.assertEqual('Jones', users[0]['lastname'])
+        self.assertEqual('Bryce', users[0]['firstname'])
 
         # Use two filters for firstname and lastname
         params = {'filter': {'lastname': ['Smith', 'Lee'], 'firstname': 'Mary'}}
