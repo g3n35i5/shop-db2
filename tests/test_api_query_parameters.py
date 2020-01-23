@@ -47,6 +47,28 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         self.assertEqual('Daniel', users[1]['firstname'])
         self.assertEqual(4, users[1]['id'])
 
+        # Use two filters for firstname and lastname
+        params = {'filter': {'lastname': ['Smith', 'Lee'], 'firstname': 'Mary'}}
+        users = json.loads(self.get('/users', role='admin', params=params).data)
+        # There should only be Mary Smith
+        self.assertEqual(1, len(users))
+        self.assertEqual('Smith', users[0]['lastname'])
+        self.assertEqual('Mary', users[0]['firstname'])
+
+        # If we add another filter with ids, there should still be only Mary
+        params = {'filter': {'lastname': ['Smith', 'Lee'], 'firstname': 'Mary', 'id': [2, 3]}}
+        users = json.loads(self.get('/users', role='admin', params=params).data)
+        # There should only be Mary Smith
+        self.assertEqual(1, len(users))
+        self.assertEqual('Smith', users[0]['lastname'])
+        self.assertEqual('Mary', users[0]['firstname'])
+
+        # By removing her id from the filter, no user should be found
+        params = {'filter': {'lastname': ['Smith', 'Lee'], 'firstname': 'Mary', 'id': 3}}
+        users = json.loads(self.get('/users', role='admin', params=params).data)
+        # There shouldn't be any results
+        self.assertEqual(0, len(users))
+
     def test_query_parameters_pagination(self):
         """
         Test query pagination
@@ -91,6 +113,9 @@ class QueryParametersAPITestCase(BaseAPITestCase):
             {"sort": {"field": "id", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 1}, "filter": {'firstname': 'Inval!d value'}},
             # Little Bobby Tables
             {"sort": {"field": "id", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 1}, "filter": {'firstname': 'Robert\'); DROP TABLE users;--'}},
+            # Multiple filters with one invalid type
+            {"sort": {"field": "id", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 1},
+             "filter": {'firstname': 'Mary', 'id': [1, 2, 3, "4"], 'lastname': 'Smith'}},
         ]
         for params in param_list:
             res = self.get('/users', params=params)
