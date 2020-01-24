@@ -11,7 +11,7 @@ from werkzeug import ImmutableMultiDict
 from shopdb.models import db
 import shopdb.exceptions as exc
 from sqlalchemy.sql.expression import BinaryExpression
-from sqlalchemy import func
+from sqlalchemy import func, types
 
 
 class QueryFromRequestParameters:
@@ -210,11 +210,18 @@ class QueryFromRequestParameters:
 
         # Apply sorting
         if self.sorting is not None:
-            field = func.lower(self._column_mapper[self.sorting.get("field")])
+            # Only perform the lowercase operation if the column type is not "types.Integer"
+            # If the column to be sorted by is of the type "types.integer", the lowercase function
+            # must not be used, otherwise integers are sorted by the scheme
+            # "1, 10, 11, 12, ..., 2, 21, 22, ... 3..."
+            column = self._column_mapper[self.sorting.get("field")]
+            if not isinstance(column.type, types.Integer):
+                column = func.lower(column)
+
             if self.sorting.get("order").lower() == 'asc':
-                self._query = self._query.order_by(field.asc())
+                self._query = self._query.order_by(column.asc())
             else:
-                self._query = self._query.order_by(field.desc())
+                self._query = self._query.order_by(column.desc())
 
         # Apply the pagination if it exists
         if self.pagination is not None:
