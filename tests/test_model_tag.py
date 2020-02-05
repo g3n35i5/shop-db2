@@ -9,10 +9,10 @@ from tests.base import BaseTestCase
 class TagModelTestCase(BaseTestCase):
     def test_insert_tag(self):
         """ Insert a tag should work. """
-        self.assertEqual(len(Tag.query.all()), 4)
+        self.assertEqual(len(Tag.query.all()), 5)
         db.session.add(Tag(name='Foo', created_by=1))
         db.session.commit()
-        self.assertEqual(len(Tag.query.all()), 5)
+        self.assertEqual(len(Tag.query.all()), 6)
 
     def test_assign_single_tag_to_product(self):
         """ Adding a single tag to a product. """

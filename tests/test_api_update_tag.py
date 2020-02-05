@@ -33,7 +33,7 @@ class UpdateTagAPITestCase(BaseAPITestCase):
     def test_update_non_existing_tag(self):
         """Updating a non existing tag should raise an error."""
         data = {'name': 'Foo'}
-        res = self.put(url='/tags/5', data=data, role='admin')
+        res = self.put(url='/tags/6', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
