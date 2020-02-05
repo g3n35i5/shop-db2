@@ -69,6 +69,29 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(data['updated_fields'][0], 'name')
         self.assertEqual(Product.query.filter_by(id=1).first().name, 'Bread')
 
+    def test_update_product_tags(self):
+        """Update product tags"""
+        self.insert_default_tag_assignments()
+        self.assertEqual([1], Product.query.filter_by(id=1).first().tag_ids)
+        # Remove tag 1 and add 2, 3, 4
+        data = {'tags': [2, 3, 4]}
+        self.put(url='/products/1', data=data, role='admin')
+        self.assertEqual([2, 3, 4], Product.query.filter_by(id=1).first().tag_ids)
+
+    def test_update_product_tags_no_remaining_tag(self):
+        """Update product tags with an empty array"""
+        self.insert_default_tag_assignments()
+        data = {'tags': []}
+        res = self.put(url='/products/1', data=data, role='admin')
+        self.assertException(res, exc.NoRemainingTag)
+
+    def test_update_product_tags_no_changes(self):
+        """Update product tags with no changes"""
+        self.insert_default_tag_assignments()
+        data = {'tags': [1]}
+        res = self.put(url='/products/1', data=data, role='admin')
+        self.assertException(res, exc.NothingHasChanged)
+
     def test_update_product_price(self):
         """Update product price"""
         self.assertEqual(Product.query.filter_by(id=1).first().price, 300)
