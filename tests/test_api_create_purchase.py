@@ -73,6 +73,23 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
 
         self.assertEqual(len(Purchase.query.all()), 0)
 
+    def test_create_purchase_product_not_for_sale(self):
+        """
+        Creating a purchase with a product which is not for sale must raise an exception
+        """
+        # Assign a "not for sale" tag to the product
+        tag = db.session.query(Tag).filter(Tag.is_for_sale.is_(False)).first()
+        product = Product.query.filter_by(id=1).first()
+        product.tags.append(tag)
+        db.session.commit()
+
+        data = {'user_id': 1, 'product_id': 1, 'amount': 2}
+        for role in [None, 'user', 'admin']:
+            res = self.post(url='/purchases', role=role, data=data)
+            self.assertEqual(res.status_code, 400)
+            self.assertException(res, exc.EntryIsNotForSale)
+            self.assertEqual(len(Purchase.query.all()), 0)
+
     def test_create_purchase_unknown_field(self):
         """Create a purchase with an unknown field."""
         data = {'user_id': 4, 'product_id': 3, 'amount': 4, 'foo': 'bar'}

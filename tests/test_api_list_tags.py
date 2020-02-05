@@ -3,7 +3,7 @@
 __author__ = 'g3n35i5'
 
 from tests.base_api import BaseAPITestCase
-from tests.base import t_names
+from tests.base import tag_data
 from flask import json
 
 
@@ -13,7 +13,7 @@ class ListTagsAPITestCase(BaseAPITestCase):
         res = self.get(url='/tags')
         self.assertEqual(res.status_code, 200)
         tags = json.loads(res.data)
-        self.assertEqual(len(tags), 4)
-        for i in range(4):
-            self.assertEqual(tags[i]['name'], t_names[i])
+        self.assertEqual(len(tags), 5)
+        for i in range(5):
+            self.assertEqual(tags[i]['name'], tag_data[i]['name'])
             self.assertEqual(tags[i]['created_by'], 1)
