@@ -20,7 +20,7 @@ def list_tags():
 
     :return: A list of all tags.
     """
-    fields = ['id', 'name', 'created_by']
+    fields = ['id', 'name', 'created_by', 'is_for_sale']
     query = QueryFromRequestParameters(Tag, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
@@ -43,7 +43,7 @@ def get_tag(id):
     if not result:
         raise exc.EntryNotFound()
 
-    tag = convert_minimal(result, ['id', 'name', 'created_by'])[0]
+    tag = convert_minimal(result, ['id', 'name', 'created_by', 'is_for_sale'])[0]
     return jsonify(tag), 200
 
 
