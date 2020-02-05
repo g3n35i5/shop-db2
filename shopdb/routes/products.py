@@ -265,7 +265,7 @@ def update_product(admin, id):
         raise exc.EntryNotFound()
 
     optional = {
-        'name': str, 'price': int, 'barcode': str,
+        'name': str, 'price': int, 'barcode': str, 'tags': list,
         'imagename': str, 'countable': bool, 'revocable': bool
     }
 
@@ -300,6 +300,42 @@ def update_product(admin, id):
 
             product.image_upload_id = upload.id
             updated_fields.append('imagename')
+
+    # Check for changed tag assignments
+    if 'tags' in data:
+        data_tags = data['tags']
+        # All tag ids must be int
+        if not all([isinstance(tag_id, int) for tag_id in data_tags]):
+            raise exc.InvalidData()
+
+        # No changes?
+        if sorted(data_tags) == sorted(product.tag_ids):
+            raise exc.NothingHasChanged()
+
+        # If there are no remaining tags after the update, the request is invalid.
+        if len(data_tags) == 0:
+            raise exc.NoRemainingTag()
+
+        # Get a list of all new tag ids and a list of all removed tag ids
+        added_tag_ids = [x for x in data_tags if x not in product.tag_ids]
+        removed_tag_ids = [x for x in product.tag_ids if x not in data_tags]
+
+        # Add all new tags in the added tag ids list
+        for tag_id in added_tag_ids:
+            tag = Tag.query.filter_by(id=tag_id).first()
+            if tag is None:
+                raise exc.EntryNotFound()
+            product.tags.append(tag)
+
+        # Remove all tags in the remove tag ids list
+        for tag_id in removed_tag_ids:
+            tag = Tag.query.filter_by(id=tag_id).first()
+            if tag is None:
+                raise exc.EntryNotFound()
+            product.tags.remove(tag)
+
+        updated_fields.append('tags')
+        del data['tags']
 
     # Update all other fields
     updated_fields = update_fields(data, product, updated=updated_fields)
