@@ -56,6 +56,7 @@ def create_purchase(admin):
     :raises EntryNotFound:       If the user with this ID does not exist.
     :raises UserIsNotVerified:   If the user has not yet been verified.
     :raises EntryNotFound:       If the product with this ID does not exist.
+    :raises EntryIsNotForSale:   If the product is not for sale.
     :raises EntryIsInactive:     If the product is inactive.
     :raises InvalidAmount:       If amount is less than or equal to zero.
     :raises InsufficientCredit:  If the credit balance of the user is not
@@ -86,6 +87,10 @@ def create_purchase(admin):
         raise exc.EntryNotFound()
     if not admin and not product.active:
         raise exc.EntryIsInactive()
+
+    # Check weather the product is for sale
+    if any(map(lambda tag: not tag.is_for_sale, product.tags)):
+        raise exc.EntryIsNotForSale()
 
     # Check amount
     if data['amount'] <= 0:

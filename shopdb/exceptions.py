@@ -166,6 +166,12 @@ class EntryIsInactive(ShopdbException):
     code = 401
 
 
+class EntryIsNotForSale(ShopdbException):
+    type = 'error'
+    message = 'This entry is not for sale.'
+    code = 400
+
+
 class EntryAlreadyExists(ShopdbException):
     type = 'error'
     message = 'This entry already exists.'
