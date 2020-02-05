@@ -275,6 +275,13 @@ class Product(db.Model):
 
         return created_by
 
+    @property
+    def is_for_sale(self):
+        """
+        Returns whether this product is for sale for unprivileged users
+        """
+        return all(map(lambda tag: tag.is_for_sale, self.tags))
+
     @hybrid_property
     def imagename(self):
         upload = Upload.query.filter_by(id=self.image_upload_id).first()
@@ -341,6 +348,7 @@ class Tag(db.Model):
     name = db.Column(db.String(24), unique=True, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'),
                            nullable=False)
+    is_for_sale = db.Column(db.Boolean, nullable=False, default=True)
 
     def __repr__(self):
         return f'<Tag {self.name}>'

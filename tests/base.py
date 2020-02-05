@@ -20,6 +20,7 @@ u_passwords = ['secret1', 'secret2', None, None]
 # Default data for products
 p_names = ['Pizza', 'Coffee', 'Cookie', 'Coke']
 p_prices = [300, 50, 100, 200]
+p_tags = [1, 4, 2, 3]
 
 # Default data for ranks
 rank_data = [
@@ -29,7 +30,12 @@ rank_data = [
         {'name': 'Inactive', 'debt_limit': 0, 'active': False}]
 
 # Default data for product tags
-t_names = ['Food', 'Sweets', 'Drinks', 'Coffee']
+tag_data = [
+        {'name': 'Food'},
+        {'name': 'Sweets'},
+        {'name': 'Drinks'},
+        {'name': 'Coffee'},
+        {'name': 'Uncategorized', 'is_for_sale': False}]
 
 # Default data for turnovers
 turnovers = [
@@ -94,6 +100,14 @@ class BaseTestCase(TestCase):
         db.session.add(au)
         db.session.commit()
 
+    def insert_default_tag_assignments(self):
+        for index in range(len(p_tags)):
+            product = Product.query.filter_by(id=index+1).first()
+            tag = Tag.query.filter_by(id=index+1).first()
+            product.tags.append(tag)
+
+        db.session.commit()
+
     def insert_default_products(self):
         for i in range(0, len(p_names)):
             product = Product(name=p_names[i], created_by=1)
@@ -117,8 +131,8 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     def insert_default_tags(self):
-        for name in t_names:
-            tag = Tag(name=name, created_by=1)
+        for data in tag_data:
+            tag = Tag(**data, created_by=1)
             db.session.add(tag)
         db.session.commit()
 

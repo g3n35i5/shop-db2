@@ -65,3 +65,11 @@ class UpdateTagAPITestCase(BaseAPITestCase):
         self.assertEqual(len(data['updated_fields']), 1)
         self.assertEqual(data['updated_fields'][0], 'name')
         self.assertEqual(Tag.query.filter_by(id=1).first().name, 'Foo')
+
+    def test_update_tag_is_for_sale(self):
+        """
+        Update the "is_for_sale" field
+        """
+        self.assertTrue(Tag.query.filter_by(id=1).first().is_for_sale)
+        res = self.put(url='/tags/1', data={'is_for_sale': False}, role='admin')
+        self.assertFalse(Tag.query.filter_by(id=1).first().is_for_sale)

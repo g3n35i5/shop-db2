@@ -20,7 +20,7 @@ def list_tags():
 
     :return: A list of all tags.
     """
-    fields = ['id', 'name', 'created_by']
+    fields = ['id', 'name', 'created_by', 'is_for_sale']
     query = QueryFromRequestParameters(Tag, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
@@ -43,7 +43,7 @@ def get_tag(id):
     if not result:
         raise exc.EntryNotFound()
 
-    tag = convert_minimal(result, ['id', 'name', 'created_by'])[0]
+    tag = convert_minimal(result, ['id', 'name', 'created_by', 'is_for_sale'])[0]
     return jsonify(tag), 200
 
 
@@ -110,9 +110,10 @@ def create_tag(admin):
     """
     data = json_body()
     required = {'name': str}
+    optional = {'is_for_sale': bool}
 
     # Check all required fields
-    check_fields_and_types(data, required)
+    check_fields_and_types(data, required, optional)
 
     # Check if a tag with this name already exists
     if Tag.query.filter_by(name=data['name']).first():
@@ -156,7 +157,7 @@ def update_tag(admin, id):
     if not tag:
         raise exc.EntryNotFound()
 
-    updateable = {'name': str}
+    updateable = {'name': str, 'is_for_sale': bool}
 
     # Check forbidden fields
     check_forbidden(data, updateable, tag)
