@@ -23,7 +23,8 @@ class Rank(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=True, nullable=False)
     active = db.Column(db.Boolean, nullable=False, default=True)
-    debt_limit = db.Column(db.Integer, nullable=False)
+    debt_limit = db.Column(db.Integer, nullable=True)
+    is_system_user = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f'<Rank {self.name}>'
