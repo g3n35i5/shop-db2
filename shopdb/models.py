@@ -80,6 +80,12 @@ class User(db.Model):
                              .limit(1)
                              .as_scalar())
 
+    # Column property for the verification_date
+    verification_date = column_property(select([UserVerification.timestamp])
+                                        .where(UserVerification.user_id == id)
+                                        .limit(1)
+                                        .as_scalar())
+
     # Column property for the active state
     rank_id = column_property(select([Rank.id])
                               .where(and_(RankUpdate.user_id == id, Rank.id == RankUpdate.rank_id))
@@ -115,15 +121,6 @@ class User(db.Model):
         if au is None:
             return False
         return au.is_admin
-
-    @hybrid_property
-    def verification_date(self):
-        verification = (UserVerification.query
-                        .filter(UserVerification.user_id == self.id)
-                        .first())
-        if verification:
-            return verification.timestamp
-        return None
 
     @hybrid_method
     def set_admin(self, is_admin, admin_id):
