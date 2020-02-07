@@ -36,8 +36,7 @@ class ListUsersAPITestCase(BaseAPITestCase):
         users = json.loads(res.data)
         self.assertEqual(len(users), 4)
         for user in users:
-            self.assertEqual(len(user), 9)
-            for item in ['id', 'firstname', 'lastname', 'creation_date', 'credit',
-                         'is_admin', 'rank_id', 'is_verified']:
+            self.assertEqual(len(user), 10)
+            for item in ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'active',
+                         'is_admin', 'creation_date', 'verification_date', 'is_verified']:
                 assert item in user
-
