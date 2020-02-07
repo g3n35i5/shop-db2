@@ -73,6 +73,29 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
 
         self.assertEqual(len(Purchase.query.all()), 0)
 
+    def test_create_purchase_with_system_user(self):
+        """Creating purchases with a system user is only allowed for administrators"""
+        # Add system user rank
+        db.session.add(Rank(name='System', is_system_user=True))
+        db.session.commit()
+        rank = db.session.query(Rank).filter(Rank.is_system_user.is_(True)).first()
+        user = User.query.filter_by(id=2).first()
+        user.set_rank_id(rank_id=rank.id, admin_id=1)
+        db.session.commit()
+
+        data = {'user_id': 2, 'product_id': 1, 'amount': 2}
+
+        for role in [None, 'user']:
+            res = self.post(url='/purchases', role=role, data=data)
+            self.assertException(res, exc.UnauthorizedAccess)
+
+        res = self.post(url='/purchases', role='admin', data=data)
+        data = json.loads(res.data)
+        assert 'message' in data
+        self.assertEqual(data['message'], 'Purchase created.')
+        purchases = Purchase.query.all()
+        self.assertEqual(len(purchases), 1)
+
     def test_create_purchase_with_timestamp_as_admin(self):
         """Creating a purchase with a timestamp as administrator"""
         data = {'user_id': 2, 'product_id': 3, 'amount': 4, 'timestamp': '2000-01-01 12:00:00 UTC'}
