@@ -73,6 +73,21 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
 
         self.assertEqual(len(Purchase.query.all()), 0)
 
+    def test_create_purchase_with_timestamp_as_admin(self):
+        """Creating a purchase with a timestamp as administrator"""
+        data = {'user_id': 2, 'product_id': 3, 'amount': 4, 'timestamp': '2000-01-01 12:00:00 UTC'}
+        self.post(url='/purchases', role='admin', data=data)
+        purchases = Purchase.query.all()
+        self.assertEqual(len(purchases), 1)
+        self.assertEqual(2000, purchases[0].timestamp.year)
+
+    def test_create_purchase_with_timestamp_without_admin_permissions(self):
+        """Creating a purchase with a timestamp is only allowed for administrators"""
+        data = {'user_id': 2, 'product_id': 3, 'amount': 4, 'timestamp': '2000-01-01 12:00:00'}
+        for role in [None, 'user']:
+            res = self.post(url='/purchases', role=role, data=data)
+            self.assertException(res, exc.ForbiddenField)
+
     def test_create_purchase_product_not_for_sale(self):
         """
         Creating a purchase with a product which is not for sale must raise an exception

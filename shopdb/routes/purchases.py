@@ -5,6 +5,8 @@ __author__ = 'g3n35i5'
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import exists
 from flask import jsonify, request
+import dateutil.parser
+import datetime
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminOptional
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
@@ -65,8 +67,13 @@ def create_purchase(admin):
     """
     data = json_body()
     required = {'user_id': int, 'product_id': int, 'amount': int}
+    optional = {'timestamp': str}
 
-    check_fields_and_types(data, required)
+    # If the request is not made by an administrator, the timestamp can't be set
+    if admin is None and 'timestamp' in data:
+        raise exc.ForbiddenField()
+
+    check_fields_and_types(data, required, optional)
 
     # Check user
     user = User.query.filter_by(id=data['user_id']).first()
@@ -80,6 +87,24 @@ def create_purchase(admin):
     # Check if the user is inactive
     if not user.active:
         raise exc.UserIsInactive()
+
+    # Check the user rank. If it is a system user, only administrators are allowed to insert purchases
+    if user.rank.is_system_user and admin is None:
+        raise exc.UnauthorizedAccess()
+
+    # Check timestamp if it exists
+    if 'timestamp' in data:
+        # Catch empty string timestamp which is caused by some JS datepickers inputs when they get cleared
+        if data['timestamp'] == '':
+            del data['timestamp']
+        else:
+            try:
+                timestamp = dateutil.parser.parse(data['timestamp'])
+                assert isinstance(timestamp, datetime.datetime)
+                assert timestamp < datetime.datetime.now(datetime.timezone.utc)
+                data['timestamp'] = timestamp.replace(microsecond=0)
+            except (TypeError, ValueError, AssertionError):
+                raise exc.InvalidData()
 
     # Check product
     product = Product.query.filter_by(id=data['product_id']).first()
