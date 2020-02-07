@@ -256,7 +256,7 @@ class Product(db.Model):
     image_upload_id = db.Column(db.Integer, db.ForeignKey('uploads.id'),
                                 nullable=True)
     tags = db.relationship('Tag', secondary=product_tag_assignments,
-                            backref=db.backref('products', lazy='dynamic'))
+                           backref=db.backref('products', lazy='dynamic'))
 
     # Column property for the price
     price = column_property(select([ProductPrice.price])
@@ -500,7 +500,7 @@ class Replenishment(db.Model):
         if self.revoked == revoked:
             raise NothingHasChanged()
         dr = ReplenishmentRevoke(revoked=revoked, admin_id=admin_id,
-                                           repl_id=self.id)
+                                 repl_id=self.id)
         self.revoked = revoked
         db.session.add(dr)
 
@@ -693,7 +693,7 @@ class StocktakingCollection(db.Model):
     revoked = db.Column(db.Boolean, nullable=False, default=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     stocktakings = db.relationship('Stocktaking', lazy='dynamic',
-                                    foreign_keys='Stocktaking.collection_id')
+                                   foreign_keys='Stocktaking.collection_id')
 
     @hybrid_method
     def toggle_revoke(self, revoked, admin_id):
