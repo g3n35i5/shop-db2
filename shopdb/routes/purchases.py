@@ -5,15 +5,14 @@ __author__ = 'g3n35i5'
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import exists
 from flask import jsonify, request
-import dateutil.parser
-import datetime
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminOptional
-from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
+from shopdb.helpers.validators import check_fields_and_types, check_forbidden
 from shopdb.helpers.utils import convert_minimal, update_fields, json_body
 from shopdb.helpers.query import QueryFromRequestParameters
+from shopdb.helpers.purchases import insert_purchase
 from shopdb.api import app, db
-from shopdb.models import Purchase, Product, User, Rank, PurchaseRevoke
+from shopdb.models import Purchase, Product, PurchaseRevoke
 
 
 @app.route('/purchases', methods=['GET'])
@@ -66,73 +65,15 @@ def create_purchase(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required = {'user_id': int, 'product_id': int, 'amount': int}
-    optional = {'timestamp': str}
 
-    # If the request is not made by an administrator, the timestamp can't be set
-    if admin is None and 'timestamp' in data:
-        raise exc.ForbiddenField()
-
-    check_fields_and_types(data, required, optional)
-
-    # Check user
-    user = User.query.filter_by(id=data['user_id']).first()
-    if not user:
-        raise exc.EntryNotFound()
-
-    # Check if the user has been verified.
-    if not user.is_verified:
-        raise exc.UserIsNotVerified()
-
-    # Check if the user is inactive
-    if not user.active:
-        raise exc.UserIsInactive()
-
-    # Check the user rank. If it is a system user, only administrators are allowed to insert purchases
-    if user.rank.is_system_user and admin is None:
-        raise exc.UnauthorizedAccess()
-
-    # Check timestamp if it exists
-    if 'timestamp' in data:
-        # Catch empty string timestamp which is caused by some JS datepickers inputs when they get cleared
-        if data['timestamp'] == '':
-            del data['timestamp']
-        else:
-            try:
-                timestamp = dateutil.parser.parse(data['timestamp'])
-                assert isinstance(timestamp, datetime.datetime)
-                assert timestamp < datetime.datetime.now(datetime.timezone.utc)
-                data['timestamp'] = timestamp.replace(microsecond=0)
-            except (TypeError, ValueError, AssertionError):
-                raise exc.InvalidData()
-
-    # Check product
-    product = Product.query.filter_by(id=data['product_id']).first()
-    if not product:
-        raise exc.EntryNotFound()
-    if not admin and not product.active:
-        raise exc.EntryIsInactive()
-
-    # Check weather the product is for sale
-    if any(map(lambda tag: not tag.is_for_sale, product.tags)):
-        raise exc.EntryIsNotForSale()
-
-    # Check amount
-    if data['amount'] <= 0:
-        raise exc.InvalidAmount()
-
-    # If the purchase is made by an administrator, the credit limit
-    # may be exceeded.
-    if not admin:
-        limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
-        current_credit = user.credit
-        future_credit = current_credit - (product.price * data['amount'])
-        if future_credit < limit:
-            raise exc.InsufficientCredit()
+    # It is allowed to create multiple purchases at once
+    if isinstance(data, list):
+        for purchase in data:
+            insert_purchase(admin, purchase)
+    else:
+        insert_purchase(admin, data)
 
     try:
-        purchase = Purchase(**data)
-        db.session.add(purchase)
         db.session.commit()
     except IntegrityError:
         raise exc.CouldNotCreateEntry()

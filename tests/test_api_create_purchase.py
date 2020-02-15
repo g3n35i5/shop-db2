@@ -96,6 +96,32 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 1)
 
+    def test_create_multiple_purchases_at_once(self):
+        """Creating multiple purchases at once"""
+        data = [
+            {'user_id': 2, 'product_id': 1, 'amount': 1},
+            {'user_id': 2, 'product_id': 2, 'amount': 1},
+            {'user_id': 2, 'product_id': 3, 'amount': 1}
+        ]
+        res = self.post(url='/purchases', data=data)
+        data = json.loads(res.data)
+        self.assertEqual(data['message'], 'Purchase created.')
+        purchases = Purchase.query.all()
+        self.assertEqual(3, len(purchases))
+
+    def test_create_multiple_purchases_with_invalid_data(self):
+        """This test ensures that if you create multiple purchases at once, a single error will
+        prevent the whole transaction"""
+        data = [
+            {'user_id': 2, 'product_id': 1, 'amount': 1},
+            {'user_id': 2, 'product_id': 2, 'amount': 1},
+            {'user_id': 2, 'product_id': 3, 'amount': '1'}
+        ]
+        res = self.post(url='/purchases', data=data)
+        self.assertException(res, exc.WrongType)
+        purchases = Purchase.query.all()
+        self.assertEqual(0, len(purchases))
+
     def test_create_purchase_with_timestamp_as_admin(self):
         """Creating a purchase with a timestamp as administrator"""
         data = {'user_id': 2, 'product_id': 3, 'amount': 4, 'timestamp': '2000-01-01 12:00:00 UTC'}
