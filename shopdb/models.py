@@ -93,7 +93,7 @@ class User(db.Model):
                                         .limit(1)
                                         .as_scalar())
 
-    # Column property for the active state
+    # Column property for the rank_id
     rank_id = column_property(select([Rank.id])
                               .where(and_(RankUpdate.user_id == id, Rank.id == RankUpdate.rank_id))
                               .order_by(RankUpdate.id.desc())
