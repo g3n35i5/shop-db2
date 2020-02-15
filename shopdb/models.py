@@ -80,6 +80,13 @@ class User(db.Model):
                              .limit(1)
                              .as_scalar())
 
+    # Column property for the is system user property
+    is_system_user = column_property(select([Rank.is_system_user])
+                                     .where(and_(RankUpdate.user_id == id, Rank.id == RankUpdate.rank_id))
+                                     .order_by(RankUpdate.id.desc())
+                                     .limit(1)
+                                     .as_scalar())
+
     # Column property for the verification_date
     verification_date = column_property(select([UserVerification.timestamp])
                                         .where(UserVerification.user_id == id)

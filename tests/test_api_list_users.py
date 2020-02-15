@@ -15,17 +15,26 @@ class ListUsersAPITestCase(BaseAPITestCase):
         # Set user 3 inactive
         rank = Rank.query.filter(Rank.active.is_(False)).first()
         User.query.filter_by(id=3).first().set_rank_id(rank.id, 1)
+        # Make user 2 a system user
+        db.session.add(Rank(name="System", is_system_user=True))
+        db.session.flush()
+        rank = Rank.query.filter(Rank.is_system_user.is_(True)).first()
+        User.query.filter_by(id=2).first().set_rank_id(rank.id, 1)
         db.session.commit()
+
+        # Make sure user 3 is inactive and user 4 is a system user
         self.assertFalse(User.query.filter_by(id=3).first().active)
+        self.assertTrue(User.query.filter_by(id=2).first().is_system_user)
+
         for role in ['user', None]:
             res = self.get(url='/users', role=role)
             self.assertEqual(res.status_code, 200)
             users = json.loads(res.data)
-            self.assertEqual(len(users), 2)
-            for user in users:
-                self.assertEqual(len(user), 4)
-                for item in ['id', 'firstname', 'lastname', 'rank_id']:
-                    assert item in user
+            self.assertEqual(len(users), 1)
+            user = users[0]
+            self.assertEqual(len(user), 4)
+            for item in ['id', 'firstname', 'lastname', 'rank_id']:
+                assert item in user
 
     def test_list_users_with_token(self):
         """Get a list of all users as admin. It should contain more information

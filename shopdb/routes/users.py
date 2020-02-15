@@ -36,11 +36,12 @@ def list_users(admin):
 
     query = QueryFromRequestParameters(User, request.args, fields=fields)
 
-    # Hide non verified and inactive users for non-administrators
+    # Hide non verified, inactive and system users for non-administrators
     if admin is None:
         query = (query
                  .filter(User.is_verified.is_(True))
-                 .filter(User.active.is_(True)))
+                 .filter(User.active.is_(True))
+                 .filter(User.is_system_user.is_(False)))
 
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
