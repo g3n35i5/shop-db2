@@ -14,6 +14,7 @@ except ModuleNotFoundError:
 import argparse
 from shopdb.api import app, db, set_app
 from dev import insert_dev_data
+from flask_cors import CORS
 
 parser = argparse.ArgumentParser(description='Starting script shop.db')
 parser.add_argument('--mode', choices=['development', 'local'])
@@ -29,6 +30,7 @@ if args.mode == 'development':
 elif args.mode == 'local':
     print('Starting shop-db on the local database')
     set_app(config.ProductiveConfig)
+    CORS(app, expose_headers='*')
     app.app_context().push()
 
 else:
