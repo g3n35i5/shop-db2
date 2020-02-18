@@ -20,6 +20,8 @@ product_tag_assignments = db.Table('product_tag_assignments',
 
 class Rank(db.Model):
     __tablename__ = 'ranks'
+    __updateable_fields__ = {'name': str, 'is_system_user': bool, 'debt_limit': int}
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=True, nullable=False)
     active = db.Column(db.Boolean, nullable=False, default=True)
@@ -66,6 +68,8 @@ class UserVerification(db.Model):
 
 class User(db.Model):
     __tablename__ = 'users'
+    __updateable_fields__ = {'firstname': str, 'lastname': str, 'password': bytes, 'is_admin': bool, 'rank_id': int}
+
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
     firstname = db.Column(db.String(32), unique=False, nullable=True)
@@ -149,10 +153,20 @@ class User(db.Model):
 
     @hybrid_method
     def set_rank_id(self, rank_id, admin_id):
-        if self.rank_id == rank_id:
-            raise NothingHasChanged()
-        ru = RankUpdate(rank_id=rank_id, admin_id=admin_id, user_id=self.id)
-        db.session.add(ru)
+        if self.is_verified:
+            ru = RankUpdate(rank_id=rank_id, admin_id=admin_id, user_id=self.id)
+            db.session.add(ru)
+        else:
+            self.verify(admin_id=admin_id, rank_id=rank_id)
+
+    @hybrid_method
+    def set_is_admin(self, is_admin, admin_id):
+        self.set_admin(is_admin=is_admin, admin_id=admin_id)
+        if not self.is_admin:
+            users = User.query.all()
+            admins = list(filter(lambda x: x.is_admin, users))
+            if not admins:
+                raise NoRemainingAdmin()
 
     @hybrid_property
     def rank(self):
@@ -251,6 +265,11 @@ class ProductPrice(db.Model):
 
 class Product(db.Model):
     __tablename__ = 'products'
+    __updateable_fields__ = {
+        'name': str, 'price': int, 'barcode': str, 'tags': list, 'imagename': str,
+        'countable': bool, 'revocable': bool
+    }
+
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'),
@@ -339,6 +358,53 @@ class Product(db.Model):
         )
         db.session.add(productprice)
 
+    @hybrid_method
+    def set_barcode(self, barcode):
+        if Product.query.filter_by(barcode=barcode).first():
+            raise EntryAlreadyExists()
+        self.barcode = barcode
+
+    @hybrid_method
+    def set_tags(self, tags):
+        # All tag ids must be int
+        if not all([isinstance(tag_id, int) for tag_id in tags]):
+            raise InvalidData()
+
+        # No changes?
+        if sorted(tags) == sorted(self.tag_ids):
+            raise NothingHasChanged()
+
+        # If there are no remaining tags after the update, the request is invalid.
+        if len(tags) == 0:
+            raise NoRemainingTag()
+
+        # Get a list of all new tag ids and a list of all removed tag ids
+        added_tag_ids = [x for x in tags if x not in self.tag_ids]
+        removed_tag_ids = [x for x in self.tag_ids if x not in tags]
+
+        # Add all new tags in the added tag ids list
+        for tag_id in added_tag_ids:
+            tag = Tag.query.filter_by(id=tag_id).first()
+            if tag is None:
+                raise EntryNotFound()
+            self.tags.append(tag)
+
+        # Remove all tags in the remove tag ids list
+        for tag_id in removed_tag_ids:
+            tag = Tag.query.filter_by(id=tag_id).first()
+            if tag is None:
+                raise EntryNotFound()
+            self.tags.remove(tag)
+
+    @hybrid_method
+    def set_imagename(self, imagename):
+        if imagename != self.imagename:
+            upload = Upload.query.filter_by(filename=imagename).first()
+            if not upload:
+                raise EntryNotFound()
+
+            self.image_upload_id = upload.id
+
     @property
     def tag_ids(self):
         return [tag.id for tag in self.tags]
@@ -349,6 +415,7 @@ class Product(db.Model):
 
 class Tag(db.Model):
     __tablename__ = 'tags'
+    __updateable_fields__ = {'name': str, 'is_for_sale': bool}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(24), unique=True, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'),
@@ -361,6 +428,8 @@ class Tag(db.Model):
 
 class Purchase(db.Model):
     __tablename__ = 'purchases'
+    __updateable_fields__ = {'revoked': bool, 'amount': int}
+
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -375,6 +444,11 @@ class Purchase(db.Model):
         'User',
         back_populates='purchases',
         foreign_keys=[user_id]
+    )
+
+    # Link to the product
+    product = db.relationship(
+        'Product', foreign_keys=[product_id]
     )
 
     def __init__(self, **kwargs):
@@ -395,9 +469,10 @@ class Purchase(db.Model):
         return user_id
 
     @hybrid_method
-    def toggle_revoke(self, revoked):
-        if self.revoked == revoked:
-            raise NothingHasChanged
+    def set_revoked(self, revoked):
+        if not self.product.revocable:
+            raise EntryNotRevocable()
+
         pr = PurchaseRevoke(purchase_id=self.id, revoked=revoked)
         self.revoked = revoked
         db.session.add(pr)
@@ -423,6 +498,8 @@ class Purchase(db.Model):
 
 class ReplenishmentCollection(db.Model):
     __tablename__ = 'replenishmentcollections'
+    __updateable_fields__ = {'revoked': bool, 'comment': str, 'timestamp': int}
+
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -437,13 +514,31 @@ class ReplenishmentCollection(db.Model):
                        filter_by(revoked=False).all()))
 
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
-        if self.revoked == revoked:
-            raise NothingHasChanged()
-        dr = ReplenishmentCollectionRevoke(revoked=revoked, admin_id=admin_id,
-                                           replcoll_id=self.id)
+    def set_revoked(self, revoked, admin_id):
+        # Which replenishments are not revoked?
+        non_revoked_replenishments = self.replenishments.filter_by(revoked=False).all()
+        if not revoked and not non_revoked_replenishments:
+            raise EntryNotRevocable()
+
+        dr = ReplenishmentCollectionRevoke(revoked=revoked, admin_id=admin_id, replcoll_id=self.id)
         self.revoked = revoked
         db.session.add(dr)
+
+    @hybrid_method
+    def set_timestamp(self, timestamp):
+        try:
+            timestamp = datetime.datetime.fromtimestamp(timestamp)
+            assert timestamp <= datetime.datetime.utcnow()
+            self.timestamp = timestamp
+        except (AssertionError, TypeError, ValueError, OSError, OverflowError):
+            """
+            AssertionError: The timestamp lies in the future.
+            TypeError:      Invalid type for conversion.
+            ValueError:     Timestamp is out of valid range.
+            OSError:        Value exceeds the data type.
+            OverflowError:  Timestamp out of range for platform time_t.
+            """
+            raise InvalidData()
 
     @hybrid_property
     def revokehistory(self):
@@ -492,6 +587,8 @@ class ReplenishmentCollectionRevoke(Revoke, db.Model):
 
 class Replenishment(db.Model):
     __tablename__ = 'replenishments'
+    __updateable_fields__ = {'revoked': bool, 'amount': int, 'total_price': int}
+
     id = db.Column(db.Integer, primary_key=True)
     replcoll_id = db.Column(db.Integer,
                             db.ForeignKey('replenishmentcollections.id'),
@@ -502,14 +599,35 @@ class Replenishment(db.Model):
     amount = db.Column(db.Integer, nullable=False)
     total_price = db.Column(db.Integer, nullable=False)
 
+    # Link to the replenishmentcollection
+    replenishmentcollection = db.relationship(
+        'ReplenishmentCollection',
+        back_populates='replenishments',
+        foreign_keys=[replcoll_id]
+    )
+
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
-        if self.revoked == revoked:
-            raise NothingHasChanged()
-        dr = ReplenishmentRevoke(revoked=revoked, admin_id=admin_id,
-                                 repl_id=self.id)
+    def set_revoked(self, revoked, admin_id, skip_checks: bool = False):
+        # Get all not revoked replenishments corresponding to the
+        # replenishmentcollection before changes are made
+        non_revoked_replenishments = self.replenishmentcollection.replenishments.filter_by(revoked=False).all()
+        if not revoked and not non_revoked_replenishments:
+            dr = ReplenishmentCollectionRevoke(revoked=False, admin_id=admin_id,
+                                               replcoll_id=self.replenishmentcollection.id)
+            self.replenishmentcollection.revoked = False
+            db.session.add(dr)
+
+        dr = ReplenishmentRevoke(revoked=revoked, admin_id=admin_id, repl_id=self.id)
         self.revoked = revoked
         db.session.add(dr)
+
+        # Check if ReplenishmentCollection still has non-revoked replenishments
+        non_revoked_replenishments = self.replenishmentcollection.replenishments.filter_by(revoked=False).all()
+        if not self.replenishmentcollection.revoked and not non_revoked_replenishments:
+            dr = ReplenishmentCollectionRevoke(revoked=True, admin_id=admin_id,
+                                               replcoll_id=self.replenishmentcollection.id)
+            self.replenishmentcollection.revoked = True
+            db.session.add(dr)
 
     @hybrid_property
     def revokehistory(self):
@@ -544,6 +662,8 @@ class PurchaseRevoke(db.Model):
 
 class Deposit(db.Model):
     __tablename__ = 'deposits'
+    __updateable_fields__ = {'revoked': bool}
+
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -560,11 +680,8 @@ class Deposit(db.Model):
     )
 
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
-        if self.revoked == revoked:
-            raise NothingHasChanged
-        dr = DepositRevoke(revoked=revoked, admin_id=admin_id,
-                           deposit_id=self.id)
+    def set_revoked(self, revoked, admin_id):
+        dr = DepositRevoke(revoked=revoked, admin_id=admin_id, deposit_id=self.id)
         self.revoked = revoked
         db.session.add(dr)
 
@@ -591,6 +708,8 @@ class DepositRevoke(Revoke, db.Model):
 
 class Refund(db.Model):
     __tablename__ = 'refunds'
+    __updateable_fields__ = {'revoked': bool}
+
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -607,11 +726,8 @@ class Refund(db.Model):
     )
 
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
-        if self.revoked == revoked:
-            raise NothingHasChanged
-        rr = RefundRevoke(revoked=revoked, admin_id=admin_id,
-                          refund_id=self.id)
+    def set_revoke(self, revoked, admin_id):
+        rr = RefundRevoke(revoked=revoked, admin_id=admin_id, refund_id=self.id)
         self.revoked = revoked
         db.session.add(rr)
 
@@ -638,6 +754,8 @@ class RefundRevoke(Revoke, db.Model):
 
 class Payoff(db.Model):
     __tablename__ = 'payoffs'
+    __updateable_fields__ = {'revoked': bool}
+
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -646,11 +764,8 @@ class Payoff(db.Model):
     amount = db.Column(db.Integer, nullable=False)
 
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
-        if self.revoked == revoked:
-            raise NothingHasChanged
-        rr = PayoffRevoke(revoked=revoked, admin_id=admin_id,
-                          payoff_id=self.id)
+    def set_revoked(self, revoked, admin_id):
+        rr = PayoffRevoke(revoked=revoked, admin_id=admin_id, payoff_id=self.id)
         self.revoked = revoked
         db.session.add(rr)
 
@@ -677,6 +792,8 @@ class PayoffRevoke(Revoke, db.Model):
 
 class Stocktaking(db.Model):
     __tablename__ = 'stocktakings'
+    __updateable_fields__ = {'count': int}
+
     id = db.Column(db.Integer, primary_key=True)
     count = db.Column(db.Integer, nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
@@ -684,6 +801,12 @@ class Stocktaking(db.Model):
     collection_id = db.Column(db.Integer,
                               db.ForeignKey('stocktakingcollections.id'),
                               nullable=False)
+
+    @hybrid_method
+    def set_count(self, count):
+        if count < 0:
+            raise InvalidAmount()
+        self.count = count
 
     # Link to the stocktakingcollection
     stocktakingcollection = db.relationship(
@@ -695,6 +818,8 @@ class Stocktaking(db.Model):
 
 class StocktakingCollection(db.Model):
     __tablename__ = 'stocktakingcollections'
+    __updateable_fields__ = {'revoked': bool}
+
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False, default=False)
@@ -703,11 +828,8 @@ class StocktakingCollection(db.Model):
                                    foreign_keys='Stocktaking.collection_id')
 
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
-        if self.revoked == revoked:
-            raise NothingHasChanged
-        sr = StocktakingCollectionRevoke(revoked=revoked, admin_id=admin_id,
-                                         collection_id=self.id)
+    def set_revoked(self, revoked, admin_id):
+        sr = StocktakingCollectionRevoke(revoked=revoked, admin_id=admin_id, collection_id=self.id)
         self.revoked = revoked
         db.session.add(sr)
 
@@ -735,6 +857,8 @@ class StocktakingCollectionRevoke(Revoke, db.Model):
 
 class Turnover(db.Model):
     __tablename__ = 'turnovers'
+    __updateable_fields__ = {'revoked': bool}
+
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False, default=False)
@@ -743,11 +867,8 @@ class Turnover(db.Model):
     comment = db.Column(db.String(256), unique=False, nullable=False)
 
     @hybrid_method
-    def toggle_revoke(self, revoked, admin_id):
-        if self.revoked == revoked:
-            raise NothingHasChanged
-        tr = TurnoverRevoke(revoked=revoked, admin_id=admin_id,
-                            turnover_id=self.id)
+    def set_revoked(self, revoked, admin_id):
+        tr = TurnoverRevoke(revoked=revoked, admin_id=admin_id, turnover_id=self.id)
         self.revoked = revoked
         db.session.add(tr)
 
@@ -759,7 +880,6 @@ class Turnover(db.Model):
         revokehistory = []
         for revoke in res:
             revokehistory.append({
-                'id': revoke.id,
                 'id': revoke.id,
                 'timestamp': revoke.timestamp,
                 'revoked': revoke.revoked

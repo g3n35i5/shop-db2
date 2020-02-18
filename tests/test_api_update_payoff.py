@@ -76,5 +76,5 @@ class UpdatePayoffAPITestCase(BaseAPITestCase):
         res = self.put(url='/payoffs/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        self.assertEqual(data['message'], 'Updated payoff.')
+        self.assertEqual(data['message'], 'Updated payoff')
         self.assertTrue(Payoff.query.filter_by(id=1).first().revoked)

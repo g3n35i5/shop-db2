@@ -18,7 +18,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message', 'updated_fields' in data
-        self.assertEqual(data['message'], 'Updated stocktaking.')
+        self.assertEqual(data['message'], 'Updated stocktaking')
         self.assertEqual(data['updated_fields'], ['count'])
         stocktaking = Stocktaking.query.filter_by(id=1).first()
         self.assertEqual(stocktaking.count, 20)

@@ -6,8 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
-from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.validators import check_fields_and_types
+from shopdb.helpers.utils import convert_minimal, json_body, generic_update
 from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 from shopdb.models import Tag
@@ -136,44 +136,9 @@ def update_tag(admin, id):
     """
     Update the tag with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the tag id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the product id.
 
-    :return:                     A message that the update was
-                                 successful and a list of all updated fields.
-
-    :raises EntryNotFound:       If the tag with this ID does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request
-                                 data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    data = json_body()
-
-    # Check, if the product exists.
-    tag = Tag.query.filter_by(id=id).first()
-    if not tag:
-        raise exc.EntryNotFound()
-
-    updateable = {'name': str, 'is_for_sale': bool}
-
-    # Check forbidden fields
-    check_forbidden(data, updateable, tag)
-    # Check types
-    check_fields_and_types(data, None, updateable)
-
-    updated_fields = update_fields(data, tag)
-    tag.created_by = admin.id
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': 'Updated tag.',
-        'updated_fields': updated_fields
-    }), 201
+    return generic_update(Tag, id, json_body(), admin)

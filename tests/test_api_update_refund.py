@@ -77,5 +77,5 @@ class UpdateRefundAPITestCase(BaseAPITestCase):
         res = self.put(url='/refunds/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        self.assertEqual(data['message'], 'Updated refund.')
+        self.assertEqual(data['message'], 'Updated refund')
         self.assertTrue(Refund.query.filter_by(id=1).first().revoked)

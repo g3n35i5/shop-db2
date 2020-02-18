@@ -77,5 +77,5 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         res = self.put(url='/deposits/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        self.assertEqual(data['message'], 'Updated deposit.')
+        self.assertEqual(data['message'], 'Updated deposit')
         self.assertTrue(Deposit.query.filter_by(id=1).first().revoked)

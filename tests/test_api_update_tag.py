@@ -61,7 +61,7 @@ class UpdateTagAPITestCase(BaseAPITestCase):
         res = self.put(url='/tags/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        self.assertEqual(data['message'], 'Updated tag.')
+        self.assertEqual(data['message'], 'Updated tag')
         self.assertEqual(len(data['updated_fields']), 1)
         self.assertEqual(data['updated_fields'][0], 'name')
         self.assertEqual(Tag.query.filter_by(id=1).first().name, 'Foo')

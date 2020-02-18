@@ -7,7 +7,7 @@ from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired, adminOptional, checkIfUserIsValid
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.utils import convert_minimal, update_fields, json_body, generic_update
 from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.helpers.users import insert_user
 from shopdb.api import app, db, bcrypt
@@ -173,104 +173,50 @@ def update_user(admin, id):
     """
     Update the user with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the user id.
-    :return:                     A message that the update was
-                                 successful and a list of all updated fields.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the user id.
 
-    :raises EntryNotFound:        If the user with this ID does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request
-                                 data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises PasswordsDoNotMatch: If the password and its repetition do not
-                                 match.
-    :raises DataIsMissing:       If the password is to be updated but no
-                                 repetition of the password exists in the
-                                 request.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
+    # Get the update data
     data = json_body()
 
-    # Query user
+    # Query the user. If he/she is not verified yet, there *must* be a
+    # rank_id given in the update data.
     user = User.query.filter(User.id == id).first()
     if not user:
         raise exc.EntryNotFound()
 
-    allowed = {
-        'firstname': str,
-        'lastname': str,
-        'password': str,
-        'password_repeat': str,
-        'is_admin': bool,
-        'rank_id': int}
-
-    # Check the data for forbidden fields.
-    check_forbidden(data, allowed, user)
-    # Check all allowed fields and for their types.
-    check_fields_and_types(data, None, allowed)
-
-    updated_fields = []
-
-    # Check if user has been verified
     if not user.is_verified and 'rank_id' not in data:
         raise exc.UserIsNotVerified()
 
-    # Update rank
-    if 'rank_id' in data:
-        if user.is_verified:
-            user.set_rank_id(rank_id=data['rank_id'], admin_id=admin.id)
-        else:
-            user.verify(admin_id=admin.id, rank_id=data['rank_id'])
-        updated_fields.append('rank_id')
-        del data['rank_id']
-
-    # Update admin role
-    if 'is_admin' in data:
-        user.set_admin(is_admin=data['is_admin'], admin_id=admin.id)
-        if not user.is_admin:
-            users = User.query.all()
-            admins = list(filter(lambda x: x.is_admin, users))
-            if not admins:
-                raise exc.NoRemainingAdmin()
-
-        updated_fields.append('is_admin')
-        del data['is_admin']
-
-    # Check password
+    # The password pre-check must be done here...
     if 'password' in data:
-        if 'password_repeat' in data:
-            password = data['password'].strip()
-            password_repeat = data['password_repeat'].strip()
-
-            if password != password_repeat:
-                raise exc.PasswordsDoNotMatch()
-
-            if len(password) < app.config['MINIMUM_PASSWORD_LENGTH']:
-                raise exc.PasswordTooShort()
-            user.password = bcrypt.generate_password_hash(password)
-            updated_fields.append('password')
-            del data['password_repeat']
-        else:
+        # The repeat password must be there, too!
+        if 'password_repeat' not in data:
             raise exc.DataIsMissing()
 
-        del data['password']
+        # Both must be strings
+        if not all([isinstance(x, str) for x in [data['password'], data['password_repeat']]]):
+            raise exc.WrongType()
 
-    # All other fields
-    updateable = ['firstname', 'lastname']
-    check_forbidden(data, updateable, user)
-    updated_fields = update_fields(data, user, updated=updated_fields)
+        # Passwords must match
+        if data['password'] != data['password_repeat']:
+            raise exc.PasswordsDoNotMatch()
 
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
+        # Minimum password length
+        if len(data['password']) < app.config['MINIMUM_PASSWORD_LENGTH']:
+            raise exc.PasswordTooShort()
 
-    return jsonify({
-        'message': 'Updated user.',
-        'updated_fields': updated_fields
-    }), 201
+        # Convert the password into a salted hash
+        # DONT YOU DARE TO REMOVE THIS LINE
+        data['password'] = bcrypt.generate_password_hash(data['password'])
+        # DONT YOU DARE TO REMOVE THIS LINE
+
+        # All fine, delete repeat_password from the dict and do the rest of the update
+        del data['password_repeat']
+
+    return generic_update(User, id, data, admin)
 
 
 @app.route('/users/<int:id>', methods=['DELETE'])

@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from flask import jsonify, request
 from shopdb.api import app, db
 import shopdb.exceptions as exc
-from shopdb.helpers.utils import convert_minimal, json_body, update_fields
+from shopdb.helpers.utils import convert_minimal, json_body, generic_update
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.helpers.decorators import adminRequired
@@ -92,40 +92,10 @@ def update_rank(admin, id):
     """
     Update the rank with the given id.
 
-    :param admin:                Is the administrator user, determined by @adminRequired.
-    :param id:                   Is the rank id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the product id.
 
-    :return:                     A message that the update was
-                                 successful and a list of all updated fields.
-
-    :raises EntryNotFound:       If the rank with this ID does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    data = json_body()
-
-    # Check, if the product exists.
-    rank = Rank.query.filter_by(id=id).first()
-    if not rank:
-        raise exc.EntryNotFound()
-
-    updateable = {'name': str, 'is_system_user': bool, 'debt_limit': int}
-
-    # Check types
-    check_fields_and_types(data, None, updateable)
-
-    updated_fields = update_fields(data, rank)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': 'Updated rank.',
-        'updated_fields': updated_fields
-    }), 201
+    return generic_update(Rank, id, json_body(), admin)
 

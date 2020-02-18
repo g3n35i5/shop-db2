@@ -18,7 +18,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Updated replenishmentcollection.')
+        self.assertEqual(data['message'], 'Updated replenishmentcollection')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.revoked, True)
         required = ['id', 'revoked', 'timestamp']
@@ -53,7 +53,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Updated replenishmentcollection.')
+        self.assertEqual(data['message'], 'Updated replenishmentcollection')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.comment, 'FooBar')
 
@@ -66,7 +66,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Updated replenishmentcollection.')
+        self.assertEqual(data['message'], 'Updated replenishmentcollection')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.timestamp, datetime.datetime.fromtimestamp(timestamp))
 
@@ -142,13 +142,11 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
            replenishments should raise an error"""
         self.insert_default_replenishmentcollections()
         # revoke the corresponding replenishments
-        data = {'revoked': True}
-        res = self.put(url='/replenishments/1', data=data, role='admin')
+        res = self.put(url='/replenishments/1', data={'revoked': True}, role='admin')
         self.assertEqual(res.status_code, 201)
-        res = self.put(url='/replenishments/2', data=data, role='admin')
+        res = self.put(url='/replenishments/2', data={'revoked': True}, role='admin')
         self.assertEqual(res.status_code, 201)
         # actual test
-        res = self.put(url='/replenishmentcollections/1',
-                       data={'revoked': False}, role='admin')
+        res = self.put(url='/replenishmentcollections/1', data={'revoked': False}, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotRevocable)

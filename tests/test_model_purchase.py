@@ -175,16 +175,16 @@ class PurchaseModelTestCase(BaseTestCase):
         self.assertEqual(user.credit, -3000)
         # Revoke some purchases
         purchases = Purchase.query.all()
-        purchases[0].toggle_revoke(revoked=True)
-        purchases[4].toggle_revoke(revoked=True)
-        purchases[6].toggle_revoke(revoked=True)
+        purchases[0].set_revoked(revoked=True)
+        purchases[4].set_revoked(revoked=True)
+        purchases[6].set_revoked(revoked=True)
         db.session.commit()
         # Check user credit
         user = User.query.filter(User.id == 1).first()
         self.assertEqual(user.credit, -2100)
         # Un-Revoke one purchase
         purchases = Purchase.query.all()
-        purchases[4].toggle_revoke(revoked=False)
+        purchases[4].set_revoked(revoked=False)
         db.session.commit()
         # Check user credit
         user = User.query.filter(User.id == 1).first()

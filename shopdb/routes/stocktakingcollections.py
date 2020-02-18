@@ -12,7 +12,7 @@ import shopdb.exceptions as exc
 from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden, check_allowed_parameters
-from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.utils import convert_minimal, update_fields, json_body, generic_update
 from shopdb.helpers.query import QueryFromRequestParameters
 import shopdb.helpers.products as product_helpers
 from shopdb.api import app, db
@@ -259,57 +259,12 @@ def update_stocktakingcollection(admin, id):
     """
     Update the stocktakingcollection with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the stocktakingcollection id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the stocktakingcollection id.
 
-    :return:                     A message that the update was successful.
-
-    :raises EntryNotFound:       If the stocktakingcollection with this ID
-                                 does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request
-                                 data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises NothingHasChanged:   If no change occurred after the update.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    # Check StocktakingCollection
-    collection = (StocktakingCollection.query.filter_by(id=id).first())
-    if not collection:
-        raise exc.EntryNotFound()
-
-    data = json_body()
-
-    if data == {}:
-        raise exc.NothingHasChanged()
-
-    updateable = {'revoked': bool}
-    check_forbidden(data, updateable, collection)
-    check_fields_and_types(data, None, updateable)
-
-    updated_fields = []
-    # Handle revoke
-    if 'revoked' in data:
-        if collection.revoked == data['revoked']:
-            raise exc.NothingHasChanged()
-        collection.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
-        del data['revoked']
-        updated_fields.append('revoked')
-
-    # Handle all other fields
-    updated_fields = update_fields(data, collection, updated_fields)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': 'Updated stocktakingcollection.',
-        'updated_fields': updated_fields
-    }), 201
+    return generic_update(StocktakingCollection, id, json_body(), admin)
 
 
 @app.route('/stocktakings/<int:id>', methods=['PUT'])
@@ -318,55 +273,9 @@ def update_stocktaking(admin, id):
     """
     Update the stocktaking with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the stocktaking id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the stocktaking id.
 
-    :return:                     A message that the update was successful
-                                 and a list of all updated fields.
-
-    :raises EntryNotFound:       If the stocktaking with this ID does not
-                                 exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the
-                                 request data.
-    :raises InvalidType:         If one or more parameters have an invalid
-                                 type.
-    :raises NothingHasChanged:   If no change occurred after the update.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    # Check Stocktaking
-    stocktaking = Stocktaking.query.filter_by(id=id).first()
-    if not stocktaking:
-        raise exc.EntryNotFound()
-
-    # Data validation
-    data = json_body()
-    updateable = {'count': int}
-    check_forbidden(data, updateable, stocktaking)
-    check_fields_and_types(data, None, updateable)
-
-    updated_fields = []
-    message = 'Updated stocktaking.'
-
-    # Check count
-    if 'count' in data:
-        if data['count'] < 0:
-            raise exc.InvalidAmount()
-
-        if data['count'] == stocktaking.count:
-            raise exc.NothingHasChanged()
-
-    # Handle all other fields
-    updated_fields = update_fields(data, stocktaking, updated_fields)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': message,
-        'updated_fields': updated_fields
-    }), 201
+    return generic_update(Stocktaking, id, json_body(), admin)

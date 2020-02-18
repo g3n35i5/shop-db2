@@ -7,7 +7,7 @@ from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.utils import convert_minimal, json_body, generic_update
 from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 from shopdb.models import Turnover
@@ -95,47 +95,9 @@ def update_turnover(admin, id):
     """
     Update the turnover with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the turnover id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the turnover id.
 
-    :return:                     A message that the update was
-                                 successful and a list of all updated fields.
-
-    :raises EntryNotFound:       If the turnover with this ID does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request
-                                 data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises NothingHasChanged:   If no change occurred after the update.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    # Check turnover
-    turnover = Turnover.query.filter_by(id=id).first()
-    if not turnover:
-        raise exc.EntryNotFound()
-
-    data = json_body()
-
-    if not data:
-        raise exc.NothingHasChanged()
-
-    updateable = {'revoked': bool}
-    check_forbidden(data, updateable, turnover)
-    check_fields_and_types(data, None, updateable)
-
-    # Handle turnover revoke
-    if 'revoked' in data:
-        if turnover.revoked == data['revoked']:
-            raise exc.NothingHasChanged()
-        turnover.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': 'Updated turnover.',
-    }), 201
+    return generic_update(Turnover, id, json_body(), admin)
