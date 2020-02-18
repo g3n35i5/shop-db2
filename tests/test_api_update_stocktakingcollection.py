@@ -18,7 +18,7 @@ class UpdateStocktakingCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message' in data
-        self.assertEqual(data['message'], 'Updated stocktakingcollection.')
+        self.assertEqual(data['message'], 'Updated stocktakingcollection')
         collection = StocktakingCollection.query.filter_by(id=1).first()
         self.assertEqual(collection.revoked, True)
         required = ['id', 'revoked', 'timestamp']

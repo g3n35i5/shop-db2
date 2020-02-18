@@ -103,7 +103,7 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         # Insert the replenishmentcollections and revoke the first one.
         self.insert_default_replenishmentcollections()
         rc = ReplenishmentCollection.query.filter_by(id=1).first()
-        rc.toggle_revoke(admin_id=1, revoked=True)
+        rc.set_revoked(admin_id=1, revoked=True)
         db.session.commit()
 
         # Manipulate the replenishment timestamps
@@ -117,7 +117,7 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         # Insert the payoffs and revoke the first one.
         self.insert_default_payoffs()
         po = Payoff.query.filter_by(id=1).first()
-        po.toggle_revoke(admin_id=1, revoked=True)
+        po.set_revoked(admin_id=1, revoked=True)
         db.session.commit()
 
         # Add negative payoff

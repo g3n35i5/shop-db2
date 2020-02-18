@@ -37,7 +37,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         self.insert_default_purchases()
         # Revoke the third purchase
         purchase = Purchase.query.filter_by(id=3).first()
-        purchase.toggle_revoke(revoked=True)
+        purchase.set_revoked(revoked=True)
         db.session.commit()
         res = self.get(url='/purchases')
         self.assertEqual(res.status_code, 200)
@@ -63,7 +63,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
 
         # Revoke the third purchase
         purchase = Purchase.query.filter_by(id=3).first()
-        purchase.toggle_revoke(revoked=True)
+        purchase.set_revoked(revoked=True)
         db.session.commit()
         res = self.get(url='/purchases', params={"sort": {"field": "id", "order": "DESC"}, "pagination": {'page': 1, 'perPage': 3}})
         self.assertEqual(res.status_code, 200)

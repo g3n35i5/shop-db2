@@ -9,8 +9,8 @@ from shopdb.helpers.deposits import insert_deposit
 from shopdb.api import app, db
 from shopdb.models import Deposit
 from shopdb.helpers.decorators import adminRequired
-from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.validators import check_fields_and_types
+from shopdb.helpers.utils import convert_minimal, json_body, generic_update
 from shopdb.helpers.query import QueryFromRequestParameters
 
 
@@ -131,47 +131,9 @@ def update_deposit(admin, id):
     """
     Update the deposit with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the deposit id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the deposit id.
 
-    :return:                     A message that the update was
-                                 successful and a list of all updated fields.
-
-    :raises EntryNotFound:       If the deposit with this ID does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request
-                                 data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises NothingHasChanged:   If no change occurred after the update.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    # Check deposit
-    deposit = Deposit.query.filter_by(id=id).first()
-    if not deposit:
-        raise exc.EntryNotFound()
-
-    data = json_body()
-
-    if not data:
-        raise exc.NothingHasChanged()
-
-    updateable = {'revoked': bool}
-    check_forbidden(data, updateable, deposit)
-    check_fields_and_types(data, None, updateable)
-
-    # Handle deposit revoke
-    if 'revoked' in data:
-        if deposit.revoked == data['revoked']:
-            raise exc.NothingHasChanged()
-        deposit.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': 'Updated deposit.',
-    }), 201
+    return generic_update(Deposit, id, json_body(), admin)

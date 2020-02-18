@@ -76,8 +76,6 @@ class UserModelTestCase(BaseTestCase):
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.rank_id, 3)
         self.assertEqual(user.rank.name, 'Alumni')
-        with self.assertRaises(NothingHasChanged):
-            user.set_rank_id(rank_id=3, admin_id=1)
 
     def test_update_user_firstname(self):
         """Update the firstname of a user"""

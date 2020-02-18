@@ -70,5 +70,5 @@ class UpdateTurnoverAPITestCase(BaseAPITestCase):
         res = self.put(url='/turnovers/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        self.assertEqual(data['message'], 'Updated turnover.')
+        self.assertEqual(data['message'], 'Updated turnover')
         self.assertTrue(Turnover.query.filter_by(id=1).first().revoked)

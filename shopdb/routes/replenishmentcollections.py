@@ -8,7 +8,7 @@ from flask import jsonify, request
 import shopdb.exceptions as exc
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from shopdb.helpers.utils import convert_minimal, update_fields, json_body
+from shopdb.helpers.utils import convert_minimal, update_fields, json_body, generic_update
 from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.api import app, db
 from shopdb.models import Replenishment, ReplenishmentCollection, Product
@@ -144,85 +144,12 @@ def update_replenishmentcollection(admin, id):
     """
     Update the replenishmentcollection with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the replenishmentcollection id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the replenishmentcollection id.
 
-    :return:                     A message that the update was successful.
-
-    :raises EntryNotFound:       If the replenishmentcollection with this ID
-                                 does not exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the request
-                                 data.
-    :raises InvalidType:         If one or more parameters have an invalid type.
-    :raises NothingHasChanged:   If no change occurred after the update.
-    :raises CouldNotUpdateEntry: If any other error occurs.
-    :raises EntryNotRevocable:   If the replenishmentcollections was revoked by
-                                 by replenishment_update, because all
-                                 replenishments are revoked, the revoked field
-                                 can not be set to true.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    # Check ReplenishmentCollection
-    replcoll = (ReplenishmentCollection.query.filter_by(id=id).first())
-    if not replcoll:
-        raise exc.EntryNotFound()
-    # Which replenishments are not revoked?
-    repls = replcoll.replenishments.filter_by(revoked=False).all()
-
-    data = json_body()
-
-    if data == {}:
-        raise exc.NothingHasChanged()
-
-    updateable = {'revoked': bool, 'comment': str, 'timestamp': int}
-    check_forbidden(data, updateable, replcoll)
-    check_fields_and_types(data, None, updateable)
-
-    updated_fields = []
-    # Handle replenishmentcollection revoke
-    if 'revoked' in data:
-        if replcoll.revoked == data['revoked']:
-            raise exc.NothingHasChanged()
-        # Check if the revoke was caused through the replenishment_update and
-        # therefor cant be changed
-        if not data['revoked'] and not repls:
-            raise exc.EntryNotRevocable()
-        replcoll.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
-        del data['revoked']
-        updated_fields.append('revoked')
-
-    # Handle new timestamp
-    if 'timestamp' in data:
-        try:
-            timestamp = datetime.datetime.fromtimestamp(data['timestamp'])
-            assert timestamp <= datetime.datetime.now()
-            replcoll.timestamp = timestamp
-            updated_fields.append('revoked')
-        except (AssertionError, TypeError, ValueError, OSError, OverflowError):
-            """
-            AssertionError: The timestamp lies in the future.
-            TypeError:      Invalid type for conversion.
-            ValueError:     Timestamp is out of valid range.
-            OSError:        Value exceeds the data type.
-            OverflowError:  Timestamp out of range for platform time_t.
-            """
-            raise exc.InvalidData()
-        del data['timestamp']
-
-    # Handle all other fields
-    updated_fields = update_fields(data, replcoll, updated_fields)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': 'Updated replenishmentcollection.',
-        'updated_fields': updated_fields
-    }), 201
+    return generic_update(ReplenishmentCollection, id, json_body(), admin)
 
 
 @app.route('/replenishments/<int:id>', methods=['PUT'])
@@ -231,72 +158,9 @@ def update_replenishment(admin, id):
     """
     Update the replenishment with the given id.
 
-    :param admin:                Is the administrator user, determined by
-                                 @adminRequired.
-    :param id:                   Is the replenishment id.
+    :param admin: Is the administrator user, determined by @adminRequired.
+    :param id:    Is the replenishment id.
 
-    :return:                     A message that the update was successful
-                                 and a list of all updated fields.
-
-    :raises EntryNotFound:       If the replenishment with this ID does not
-                                 exist.
-    :raises ForbiddenField:      If a forbidden field is in the request data.
-    :raises UnknownField:        If an unknown parameter exists in the
-                                 request data.
-    :raises InvalidType:         If one or more parameters have an invalid
-                                 type.
-    :raises NothingHasChanged:   If no change occurred after the update.
-    :raises CouldNotUpdateEntry: If any other error occurs.
+    :return:      A message that the update was successful and a list of all updated fields.
     """
-    # Check Replenishment
-    repl = Replenishment.query.filter_by(id=id).first()
-    if not repl:
-        raise exc.EntryNotFound()
-
-    # Get the corresponding ReplenishmentCollection
-    replcoll = (ReplenishmentCollection.query.filter_by(id=repl.replcoll_id)
-                .first())
-    # Get all not revoked replenishments corresponding to the
-    # replenishmentcollection before changes are made
-    repls_nr = replcoll.replenishments.filter_by(revoked=False).all()
-
-    # Data validation
-    data = json_body()
-    updateable = {'revoked': bool, 'amount': int, 'total_price': int}
-    check_forbidden(data, updateable, repl)
-    check_fields_and_types(data, None, updateable)
-
-    updated_fields = []
-    message = 'Updated replenishment.'
-
-    # Handle replenishment revoke
-    if 'revoked' in data:
-        if repl.revoked == data['revoked']:
-            raise exc.NothingHasChanged()
-        if not data['revoked'] and not repls_nr:
-            replcoll.toggle_revoke(revoked=False, admin_id=admin.id)
-            message = message + (' Rerevoked ReplenishmentCollection ID: {}'.format(replcoll.id))
-        repl.toggle_revoke(revoked=data['revoked'], admin_id=admin.id)
-        del data['revoked']
-        updated_fields.append('revoked')
-
-    # Handle all other fields
-    updated_fields = update_fields(data, repl, updated_fields)
-
-    # Check if ReplenishmentCollection still has unrevoked Replenishments
-    repls = replcoll.replenishments.filter_by(revoked=False).all()
-    if not repls and not replcoll.revoked:
-        message = message + (' Revoked ReplenishmentCollection ID: {}'
-                             .format(replcoll.id))
-        replcoll.toggle_revoke(revoked=True, admin_id=admin.id)
-
-    # Apply changes
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
-
-    return jsonify({
-        'message': message,
-        'updated_fields': updated_fields
-    }), 201
+    return generic_update(Replenishment, id, json_body(), admin)

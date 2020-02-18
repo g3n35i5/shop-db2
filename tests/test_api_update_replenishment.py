@@ -18,7 +18,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message', 'updated_fields' in data
-        self.assertEqual(data['message'], 'Updated replenishment.')
+        self.assertEqual(data['message'], 'Updated replenishment')
         self.assertEqual(data['updated_fields'], ['amount', 'total_price'])
         repl = Replenishment.query.filter_by(id=1).first()
         self.assertEqual(repl.amount, 20)
@@ -91,7 +91,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message', 'updated_fields' in data
-        self.assertEqual(data['message'], 'Updated replenishment.')
+        self.assertEqual(data['message'], 'Updated replenishment')
         self.assertEqual(data['updated_fields'], ['amount'])
 
     def test_update_replenishment_revoke(self):
@@ -102,7 +102,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message', 'updated_fields' in data
-        self.assertEqual(data['message'], 'Updated replenishment.')
+        self.assertEqual(data['message'], 'Updated replenishment')
         self.assertEqual(data['updated_fields'], ['revoked'])
         repl = Replenishment.query.filter_by(id=2).first()
         self.assertTrue(repl.revoked)
@@ -115,7 +115,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message', 'updated_fields' in data
-        self.assertEqual(data['message'], 'Updated replenishment.')
+        self.assertEqual(data['message'], 'Updated replenishment')
         self.assertEqual(data['updated_fields'], ['revoked'])
         repl = Replenishment.query.filter_by(id=1).first()
         self.assertTrue(repl.revoked)
@@ -124,8 +124,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message', 'updated_fields' in data
-        self.assertEqual(data['message'],
-                'Updated replenishment. Revoked ReplenishmentCollection ID: 1')
+        self.assertEqual(data['message'], 'Updated replenishment')
         self.assertEqual(data['updated_fields'], ['revoked'])
         repl = Replenishment.query.filter_by(id=2).first()
         self.assertTrue(repl.revoked)
@@ -134,17 +133,15 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(replcoll.price, 0)
 
     def test_update_replenishment_rerevoke_replcoll(self):
-        """Rerevoking a replenishment after all replenishments have been
-           revoked should rerevoke the corresponding replenishmentcollection"""
+        """Re-revoking a replenishment after all replenishments have been
+           revoked should re-revoke the corresponding replenishmentcollection"""
         self.test_update_replenishment_revoke_all()
         data = {'revoked': False}
         res = self.put(url='/replenishments/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         assert 'message', 'updated_fields' in data
-        self.assertEqual(data['message'],
-                        'Updated replenishment. Rerevoked' +
-                         ' ReplenishmentCollection ID: 1')
+        self.assertEqual(data['message'], 'Updated replenishment')
         self.assertEqual(data['updated_fields'], ['revoked'])
         repl = Replenishment.query.filter_by(id=1).first()
         self.assertFalse(repl.revoked)
