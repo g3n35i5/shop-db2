@@ -122,10 +122,6 @@ import shopdb.routes.replenishmentcollections  # noqa: E402
 # noinspection PyUnresolvedReferences
 import shopdb.routes.refunds  # noqa: E402
 
-# Payoff routes
-# noinspection PyUnresolvedReferences
-import shopdb.routes.payoffs  # noqa: E402
-
 # StocktakingCollection routes
 # noinspection PyUnresolvedReferences
 import shopdb.routes.stocktakingcollections  # noqa: E402

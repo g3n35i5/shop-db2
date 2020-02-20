@@ -600,35 +600,3 @@ and revoked field of each entry related to the refund.
 | admin_id | *Integer* | This is the id of the admin who changed the revoke status.
 | refund_id | *Integer* | This is the id of the refund where the revoked status has been changed.
 | revoked | *Boolean* | This indicates whether the Refund is revoked (True) or not (False).
-
-#### Payoff
-
-When an admin buys things for the community with the communities money and the
-products can not directly be linked to a product like coffee beans, he has to
-make a payoff. A payoff can be revoked, even more than once. So in addition, a
-revokehistory for the payoff can be called. The total_price can be used to
-give an overview of the communities finances.
-
-| Name | TYPE | Explanation
-| --- | --- | --- |
-| id | *Integer* | The Payoff id is unique and is used for identification in the application. It is created automatically with a new Payoff.
-| timestamp | *DateTime* | This is the date and time the Payoff was created. It is created automatically with the new Payoff.
-| user_id | *Integer* | This is the id of the user the Payoff was made for.
-| admin_id | *Integer* | This is the id of the admin who made the Payoff.
-| total_price | *Integer* | This describes the amount (in cents) of the Payoff.
-| comment | *String(64)* | This is a short comment where the admin explains what he did and why.
-| revoked | *Boolean* | This indicates whether the Payoff is revoked (True) or not (False). If not specified further, it will automatically be set to False.
-
-#### PayoffRevoke
-
-When an admin revokes or re-revokes a payoff, a PayoffRevoke entry is made. It
-is used to determine the revokehistory of a deposit by listing the id, timestamp
-and revoked field of each entry related to the payoff.
-
-| Name | TYPE | Explanation
-| --- | --- | --- |
-| id | *Integer* | The PayoffRevoke id is unique and is used for identification in the application. It is created automatically with a new PayoffRevoke.
-| timestamp | *DateTime* | This is the date and time the PayoffRevoke was created. It is created automatically with the new PayoffRevoke.
-| admin_id | *Integer* | This is the id of the admin who changed the revoke status.
-| refund_id | *Integer* | This is the id of the refund where the revoked status has been changed.
-| revoked | *Boolean* | This indicates whether the PayoffRevoke is revoked (True) or not (False).

@@ -752,44 +752,6 @@ class RefundRevoke(Revoke, db.Model):
                           nullable=False)
 
 
-class Payoff(db.Model):
-    __tablename__ = 'payoffs'
-    __updateable_fields__ = {'revoked': bool}
-
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    comment = db.Column(db.String(64), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False, default=False)
-    amount = db.Column(db.Integer, nullable=False)
-
-    @hybrid_method
-    def set_revoked(self, revoked, admin_id):
-        rr = PayoffRevoke(revoked=revoked, admin_id=admin_id, payoff_id=self.id)
-        self.revoked = revoked
-        db.session.add(rr)
-
-    @hybrid_property
-    def revokehistory(self):
-        res = (PayoffRevoke.query
-               .filter(PayoffRevoke.payoff_id == self.id)
-               .all())
-        revokehistory = []
-        for revoke in res:
-            revokehistory.append({
-                'id': revoke.id,
-                'timestamp': revoke.timestamp,
-                'revoked': revoke.revoked
-            })
-        return revokehistory
-
-
-class PayoffRevoke(Revoke, db.Model):
-    __tablename__ = 'payoffrevokes'
-    payoff_id = db.Column(db.Integer, db.ForeignKey('payoffs.id'),
-                          nullable=False)
-
-
 class Stocktaking(db.Model):
     __tablename__ = 'stocktakings'
     __updateable_fields__ = {'count': int}
