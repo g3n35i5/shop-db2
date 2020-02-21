@@ -123,10 +123,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
             bytes = test.read()
         image = {'filename': 'valid_image.png',
                  'value': base64.b64encode(bytes).decode()}
-        res = self.post(url='/upload', data=image, role='admin')
-        filename = json.loads(res.data)['filename']
-        upload = Upload.query.filter_by(filename=filename).first()
-        data = {'imagename': filename}
+        data = {'imagename': image}
         res = self.put(url='/products/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
@@ -134,17 +131,8 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(len(data['updated_fields']), 1)
         self.assertEqual(data['updated_fields'][0], 'imagename')
         product = Product.query.filter_by(id=1).first()
-        self.assertEqual(product.imagename, filename)
-        filepath = app.config['UPLOAD_FOLDER'] + filename
+        filepath = app.config['UPLOAD_FOLDER'] + product.imagename
         os.remove(filepath)
-
-    def test_update_product_non_existing_image(self):
-        """Update the product image with a non existing image should
-           raise an error"""
-        data = {'imagename': 'test.png'}
-        res = self.put(url='/products/1', data=data, role='admin')
-        self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.EntryNotFound)
 
     def test_update_barcode_with_existing_barcode(self):
         """

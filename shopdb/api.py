@@ -62,10 +62,6 @@ import shopdb.routes.maintenance  # noqa: E402
 # noinspection PyUnresolvedReferences
 import shopdb.routes.images  # noqa: E402
 
-# Upload routes
-# noinspection PyUnresolvedReferences
-import shopdb.routes.uploads  # noqa: E402
-
 # Backup routes
 # noinspection PyUnresolvedReferences
 import shopdb.routes.backups  # noqa: E402

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from shopdb.exceptions import *
+from shopdb.helpers.uploads import insert_image
+from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.declarative import declared_attr
@@ -266,9 +268,12 @@ class ProductPrice(db.Model):
 class Product(db.Model):
     __tablename__ = 'products'
     __updateable_fields__ = {
-        'name': str, 'price': int, 'barcode': str, 'tags': list, 'imagename': str,
-        'countable': bool, 'revocable': bool
+        'name': str, 'price': int, 'barcode': str, 'tags': list,
+        'countable': bool, 'revocable': bool, 'imagename': dict
     }
+    # that "imagename" is a dict and not a string is because the update compares
+    # whether the values have changed. But since a product has no "image" but only an
+    # "imagename", the data for the new image must be called "imagename" and thus be a dict.
 
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
@@ -365,6 +370,18 @@ class Product(db.Model):
         self.barcode = barcode
 
     @hybrid_method
+    def set_imagename(self, image, admin_id):
+        filename = insert_image(image)
+        # Create an upload
+        try:
+            u = Upload(filename=filename, admin_id=admin_id)
+            db.session.add(u)
+            db.session.flush()
+            self.image_upload_id = u.id
+        except IntegrityError:
+            raise CouldNotCreateEntry()
+
+    @hybrid_method
     def set_tags(self, tags):
         # All tag ids must be int
         if not all([isinstance(tag_id, int) for tag_id in tags]):
@@ -395,15 +412,6 @@ class Product(db.Model):
             if tag is None:
                 raise EntryNotFound()
             self.tags.remove(tag)
-
-    @hybrid_method
-    def set_imagename(self, imagename):
-        if imagename != self.imagename:
-            upload = Upload.query.filter_by(filename=imagename).first()
-            if not upload:
-                raise EntryNotFound()
-
-            self.image_upload_id = upload.id
 
     @property
     def tag_ids(self):
