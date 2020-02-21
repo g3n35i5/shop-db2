@@ -4,11 +4,12 @@ __author__ = 'g3n35i5'
 
 from flask import jsonify
 from sqlalchemy.exc import IntegrityError
+
 import shopdb.exceptions as exc
+from shopdb.api import app, db
+from shopdb.helpers.decorators import deprecate_route
 from shopdb.helpers.users import insert_user
 from shopdb.helpers.utils import json_body
-from shopdb.helpers.decorators import deprecate_route
-from shopdb.api import app, db
 
 
 @app.route('/register', methods=['POST'])

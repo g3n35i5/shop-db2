@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from sqlalchemy.exc import IntegrityError
 from flask import jsonify, request
-from shopdb.api import app, db
+from sqlalchemy.exc import IntegrityError
+
 import shopdb.exceptions as exc
+from shopdb.api import app, db
+from shopdb.helpers.decorators import adminRequired
+from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.helpers.utils import convert_minimal, json_body, generic_update
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.decorators import adminRequired
 from shopdb.models import Rank
 
 
@@ -98,4 +99,3 @@ def update_rank(admin, id):
     :return:      A message that the update was successful and a list of all updated fields.
     """
     return generic_update(Rank, id, json_body(), admin)
-

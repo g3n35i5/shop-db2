@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-import os
-import random
-import shopdb.exceptions as exc
-from PIL import Image
-import configuration as config
-import shutil
 import base64
 import binascii
+import os
+import random
+import shutil
+
+from PIL import Image
+
+import configuration as config
+import shopdb.exceptions as exc
 
 
 def insert_image(file: dict) -> str:

@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-from shopdb.models import (Purchase, Replenishment, Product, StocktakingCollection, Stocktaking,
-                           ReplenishmentCollection)
+from typing import Optional
+
+from sqlalchemy import func, and_
+
 from shopdb.api import db
 from shopdb.helpers.products import _get_product_mean_price_in_time_range
-from typing import Optional
-from sqlalchemy import func, and_
+from shopdb.models import (Purchase, Replenishment, Product, StocktakingCollection, Stocktaking,
+                           ReplenishmentCollection)
 
 
 def _get_balance_between_stocktakings(start, end):
-
     # Check the stocktaking collections
     if not all([start, end]):
         return None
@@ -48,8 +49,8 @@ def _get_balance_between_stocktakings(start, end):
         # Determine how often the product was purchased in the period and at
         # what price.
         res = (db.session.query(
-               func.sum(Purchase.amount),
-               func.sum(Purchase.price))
+            func.sum(Purchase.amount),
+            func.sum(Purchase.price))
                .filter(Purchase.product_id == _id)
                .filter(Purchase.revoked.is_(False))
                .filter(and_(Purchase.timestamp < end.timestamp,
@@ -62,8 +63,8 @@ def _get_balance_between_stocktakings(start, end):
         # Determine how often the product was refilled in the time span and
         # how much was spent on it.
         res = (db.session.query(
-               func.sum(Replenishment.amount),
-               func.sum(Replenishment.total_price))
+            func.sum(Replenishment.amount),
+            func.sum(Replenishment.total_price))
                .join(ReplenishmentCollection,
                      ReplenishmentCollection.id == Replenishment.replcoll_id)
                .filter(Replenishment.product_id == _id)

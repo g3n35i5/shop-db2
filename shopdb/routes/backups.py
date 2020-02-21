@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-import os
-import glob
 import datetime
+import glob
+import os
 from functools import reduce
+
 from flask import jsonify
-from shopdb.helpers.decorators import adminRequired
+
 from shopdb.api import app
+from shopdb.helpers.decorators import adminRequired
 
 
 @app.route('/backups', methods=['GET'])

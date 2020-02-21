@@ -3,12 +3,14 @@
 __author__ = 'g3n35i5'
 
 import datetime
-from flask import jsonify
-import shopdb.exceptions as exc
+
 import jwt
-from shopdb.helpers.validators import check_fields_and_types
-from shopdb.helpers.utils import convert_minimal, json_body
+from flask import jsonify
+
+import shopdb.exceptions as exc
 from shopdb.api import app, bcrypt
+from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import User
 
 

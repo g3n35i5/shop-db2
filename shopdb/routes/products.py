@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from sqlalchemy.exc import IntegrityError
 from flask import jsonify, request
+from sqlalchemy.exc import IntegrityError
+
 import shopdb.exceptions as exc
-from shopdb.helpers.decorators import adminRequired, adminOptional
-from shopdb.helpers.validators import check_fields_and_types
-from shopdb.helpers.utils import generic_update, convert_minimal, json_body
-from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.api import app, db
 import shopdb.helpers.products as product_helpers
+from shopdb.api import app, db
+from shopdb.helpers.decorators import adminRequired, adminOptional
+from shopdb.helpers.query import QueryFromRequestParameters
+from shopdb.helpers.utils import generic_update, convert_minimal, json_body
+from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Product, Tag, product_tag_assignments
 
 

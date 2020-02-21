@@ -3,8 +3,10 @@
 __author__ = 'g3n35i5'
 
 import os
-import shopdb.exceptions as exc
+
 from flask import send_from_directory
+
+import shopdb.exceptions as exc
 from shopdb.api import app
 
 

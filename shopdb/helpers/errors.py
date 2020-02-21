@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.api import app, db
-import shopdb.exceptions as exc
-from flask import jsonify
 import werkzeug.exceptions as werkzeug_exceptions
+from flask import jsonify
+
+import shopdb.exceptions as exc
+from shopdb.api import app, db
 
 
 @app.errorhandler(Exception)

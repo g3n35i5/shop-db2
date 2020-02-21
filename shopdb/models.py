@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
+import datetime
+
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import select, func, and_
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.orm import validates, column_property
+
 from shopdb.exceptions import *
 from shopdb.helpers.uploads import insert_image
-from sqlalchemy.exc import IntegrityError
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import validates, column_property
-import datetime
-from sqlalchemy import select, func, and_
 
 db = SQLAlchemy()
 

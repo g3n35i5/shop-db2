@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-import re
 import json
+import re
 from typing import Optional, Tuple, List
-from flask import jsonify, request, Response
-import urllib
-from werkzeug import ImmutableMultiDict
-from shopdb.models import db
-import shopdb.exceptions as exc
-from sqlalchemy.sql.expression import BinaryExpression
+
 from sqlalchemy import func, types
+from sqlalchemy.sql.expression import BinaryExpression
+from werkzeug import ImmutableMultiDict
+
+import shopdb.exceptions as exc
+from shopdb.models import db
 
 
 class QueryFromRequestParameters:

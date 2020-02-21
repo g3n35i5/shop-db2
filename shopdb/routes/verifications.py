@@ -3,13 +3,14 @@
 __author__ = 'g3n35i5'
 
 from flask import jsonify, request
-import shopdb.exceptions as exc
 from sqlalchemy.sql import exists
+
+import shopdb.exceptions as exc
+from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.validators import check_fields_and_types
 from shopdb.helpers.utils import convert_minimal, json_body
-from shopdb.api import app, db
+from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import UserVerification, User, Rank
 
 

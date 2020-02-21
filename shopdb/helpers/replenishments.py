@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import Replenishment, ReplenishmentCollection
-from shopdb.api import db
-from sqlalchemy.sql import func
 import datetime
+
+from sqlalchemy.sql import func
+
+from shopdb.api import db
+from shopdb.models import Replenishment, ReplenishmentCollection
 
 
 def get_replenishment_amount_in_interval(product_id: int, start: datetime.datetime, end: datetime.datetime) -> int:

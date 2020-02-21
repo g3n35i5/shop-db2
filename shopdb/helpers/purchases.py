@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from sqlalchemy.sql import func
-from sqlalchemy.exc import IntegrityError
-from shopdb.models import Purchase
-from shopdb.api import db
-from shopdb.models import User, Product, Rank
-from shopdb.helpers.validators import check_fields_and_types
-import shopdb.exceptions as exc
-import dateutil.parser
 import datetime
 from typing import Optional
+
+import dateutil.parser
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import func
+
+import shopdb.exceptions as exc
+from shopdb.api import db
+from shopdb.helpers.validators import check_fields_and_types
+from shopdb.models import Purchase
+from shopdb.models import User, Product, Rank
 
 
 def get_purchase_amount_in_interval(product_id: int, start: datetime.datetime, end: datetime.datetime) -> int:

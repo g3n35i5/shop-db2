@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
+import datetime
+import logging
+import time
+
 from flask import request, g
+
 import shopdb.exceptions as exc
 from shopdb.api import app
 from shopdb.helpers.decorators import adminOptional
-import time
-import logging
-import datetime
 
 
 @app.before_request

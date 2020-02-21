@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-import shopdb.exceptions as exc
-from typing import Optional
-from flask import jsonify, request
-from shopdb.api import db
-from shopdb.models import User
-from shopdb.helpers.validators import check_fields_and_types, check_forbidden
-from sqlalchemy.exc import IntegrityError
 from inspect import signature
+from typing import Optional
+
+from flask import jsonify, request
+from sqlalchemy.exc import IntegrityError
+
+import shopdb.exceptions as exc
+from shopdb.api import db
+from shopdb.helpers.validators import check_fields_and_types, check_forbidden
+from shopdb.models import User
 
 
 def json_body():

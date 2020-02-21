@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import db
 from flask import Flask, jsonify
 from flask_bcrypt import Bcrypt
+
 import configuration as config
+from shopdb.models import db
 
 app = Flask(__name__)
 

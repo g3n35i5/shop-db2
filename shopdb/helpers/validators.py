@@ -3,6 +3,7 @@
 __author__ = 'g3n35i5'
 
 from flask import request
+
 import shopdb.exceptions as exc
 
 

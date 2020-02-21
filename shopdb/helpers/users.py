@@ -3,8 +3,9 @@
 __author__ = 'g3n35i5'
 
 from sqlalchemy.exc import IntegrityError
-from shopdb.api import app, db, bcrypt
+
 import shopdb.exceptions as exc
+from shopdb.api import app, db, bcrypt
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import User
 

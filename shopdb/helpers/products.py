@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
 
-from shopdb.models import Product, ProductPrice
-import shopdb.exceptions as exc
+import datetime
+
 from sqlalchemy import and_
-import shopdb.helpers.stocktakings as stocktaking_helpers
+
+import shopdb.exceptions as exc
 import shopdb.helpers.purchases as purchase_helpers
 import shopdb.helpers.replenishments as replenishment_helpers
-import datetime
+import shopdb.helpers.stocktakings as stocktaking_helpers
+from shopdb.models import Product, ProductPrice
 
 
 def _shift_date_to_begin_of_day(date):

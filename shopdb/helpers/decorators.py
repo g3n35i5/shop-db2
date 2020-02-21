@@ -3,8 +3,10 @@
 __author__ = 'g3n35i5'
 
 from functools import wraps
-from flask import request, Response
+
 import jwt
+from flask import request, Response
+
 import shopdb.exceptions as exc
 from shopdb.api import app
 from shopdb.models import User
@@ -158,6 +160,7 @@ def deprecate_route(message=''):
 
     :param message: The message to be added to the response header.
     """
+
     def _decorator(func):
         @wraps(func)
         def _wrapper(*args, **kwargs):
@@ -172,5 +175,7 @@ def deprecate_route(message=''):
                 return data
             response.headers['Warning'] = message
             return data
+
         return _wrapper
+
     return _decorator
