@@ -79,10 +79,6 @@ import shopdb.routes.login  # noqa: E402
 # noinspection PyUnresolvedReferences
 import shopdb.routes.register  # noqa: E402
 
-# Verification routes#
-# noinspection PyUnresolvedReferences
-import shopdb.routes.verifications  # noqa: E402
-
 # User routes
 # noinspection PyUnresolvedReferences
 import shopdb.routes.users  # noqa: E402
