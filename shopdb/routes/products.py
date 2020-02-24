@@ -10,7 +10,8 @@ import shopdb.helpers.products as product_helpers
 from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired, adminOptional
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import generic_update, convert_minimal, json_body
+from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.updater import generic_update
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Product, Tag, product_tag_assignments
 

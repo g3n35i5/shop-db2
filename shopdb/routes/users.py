@@ -10,7 +10,8 @@ from shopdb.api import app, db, bcrypt
 from shopdb.helpers.decorators import adminRequired, adminOptional, checkIfUserIsValid
 from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.helpers.users import insert_user
-from shopdb.helpers.utils import convert_minimal, json_body, generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.updater import generic_update
 from shopdb.models import User
 
 

@@ -10,7 +10,8 @@ from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.deposits import insert_deposit
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body, generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.updater import generic_update
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Deposit
 

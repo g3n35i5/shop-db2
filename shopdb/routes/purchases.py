@@ -11,7 +11,8 @@ from shopdb.api import app, db
 from shopdb.helpers.decorators import adminOptional
 from shopdb.helpers.purchases import insert_purchase
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body, generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
+from shopdb.helpers.updater import generic_update
 from shopdb.models import Purchase, PurchaseRevoke
 
 
