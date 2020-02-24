@@ -49,3 +49,47 @@ def convert_minimal(data, fields):
         out.append(element)
 
     return out
+
+
+def parse_timestamp(data: dict, required: bool) -> dict:
+    """
+    Parses a timestamp in a input dictionary. If there is no timestamp and it's not required, nothing happens.
+    Otherwise an exception gets raised. If a timestamp exists, it gets parsed.
+
+    :param data:       The input dictionary
+    :param required:   Flag whether the timestamp is required.
+    :return:           The parsed input dictionary.
+    """
+    # If the timestamp is missing but it is required, raise an exception.
+    # Otherwise return the (non-modified) input data.
+    if 'timestamp' not in data:
+        if required:
+            raise exc.DataIsMissing()
+        else:
+            return data
+
+    # Get the timestamp
+    timestamp = data.get('timestamp')
+
+    # If the timestamp is not a string, raise an exception
+    if not isinstance(timestamp, str):
+        raise exc.WrongType()
+
+    # Catch empty string timestamp which is caused by some JS date pickers
+    # inputs when they get cleared. If the timestamp is required, raise an exception.
+    if timestamp == '':
+        if required:
+            raise exc.DataIsMissing()
+        else:
+            del data['timestamp']
+            return data
+    else:
+        try:
+            timestamp = dateutil.parser.parse(data['timestamp'])
+            assert isinstance(timestamp, datetime.datetime)
+            assert timestamp < datetime.datetime.now(datetime.timezone.utc)
+            data['timestamp'] = timestamp.replace(microsecond=0)
+        except (TypeError, ValueError, AssertionError):
+            raise exc.InvalidData()
+
+    return data

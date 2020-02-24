@@ -88,11 +88,14 @@ def create_replenishmentcollection(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required = {'replenishments': list, 'comment': str}
+    required = {'replenishments': list, 'comment': str, 'timestamp': str}
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
 
     # Check all required fields
     check_fields_and_types(data, required)
+
+    # Parse timestamp
+    data = parse_timestamp(data, required=True)
 
     replenishments = data['replenishments']
     # Check for the replenishments in the collection
@@ -123,6 +126,7 @@ def create_replenishmentcollection(admin):
     # Create and insert replenishmentcollection
     try:
         collection = ReplenishmentCollection(admin_id=admin.id,
+                                             timestamp=data['timestamp'],
                                              comment=data['comment'],
                                              revoked=False)
         db.session.add(collection)

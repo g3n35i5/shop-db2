@@ -5,12 +5,12 @@ __author__ = 'g3n35i5'
 import datetime
 from typing import Optional
 
-import dateutil.parser
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
 
 import shopdb.exceptions as exc
 from shopdb.api import db
+from shopdb.helpers.utils import parse_timestamp
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Purchase
 from shopdb.models import User, Product, Rank
@@ -66,19 +66,8 @@ def insert_purchase(admin: Optional[User], data: dict) -> None:
     if user.rank.is_system_user and admin is None:
         raise exc.UnauthorizedAccess()
 
-    # Check timestamp if it exists
-    if 'timestamp' in data:
-        # Catch empty string timestamp which is caused by some JS datepickers inputs when they get cleared
-        if data['timestamp'] == '':
-            del data['timestamp']
-        else:
-            try:
-                timestamp = dateutil.parser.parse(data['timestamp'])
-                assert isinstance(timestamp, datetime.datetime)
-                assert timestamp < datetime.datetime.now(datetime.timezone.utc)
-                data['timestamp'] = timestamp.replace(microsecond=0)
-            except (TypeError, ValueError, AssertionError):
-                raise exc.InvalidData()
+    # Parse the timestamp
+    data = parse_timestamp(data, required=False)
 
     # Check product
     product = Product.query.filter_by(id=data['product_id']).first()
