@@ -56,38 +56,6 @@ def convert_minimal(data, fields):
     return out
 
 
-def update_fields(data, row, updated=None):
-    """
-    This helper function updates all fields defined in the dictionary "data"
-    for a given database object "row". If modifications have already been made
-    to the object, the names of the fields that have already been updated can
-    be transferred with the "updated" list. All updated fields are added to
-    this list.
-
-    :param data:               The dictionary with all entries to be updated.
-    :param row:                The database object to be updated.
-    :param updated:            A list of all fields that have already been
-                               updated.
-
-    :return:                   A list with all already updated fields and
-                               those that have been added.
-
-    :raises NothingHasChanged: If no fields were changed during the update.
-    """
-    for item in data:
-        if not getattr(row, item) == data[item]:
-            setattr(row, item, data[item])
-            if updated is not None:
-                updated.append(item)
-            else:
-                updated = [item]
-
-    if not updated or len(updated) == 0:
-        raise exc.NothingHasChanged()
-
-    return updated
-
-
 def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[User]):
     """
     This is a generic function which handles all entry updates. "Normal" updates (like name, ...), which do not
