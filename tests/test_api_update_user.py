@@ -3,10 +3,13 @@
 __author__ = 'g3n35i5'
 
 from shopdb.models import *
+from shopdb.api import app
 import shopdb.exceptions as exc
 from tests.base import u_firstnames
 from tests.base_api import BaseAPITestCase
 from flask import json
+import base64
+import os
 
 
 class UpdateUserAPITestCase(BaseAPITestCase):
@@ -87,6 +90,28 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
         self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
+
+    def test_update_user_image(self):
+        """Set a user image"""
+        # Assert that the user does not have an image
+        user = User.query.filter_by(id=1).first()
+        self.assertFalse(user.imagename)
+        # Upload a product image
+        filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'
+        with open(filepath, 'rb') as test:
+            bytes = test.read()
+        image = {'filename': 'valid_image.png',
+                 'value': base64.b64encode(bytes).decode()}
+        data = {'imagename': image}
+        res = self.put(url='/users/1', data=data, role='admin')
+        self.assertEqual(res.status_code, 201)
+        user = User.query.filter_by(id=1).first()
+
+        # Assert that the user has an imagename
+        user = User.query.filter_by(id=1).first()
+        self.assertTrue(isinstance(user.imagename, str))
+        filepath = app.config['UPLOAD_FOLDER'] + user.imagename
+        os.remove(filepath)
 
     def test_update_forbidden_field(self):
         """Updating a forbidden field should raise an error."""

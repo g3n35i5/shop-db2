@@ -32,8 +32,8 @@ class ListUsersAPITestCase(BaseAPITestCase):
             users = json.loads(res.data)
             self.assertEqual(len(users), 1)
             user = users[0]
-            self.assertEqual(len(user), 4)
-            for item in ['id', 'firstname', 'lastname', 'rank_id']:
+            self.assertEqual(len(user), 5)
+            for item in ['id', 'firstname', 'lastname', 'rank_id', 'imagename']:
                 assert item in user
 
     def test_list_users_with_token(self):
@@ -45,7 +45,7 @@ class ListUsersAPITestCase(BaseAPITestCase):
         users = json.loads(res.data)
         self.assertEqual(len(users), 4)
         for user in users:
-            self.assertEqual(len(user), 10)
-            for item in ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'active',
+            self.assertEqual(len(user), 11)
+            for item in ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'imagename', 'active',
                          'is_admin', 'creation_date', 'verification_date', 'is_verified']:
                 assert item in user

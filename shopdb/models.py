@@ -72,7 +72,10 @@ class UserVerification(db.Model):
 
 class User(db.Model):
     __tablename__ = 'users'
-    __updateable_fields__ = {'firstname': str, 'lastname': str, 'password': bytes, 'is_admin': bool, 'rank_id': int}
+    __updateable_fields__ = {
+        'firstname': str, 'lastname': str, 'password': bytes,
+        'is_admin': bool, 'rank_id': int, 'imagename': dict
+    }
 
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
@@ -80,6 +83,7 @@ class User(db.Model):
     lastname = db.Column(db.String(32), unique=False, nullable=False)
     password = db.Column(db.String(256), unique=False, nullable=True)
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
+    image_upload_id = db.Column(db.Integer, db.ForeignKey('uploads.id'), nullable=True)
 
     # Column property for the active state
     active = column_property(select([Rank.active])
@@ -126,6 +130,25 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
+
+    @hybrid_property
+    def imagename(self):
+        upload = Upload.query.filter_by(id=self.image_upload_id).first()
+        if upload:
+            return upload.filename
+        return None
+
+    @hybrid_method
+    def set_imagename(self, image, admin_id):
+        filename = insert_image(image)
+        # Create an upload
+        try:
+            u = Upload(filename=filename, admin_id=admin_id)
+            db.session.add(u)
+            db.session.flush()
+            self.image_upload_id = u.id
+        except IntegrityError:
+            raise CouldNotCreateEntry()
 
     @hybrid_property
     def is_admin(self):
