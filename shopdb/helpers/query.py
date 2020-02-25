@@ -89,7 +89,7 @@ class QueryFromRequestParameters:
 
         :return: None
         """
-        regex_sanitize_pattern = r"[a-zA-Z0-9\s\-\_]*"
+        regex_sanitize_pattern = r"[a-zA-Z\u00C0-\u017F0-9\s\-\_]*"
         try:
             # Validate filter(s)
             if self.filters is not None:
