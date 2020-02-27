@@ -25,7 +25,7 @@ def list_replenishmentcollections(admin):
 
     :return:      A list of all replenishmentcollections.
     """
-    fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked', 'comment']
+    fields = ['id', 'timestamp', 'admin_id', 'seller_id', 'price', 'revoked', 'comment']
     query = QueryFromRequestParameters(ReplenishmentCollection, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
