@@ -19,14 +19,14 @@ class DeleteUserAPITestCase(BaseAPITestCase):
             'password_repeat': 'supersecret'
         }
         res = self.post(url='/register', data=data)
-        user = User.query.filter_by(id=5).first()
+        user = User.query.filter_by(id=6).first()
         self.assertFalse(user.is_verified)
-        res = self.delete(url='/users/5', role='admin')
+        res = self.delete(url='/users/6', role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
         assert 'message' in data
         self.assertEqual(data['message'], 'User deleted.')
-        user = User.query.filter_by(id=5).first()
+        user = User.query.filter_by(id=6).first()
         self.assertEqual(user, None)
 
     def test_delete_verified_user(self):
@@ -37,6 +37,6 @@ class DeleteUserAPITestCase(BaseAPITestCase):
 
     def test_delete_non_existing_user(self):
         """Deleting a user that has been verified should raise an error."""
-        res = self.delete(url='/users/5', role='admin')
+        res = self.delete(url='/users/6', role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)

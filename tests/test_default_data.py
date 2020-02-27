@@ -33,12 +33,11 @@ class DefaultDataTest(BaseTestCase):
     def test_verify_all_users_except_last(self):
         """Check if all users except the last one have been verified"""
         users = User.query.all()
-        for i in range(0, len(users) - 1):
-            self.assertTrue(users[i].is_verified)
         self.assertEqual(users[0].rank_id, 2)
         self.assertEqual(users[1].rank_id, 3)
         self.assertEqual(users[2].rank_id, 1)
-        self.assertFalse(users[-1].is_verified)
+        self.assertFalse(users[3].is_verified)
+        self.assertEqual(users[4].rank_id, 1)
 
     def test_default_turnovers(self):
         """Check if all turnovers have been entered correctly"""

@@ -125,7 +125,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
     def test_update_non_existing_user(self):
         """Updating a non existing user should raise an error."""
         data = {'firstname': 'Peter'}
-        res = self.put(url='/users/5', data=data, role='admin')
+        res = self.put(url='/users/6', data=data, role='admin')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 

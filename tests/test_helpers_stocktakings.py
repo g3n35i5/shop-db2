@@ -529,7 +529,12 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Create replenishment.
         replenishments = [{'product_id': 5, 'amount': 20, 'total_price': 2000}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         self.post(url='/replenishmentcollections', data=data, role='admin')
         ts = datetime.strptime('2018-03-01 09:00:00', '%Y-%m-%d %H:%M:%S')
         ReplenishmentCollection.query.filter_by(id=1).first().timestamp = ts

@@ -60,7 +60,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
     def test_update_replenishmentcollection_timestamp(self):
         """Update the timestamp of a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
-        timestamp = 1420070461  # Thursday, January 1, 2015 1:01:01 AM GMT+01:00
+        timestamp = '2015-01-01 01:01:01Z'
         res = self.put(url='/replenishmentcollections/1',
                        data={'timestamp': timestamp}, role='admin')
         self.assertEqual(res.status_code, 201)
@@ -68,7 +68,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         assert 'message' in data
         self.assertEqual(data['message'], 'Updated replenishmentcollection')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
-        self.assertEqual(replcoll.timestamp, datetime.datetime.fromtimestamp(timestamp))
+        self.assertEqual(str(replcoll.timestamp), "2015-01-01 01:01:01")
 
     def test_update_replenishmentcollection_invalid_timestamp(self):
         """Update the timestamp of a replenishmentcollection with a timestamp in the future must fail"""
@@ -78,7 +78,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         res = self.put(url='/replenishmentcollections/1',
                        data={'timestamp': int(timestamp)}, role='admin')
         self.assertEqual(res.status_code, 401)
-        self.assertException(res, exc.InvalidData)
+        self.assertException(res, exc.WrongType)
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.timestamp, old_timestamp)
 

@@ -44,7 +44,7 @@ class LoginAPITestCase(BaseAPITestCase):
 
         # Login.
         data = {
-            'id': 5,
+            'id': 6,
             'password': 'supersecret'
         }
         res = self.post(url='/login', data=data)

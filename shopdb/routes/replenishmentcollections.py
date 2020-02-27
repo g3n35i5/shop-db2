@@ -12,7 +12,7 @@ from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.helpers.utils import convert_minimal, json_body, parse_timestamp
 from shopdb.helpers.updater import generic_update
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.models import Replenishment, ReplenishmentCollection, Product
+from shopdb.models import Replenishment, ReplenishmentCollection, Product, User
 
 
 @app.route('/replenishmentcollections', methods=['GET'])
@@ -88,11 +88,20 @@ def create_replenishmentcollection(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required = {'replenishments': list, 'comment': str, 'timestamp': str}
+    required = {'replenishments': list, 'comment': str, 'timestamp': str, 'seller_id': int}
     required_repl = {'product_id': int, 'amount': int, 'total_price': int}
 
     # Check all required fields
     check_fields_and_types(data, required)
+
+    # Check seller
+    seller = User.query.filter_by(id=data['seller_id']).first()
+    if not seller:
+        raise exc.EntryNotFound()
+
+    # Check if the seller has been verified.
+    if not seller.is_verified:
+        raise exc.UserIsNotVerified()
 
     # Parse timestamp
     data = parse_timestamp(data, required=True)
@@ -103,7 +112,6 @@ def create_replenishmentcollection(admin):
         raise exc.DataIsMissing()
 
     for repl in replenishments:
-
         # Check all required fields
         check_fields_and_types(repl, required_repl)
 
@@ -126,6 +134,7 @@ def create_replenishmentcollection(admin):
     # Create and insert replenishmentcollection
     try:
         collection = ReplenishmentCollection(admin_id=admin.id,
+                                             seller_id=seller.id,
                                              timestamp=data['timestamp'],
                                              comment=data['comment'],
                                              revoked=False)

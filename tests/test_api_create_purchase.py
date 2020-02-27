@@ -27,6 +27,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(purchases[0].productprice, 100)
         self.assertEqual(purchases[0].price, 400)
         self.assertFalse(purchases[0].revoked)
+        print()
 
     def test_create_purchase_insufficient_credit_alumni(self):
         """Create a purchase with not enough credit."""
@@ -190,7 +191,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
 
     def test_create_purchase_non_existing_user(self):
         """Create a purchase as non existing user."""
-        data = {'user_id': 5, 'product_id': 3, 'amount': 4}
+        data = {'user_id': 6, 'product_id': 3, 'amount': 4}
         res = self.post(url='/purchases', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)

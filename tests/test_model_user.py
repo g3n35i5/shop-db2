@@ -54,11 +54,11 @@ class UserModelTestCase(BaseTestCase):
     def test_verify_user(self):
         """Verify a user. We take the last one in the list since all other
            users have already been verified."""
-        user = User.query.order_by(User.id.desc()).first()
+        user = User.query.filter_by(id=4).first()
         self.assertFalse(user.is_verified)
         user.verify(admin_id=1, rank_id=1)
         db.session.commit()
-        user = User.query.order_by(User.id.desc()).first()
+        user = User.query.filter_by(id=4).first()
         self.assertTrue(user.is_verified)
         verification = (UserVerification.query
                         .order_by(UserVerification.id.desc())

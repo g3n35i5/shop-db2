@@ -11,6 +11,7 @@ from sqlalchemy.orm import validates, column_property
 
 from shopdb.exceptions import *
 from shopdb.helpers.uploads import insert_image
+from shopdb.helpers.utils import parse_timestamp
 
 db = SQLAlchemy()
 
@@ -357,65 +358,6 @@ class Purchase(db.Model):
         return revokehistory
 
 
-class ReplenishmentCollection(db.Model):
-    __tablename__ = 'replenishmentcollections'
-    __updateable_fields__ = {'revoked': bool, 'comment': str, 'timestamp': int}
-
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False, default=False)
-    comment = db.Column(db.String(64), nullable=False)
-    replenishments = db.relationship('Replenishment', lazy='dynamic',
-                                     foreign_keys='Replenishment.replcoll_id')
-
-    @hybrid_property
-    def price(self):
-        return sum(map(lambda x: x.total_price, self.replenishments.
-                       filter_by(revoked=False).all()))
-
-    @hybrid_method
-    def set_revoked(self, revoked, admin_id):
-        # Which replenishments are not revoked?
-        non_revoked_replenishments = self.replenishments.filter_by(revoked=False).all()
-        if not revoked and not non_revoked_replenishments:
-            raise EntryNotRevocable()
-
-        dr = ReplenishmentCollectionRevoke(revoked=revoked, admin_id=admin_id, replcoll_id=self.id)
-        self.revoked = revoked
-        db.session.add(dr)
-
-    @hybrid_method
-    def set_timestamp(self, timestamp):
-        try:
-            timestamp = datetime.datetime.fromtimestamp(timestamp)
-            assert timestamp <= datetime.datetime.utcnow()
-            self.timestamp = timestamp
-        except (AssertionError, TypeError, ValueError, OSError, OverflowError):
-            """
-            AssertionError: The timestamp lies in the future.
-            TypeError:      Invalid type for conversion.
-            ValueError:     Timestamp is out of valid range.
-            OSError:        Value exceeds the data type.
-            OverflowError:  Timestamp out of range for platform time_t.
-            """
-            raise InvalidData()
-
-    @hybrid_property
-    def revokehistory(self):
-        res = (ReplenishmentCollectionRevoke.query
-               .filter(ReplenishmentCollectionRevoke.replcoll_id == self.id)
-               .all())
-        revokehistory = []
-        for revoke in res:
-            revokehistory.append({
-                'id': revoke.id,
-                'timestamp': revoke.timestamp,
-                'revoked': revoke.revoked
-            })
-        return revokehistory
-
-
 class Revoke:
     """
     All revokes that must be executed by an administrator (Deposit,
@@ -437,13 +379,6 @@ class Revoke:
             raise UnauthorizedAccess()
 
         return admin_id
-
-
-class ReplenishmentCollectionRevoke(Revoke, db.Model):
-    __tablename__ = 'replenishmentcollectionrevoke'
-    replcoll_id = db.Column(db.Integer,
-                            db.ForeignKey('replenishmentcollections.id'),
-                            nullable=False)
 
 
 class Replenishment(db.Model):
@@ -510,6 +445,67 @@ class ReplenishmentRevoke(Revoke, db.Model):
     repl_id = db.Column(db.Integer,
                         db.ForeignKey('replenishments.id'),
                         nullable=False)
+
+
+class ReplenishmentCollection(db.Model):
+    __tablename__ = 'replenishmentcollections'
+    __updateable_fields__ = {'revoked': bool, 'comment': str, 'timestamp': str}
+
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
+    comment = db.Column(db.String(64), nullable=False)
+    replenishments = db.relationship('Replenishment', lazy='dynamic',
+                                     foreign_keys='Replenishment.replcoll_id')
+
+    price = column_property(select([func.coalesce(func.sum(Replenishment.total_price), 0)])
+                            .where(Replenishment.replcoll_id == id)
+                            .where(Replenishment.revoked.is_(False))
+                            .as_scalar())
+
+    # @hybrid_property
+    # def price(self):
+    #     return sum(map(lambda x: x.total_price, self.replenishments.
+    #                    filter_by(revoked=False).all()))
+
+    @hybrid_method
+    def set_revoked(self, revoked, admin_id):
+        # Which replenishments are not revoked?
+        non_revoked_replenishments = self.replenishments.filter_by(revoked=False).all()
+        if not revoked and not non_revoked_replenishments:
+            raise EntryNotRevocable()
+
+        dr = ReplenishmentCollectionRevoke(revoked=revoked, admin_id=admin_id, replcoll_id=self.id)
+        self.revoked = revoked
+        db.session.add(dr)
+
+    @hybrid_method
+    def set_timestamp(self, timestamp: str):
+        data = parse_timestamp({'timestamp': timestamp}, required=True)
+        self.timestamp = data['timestamp']
+
+    @hybrid_property
+    def revokehistory(self):
+        res = (ReplenishmentCollectionRevoke.query
+               .filter(ReplenishmentCollectionRevoke.replcoll_id == self.id)
+               .all())
+        revokehistory = []
+        for revoke in res:
+            revokehistory.append({
+                'id': revoke.id,
+                'timestamp': revoke.timestamp,
+                'revoked': revoke.revoked
+            })
+        return revokehistory
+
+
+class ReplenishmentCollectionRevoke(Revoke, db.Model):
+    __tablename__ = 'replenishmentcollectionrevoke'
+    replcoll_id = db.Column(db.Integer,
+                            db.ForeignKey('replenishmentcollections.id'),
+                            nullable=False)
 
 
 class PurchaseRevoke(db.Model):
@@ -675,9 +671,15 @@ class User(db.Model):
                                   .where(Refund.revoked.is_(False))
                                   .as_scalar())
 
+    # Select statement for the sum of all non revoked refunds referring this user.
+    _replenishmentcollection_sum = column_property(select([func.coalesce(func.sum(ReplenishmentCollection.price), 0)])
+                                                   .where(ReplenishmentCollection.seller_id == id)
+                                                   .where(ReplenishmentCollection.revoked.is_(False))
+                                                   .as_scalar())
+
     # A users credit is the sum of all amounts that increase his credit (Deposits, Refunds, ReplenishmentCollections)
     # and all amounts that decrease it (Purchases)
-    credit = column_property(_refund_sum.expression + _deposit_sum.expression - _purchase_sum.expression)
+    credit = column_property(_refund_sum.expression + _replenishmentcollection_sum.expression + _deposit_sum.expression - _purchase_sum.expression)
 
     # Link to all purchases of a user.
     purchases = db.relationship(

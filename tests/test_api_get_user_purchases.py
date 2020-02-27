@@ -28,7 +28,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         This test ensures that an exception is made if the user does not exist.
         """
         self.insert_default_purchases()
-        res = self.get(url='/users/5/purchases')
+        res = self.get(url='/users/6/purchases')
         self.assertException(res, EntryNotFound)
 
     def test_get_user_purchases_non_verified_user(self):

@@ -69,7 +69,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         """
         Getting the favorites from a non existing user should raise an error.
         """
-        res = self.get(url='/users/5/favorites')
+        res = self.get(url='/users/6/favorites')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 

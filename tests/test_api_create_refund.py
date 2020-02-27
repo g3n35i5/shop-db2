@@ -84,7 +84,7 @@ class CreateRefundAPITestCase(BaseAPITestCase):
 
     def test_create_refund_non_existing_user(self):
         """Create a refund as non existing user."""
-        data = {'user_id': 5, 'total_price': 1000, 'comment': 'Test refund'}
+        data = {'user_id': 6, 'total_price': 1000, 'comment': 'Test refund'}
         res = self.post(url='/refunds', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)

@@ -13,9 +13,9 @@ import configuration as config
 passwords = None
 
 # Default data for users
-u_firstnames = ['William', 'Mary', 'Bryce', 'Daniel']
-u_lastnames = ['Jones', 'Smith', 'Jones', 'Lee']
-u_passwords = ['secret1', 'secret2', None, None]
+u_firstnames = ['William', 'Mary', 'Bryce', 'Daniel', None]
+u_lastnames = ['Jones', 'Smith', 'Jones', 'Lee', 'Seller']
+u_passwords = ['secret1', 'secret2', None, None, None]
 
 # Default data for products
 p_names = ['Pizza', 'Coffee', 'Cookie', 'Coke']
@@ -127,6 +127,7 @@ class BaseTestCase(TestCase):
         users[0].verify(admin_id=1, rank_id=2)
         users[1].verify(admin_id=1, rank_id=3)
         users[2].verify(admin_id=1, rank_id=1)
+        users[4].verify(admin_id=1, rank_id=1)
 
         db.session.commit()
 
@@ -140,8 +141,8 @@ class BaseTestCase(TestCase):
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
         product3 = Product.query.filter_by(id=3).first()
-        rc1 = ReplenishmentCollection(admin_id=1, revoked=False, comment='Foo')
-        rc2 = ReplenishmentCollection(admin_id=2, revoked=False, comment='Foo')
+        rc1 = ReplenishmentCollection(admin_id=1, revoked=False, comment='Foo', seller_id=5)
+        rc2 = ReplenishmentCollection(admin_id=2, revoked=False, comment='Foo', seller_id=5)
         for r in [rc1, rc2]:
             db.session.add(r)
         db.session.flush()

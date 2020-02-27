@@ -48,7 +48,7 @@ class GetUserRefundsAPITestCase(BaseAPITestCase):
         """
         Getting the refunds from a non existing user should raise an error.
         """
-        res = self.get(url='/users/5/refunds')
+        res = self.get(url='/users/6/refunds')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 

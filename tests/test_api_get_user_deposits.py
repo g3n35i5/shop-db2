@@ -46,7 +46,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         """
         Getting the deposits from a non existing user should raise an error.
         """
-        res = self.get(url='/users/5/deposits')
+        res = self.get(url='/users/6/deposits')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 

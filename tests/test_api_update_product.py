@@ -3,12 +3,14 @@
 __author__ = 'g3n35i5'
 
 import base64
-from shopdb.models import *
-from shopdb.api import db, app
-import shopdb.exceptions as exc
-from tests.base_api import BaseAPITestCase
-from flask import json
 import os
+
+from flask import json
+
+import shopdb.exceptions as exc
+from shopdb.api import db, app
+from shopdb.models import *
+from tests.base_api import BaseAPITestCase
 
 
 class UpdateProductAPITestCase(BaseAPITestCase):

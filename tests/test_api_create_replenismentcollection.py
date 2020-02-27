@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db
-import shopdb.exceptions as exc
-from tests.base_api import BaseAPITestCase
 from flask import json
+
+import shopdb.exceptions as exc
+from shopdb.api import db
+from shopdb.models import *
+from tests.base_api import BaseAPITestCase
 
 
 class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
@@ -17,7 +18,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
 
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 201)
@@ -38,6 +44,26 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
             for key in dict:
                 self.assertEqual(getattr(repls[i], key), dict[key])
 
+    def test_check_users_credit_after_inserting_replenishmentcollection(self):
+        """The credit of the user who is referred by the 'seller_id' should change after a replenishmentcollection"""
+        self.insert_default_replenishmentcollections()
+        collections = ReplenishmentCollection.query.all()
+        sum_collections = 0
+        for collection in collections:
+            self.assertEqual(collection.seller_id, 5)
+            sum_collections += collection.price
+
+        seller = User.query.filter(User.id == 5).first()
+        self.assertEqual(sum_collections, seller.credit)
+
+        # Revoke the first collection. The user's credit should decrease by the price of the collection
+        collection = ReplenishmentCollection.query.filter_by(id=1).first()
+        collection.set_revoked(revoked=True, admin_id=1)
+        price = collection.price
+        db.session.commit()
+        seller = User.query.filter(User.id == 5).first()
+        self.assertEqual(sum_collections - price, seller.credit)
+
     def test_create_replenishmentcollection_reactivate_product(self):
         """
         If a product was marked as inactive with a stocktaking, it can
@@ -50,7 +76,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertFalse(Product.query.filter_by(id=1).first().active)
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         self.post(url='/replenishmentcollections', data=data, role='admin')
         self.assertTrue(Product.query.filter_by(id=1).first().active)
 
@@ -58,7 +89,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         """Creating a ReplenishmentCollection as user"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='user')
         self.assertEqual(res.status_code, 401)
@@ -75,7 +111,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         """Creating a ReplenishmentCollection with missing data for repl"""
         replenishments = [{'product_id': 1, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -83,7 +124,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_create_replenishmentcollection_with_missing_data_III(self):
         """Creating a ReplenishmentCollection with empty repl"""
-        data = {'replenishments': [], 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': [],
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -91,7 +137,22 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
 
     def test_create_replenishmentcollection_with_missing_data_IV(self):
         """Creating a ReplenishmentCollection with missing timestamp"""
-        data = {'replenishments': [{'product_id': 2, 'amount': 20, 'total_price': 20}], 'comment': 'My test comment'}
+        data = {
+            'replenishments': [{'product_id': 2, 'amount': 20, 'total_price': 20}],
+            'comment': 'My test comment',
+            'seller_id': 5
+        }
+        res = self.post(url='/replenishmentcollections', data=data,
+                        role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.DataIsMissing)
+
+    def test_create_replenishmentcollection_with_missing_data_V(self):
+        """Creating a ReplenishmentCollection with missing seller_id"""
+        data = {
+            'replenishments': [{'product_id': 2, 'amount': 20, 'total_price': 20}],
+            'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -104,8 +165,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         """
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'Nonsense': 9,
-                'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {'replenishments': replenishments,
+                'Nonsense': 9,
+                'comment': 'My test comment',
+                'timestamp': '2020-02-24 12:00:00Z',
+                'seller_id': 5
+                }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -119,7 +184,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'Nonsense': 98,
                            'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -133,7 +203,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         replenishments = [{'product_id': 1, 'amount': 'Hallo',
                            'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -146,7 +221,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         """
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': '2', 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -156,7 +236,12 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         """Creating a replenishmentcollection with negative amount"""
         replenishments = [{'product_id': 1, 'amount': -10, 'total_price': 200},
                           {'product_id': 2, 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)
@@ -166,7 +251,27 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         """Creating a replenishmentcollection with a non existing product_id"""
         replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
                           {'product_id': 20, 'amount': 20, 'total_price': 20}]
-        data = {'replenishments': replenishments, 'comment': 'My test comment', 'timestamp': '2020-02-24 12:00:00Z'}
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 5
+        }
+        res = self.post(url='/replenishmentcollections', data=data,
+                        role='admin')
+        self.assertEqual(res.status_code, 401)
+        self.assertException(res, exc.EntryNotFound)
+
+    def test_create_replenishmentcollection_with_non_existing_seller(self):
+        """Creating a replenishmentcollection with a non existing product_id"""
+        replenishments = [{'product_id': 1, 'amount': 100, 'total_price': 200},
+                          {'product_id': 2, 'amount': 20, 'total_price': 20}]
+        data = {
+            'replenishments': replenishments,
+            'comment': 'My test comment',
+            'timestamp': '2020-02-24 12:00:00Z',
+            'seller_id': 6
+        }
         res = self.post(url='/replenishmentcollections', data=data,
                         role='admin')
         self.assertEqual(res.status_code, 401)

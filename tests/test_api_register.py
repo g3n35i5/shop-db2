@@ -20,7 +20,7 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertIn(b'Created user.', res.data)
 
-        user = User.query.filter_by(id=5).first()
+        user = User.query.filter_by(id=6).first()
         self.assertTrue(user)
         self.assertEqual(user.firstname, 'John')
         self.assertEqual(user.lastname, 'Doe')
@@ -34,7 +34,7 @@ class RegisterAPITestCase(BaseAPITestCase):
         res = self.post(url='/register', data=data)
         self.assertEqual(res.status_code, 200)
         self.assertIn(b'Created user.', res.data)
-        user = User.query.filter_by(id=5).first()
+        user = User.query.filter_by(id=6).first()
         self.assertEqual(user.firstname, None)
         self.assertEqual(user.lastname, 'Doe')
         self.assertFalse(user.is_verified)
@@ -52,7 +52,7 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertException(res, PasswordTooShort)
 
         users = User.query.all()
-        self.assertEqual(len(users), 4)
+        self.assertEqual(len(users), 5)
 
     def test_register_missing_data(self):
         """This test should ensure that the correct exception gets returned
@@ -62,7 +62,7 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertException(res, DataIsMissing)
 
         users = User.query.all()
-        self.assertEqual(len(users), 4)
+        self.assertEqual(len(users), 5)
 
     def test_register_wrong_type(self):
         """This test should ensure that the correct exception gets returned
@@ -82,7 +82,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             self.assertException(res, WrongType)
 
         users = User.query.all()
-        self.assertEqual(len(users), 4)
+        self.assertEqual(len(users), 5)
 
     def test_register_passwords_do_not_match(self):
         """This test should ensure that the correct exception gets returned
@@ -97,7 +97,7 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertException(res, PasswordsDoNotMatch)
 
         users = User.query.all()
-        self.assertEqual(len(users), 4)
+        self.assertEqual(len(users), 5)
 
     def test_register_passwords_repeat_is_missing(self):
         """This test should ensure that the correct exception gets returned
@@ -110,4 +110,4 @@ class RegisterAPITestCase(BaseAPITestCase):
         res = self.post(url='/register', data=data)
         self.assertException(res, DataIsMissing)
         users = User.query.all()
-        self.assertEqual(len(users), 4)
+        self.assertEqual(len(users), 5)

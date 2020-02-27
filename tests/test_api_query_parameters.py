@@ -17,12 +17,12 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         # List all users ordered by their id in descending order
         users = json.loads(self.get('/users', role='admin', params={"sort": {"field": "id", "order": "DESC"}}).data)
         # There should be 4 ordered by their ids in descending order
-        self.assertEqual([4, 3, 2, 1], list(map(lambda x: x['id'], users)))
+        self.assertEqual([5, 4, 3, 2, 1], list(map(lambda x: x['id'], users)))
 
         # List all users ordered by their firstname in ascending order
         users = json.loads(self.get('/users', role='admin', params={"sort": {"field": "firstname", "order": "ASC"}}).data)
-        # There should be 4 ordered by their firstname in ascending order
-        self.assertEqual(['Bryce', 'Daniel', 'Mary', 'William'], list(map(lambda x: x['firstname'], users)))
+        # There should be 5 ordered by their firstname in ascending order
+        self.assertEqual([None, 'Bryce', 'Daniel', 'Mary', 'William'], list(map(lambda x: x['firstname'], users)))
 
     def test_query_parameters_filter(self):
         """
@@ -56,9 +56,11 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         # List all users with the rank_id 1
         users = json.loads(self.get('/users', role='admin', params={'filter': {'rank_id': 1}}).data)
         # There should only be Bryce Jones
-        self.assertEqual(1, len(users))
+        self.assertEqual(2, len(users))
         self.assertEqual('Jones', users[0]['lastname'])
         self.assertEqual('Bryce', users[0]['firstname'])
+        self.assertEqual('Seller', users[1]['lastname'])
+        self.assertEqual(None, users[1]['firstname'])
 
         # Use two filters for firstname and lastname
         params = {'filter': {'lastname': ['Smith', 'Lee'], 'firstname': 'Mary'}}

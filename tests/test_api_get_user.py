@@ -26,7 +26,7 @@ class GetUserAPITestCase(BaseAPITestCase):
 
     def test_get_non_existing_user(self):
         """Getting a non existing user should raise an error."""
-        res = self.get(url='/users/5')
+        res = self.get(url='/users/6')
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 

@@ -94,7 +94,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
 
     def test_create_batch_deposit_non_existing_user(self):
         """Create a batch deposit as non existing user."""
-        data = {'user_ids': [3, 5], 'amount': 1000, 'comment': 'Batch deposit'}
+        data = {'user_ids': [3, 6], 'amount': 1000, 'comment': 'Batch deposit'}
         res = self.post(url='/deposits/batch', role='admin', data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
