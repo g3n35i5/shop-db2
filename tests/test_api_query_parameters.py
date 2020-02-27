@@ -84,6 +84,23 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         # There shouldn't be any results
         self.assertEqual(0, len(users))
 
+    def test_query_parameters_sorting(self):
+        """
+        Test query sorting
+        """
+        # List all users and sort them by their firstname
+        params = {'sort': {'field': 'firstname', 'order': 'ASC'}}
+        users = json.loads(self.get('/users', role='admin', params=params).data)
+        self.assertEqual([None, 'Bryce', 'Daniel', 'Mary', 'William'], list(map(lambda x: x['firstname'], users)))
+
+        # Insert default purchases so that the user credits change
+        self.insert_default_purchases()
+        # List all users and sort them by their credit
+        params = {'sort': {'field': 'credit', 'order': 'ASC'}}
+        users = json.loads(self.get('/users', role='admin', params=params).data)
+        self.assertEqual([-1800, -1100, -400, 0, 0], list(map(lambda x: x['credit'], users)))
+
+
     def test_query_parameters_pagination(self):
         """
         Test query pagination
