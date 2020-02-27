@@ -624,6 +624,9 @@ class User(db.Model):
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
     image_upload_id = db.Column(db.Integer, db.ForeignKey('uploads.id'), nullable=True)
 
+    # Column property for the full name
+    fullname = column_property(func.trim(func.coalesce(firstname, "") + " " + lastname))
+
     # Column property for the active state
     active = column_property(select([Rank.active])
                              .where(and_(RankUpdate.user_id == id, Rank.id == RankUpdate.rank_id))

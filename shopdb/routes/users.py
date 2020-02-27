@@ -30,9 +30,9 @@ def list_users(admin):
 
     # Define fields
     if admin is None:
-        fields = ['id', 'firstname', 'lastname', 'rank_id', 'imagename']
+        fields = ['id', 'firstname', 'lastname', 'fullname', 'rank_id', 'imagename']
     else:
-        fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'imagename', 'active',
+        fields = ['id', 'firstname', 'lastname', 'fullname', 'credit', 'rank_id', 'imagename', 'active',
                   'is_admin', 'creation_date', 'verification_date', 'is_verified']
 
     query = QueryFromRequestParameters(User, request.args, fields=fields)
@@ -162,7 +162,7 @@ def get_user(admin, id):
         if not user.active:
             raise exc.UserIsInactive()
 
-    fields = ['id', 'firstname', 'lastname', 'credit', 'rank_id', 'imagename', 'active',
+    fields = ['id', 'firstname', 'lastname', 'fullname', 'credit', 'rank_id', 'imagename', 'active',
               'is_admin', 'creation_date', 'verification_date', 'is_verified']
     user = convert_minimal(user, fields)[0]
     return jsonify(user), 200
