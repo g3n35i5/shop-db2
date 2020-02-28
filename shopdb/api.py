@@ -114,7 +114,3 @@ import shopdb.routes.replenishmentcollections  # noqa: E402
 # StocktakingCollection routes
 # noinspection PyUnresolvedReferences
 import shopdb.routes.stocktakingcollections  # noqa: E402
-
-# Turnover routes
-# noinspection PyUnresolvedReferences
-import shopdb.routes.turnovers  # noqa: E402

@@ -37,14 +37,6 @@ tag_data = [
         {'name': 'Coffee'},
         {'name': 'Uncategorized', 'is_for_sale': False}]
 
-# Default data for turnovers
-turnovers = [
-    {'admin_id': 1, 'amount': 200, 'comment': 'Turnover comment 1'},
-    {'admin_id': 1, 'amount': 100, 'comment': 'Turnover comment 2'},
-    {'admin_id': 1, 'amount': -100, 'comment': 'Turnover comment 3'},
-    {'admin_id': 1, 'amount': -500, 'comment': 'Turnover comment 4'}
-]
-
 
 class BaseTestCase(TestCase):
     def create_app(self):
@@ -64,7 +56,6 @@ class BaseTestCase(TestCase):
         self.insert_default_ranks()
         self.insert_default_tags()
         self.insert_default_products()
-        self.insert_default_turnovers()
 
     def tearDown(self):
         db.session.remove()
@@ -200,9 +191,4 @@ class BaseTestCase(TestCase):
         d5 = Deposit(user_id=1, amount=600, admin_id=1, comment='Test deposit')
         for d in [d1, d2, d3, d4, d5]:
             db.session.add(d)
-        db.session.commit()
-
-    def insert_default_turnovers(self):
-        for turnover in turnovers:
-            db.session.add(Turnover(**turnover))
         db.session.commit()

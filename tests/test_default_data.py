@@ -5,7 +5,7 @@ __author__ = 'g3n35i5'
 from shopdb.models import *
 from shopdb.api import bcrypt
 from tests.base import BaseTestCase
-from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data, turnovers
+from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data
 
 
 class DefaultDataTest(BaseTestCase):
@@ -38,10 +38,3 @@ class DefaultDataTest(BaseTestCase):
         self.assertEqual(users[2].rank_id, 1)
         self.assertFalse(users[3].is_verified)
         self.assertEqual(users[4].rank_id, 1)
-
-    def test_default_turnovers(self):
-        """Check if all turnovers have been entered correctly"""
-        api_turnovers = Turnover.query.all()
-        self.assertEqual(len(api_turnovers), 4)
-        for i in range(4):
-            self.assertEqual(api_turnovers[i].amount, turnovers[i]['amount'])

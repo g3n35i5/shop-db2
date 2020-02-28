@@ -7,7 +7,7 @@ from flask import jsonify
 from shopdb.api import app
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
-from shopdb.models import Purchase, Deposit, Turnover, ReplenishmentCollection, StocktakingCollection
+from shopdb.models import Purchase, Deposit, ReplenishmentCollection, StocktakingCollection
 
 
 @app.route('/financial_overview', methods=['GET'])
@@ -31,9 +31,6 @@ def get_financial_overview(admin):
 
     # Query all deposits.
     deposits = Deposit.query.filter(Deposit.revoked.is_(False)).all()
-
-    # Query all turnovers.
-    turnovers = Turnover.query.filter(Turnover.revoked.is_(False)).all()
 
     # Query all replenishment collections.
     replcolls = (ReplenishmentCollection
@@ -61,7 +58,6 @@ def get_financial_overview(admin):
     # Incomes are:
     # - Purchases                    with a positive price
     # - Deposits                     with a positive amount
-    # - Turnovers                    with a positive amount
     # - Replenishmentcollections     with a negative price
     # - Profits between stocktakings
 
@@ -75,18 +71,13 @@ def get_financial_overview(admin):
                              list(map(lambda x: x.amount, deposits)))))
     )
 
-    pos_turn = sum(
-        map(abs, list(filter(lambda x: x >= 0,
-                             list(map(lambda x: x.amount, turnovers)))))
-    )
-
     neg_rep = sum(
         map(abs, list(filter(lambda x: x < 0,
                              list(map(lambda x: x.price, replcolls)))))
     )
 
     sum_incomes = sum([
-        pos_pur, pos_dep, pos_turn, neg_rep, pos_stock
+        pos_pur, pos_dep, neg_rep, pos_stock
     ])
 
     incomes = {
@@ -94,7 +85,6 @@ def get_financial_overview(admin):
         'items': [
             {'name': 'Purchases', 'amount': pos_pur},
             {'name': 'Deposits', 'amount': pos_dep},
-            {'name': 'Turnovers', 'amount': pos_turn},
             {'name': 'Replenishments', 'amount': neg_rep},
             {'name': 'Stocktakings', 'amount': pos_stock}
         ]
@@ -116,18 +106,13 @@ def get_financial_overview(admin):
                              list(map(lambda x: x.amount, deposits)))))
     )
 
-    neg_turn = sum(
-        map(abs, list(filter(lambda x: x < 0,
-                             list(map(lambda x: x.amount, turnovers)))))
-    )
-
     pos_rep = sum(
         map(abs, list(filter(lambda x: x >= 0,
                              list(map(lambda x: x.price, replcolls)))))
     )
 
     sum_expenses = sum([
-        neg_pur, neg_dep, neg_turn, pos_rep, neg_stock
+        neg_pur, neg_dep, pos_rep, neg_stock
     ])
 
     expenses = {
@@ -135,7 +120,6 @@ def get_financial_overview(admin):
         'items': [
             {'name': 'Purchases', 'amount': neg_pur},
             {'name': 'Deposits', 'amount': neg_dep},
-            {'name': 'Turnovers', 'amount': neg_turn},
             {'name': 'Replenishments', 'amount': pos_rep},
             {'name': 'Stocktakings', 'amount': neg_stock}
         ]
