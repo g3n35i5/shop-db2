@@ -102,6 +102,24 @@ def get_user_deposits(user, id):
     return jsonify(deposits), 200
 
 
+@app.route('/users/<int:id>/replenishmentcollections', methods=['GET'])
+@checkIfUserIsValid
+def get_user_replenishmentcollections(user, id):
+    """
+    Returns a list with all replenishmentcollections of a user.
+
+    :param user:               Is the user, determined by @checkIfUserIsValid.
+    :param id:                 Is the user id.
+
+    :return:                   A list with all replenishmentcollections of the user.
+    """
+
+    fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked', 'comment']
+    deposits = convert_minimal(user.replenishmentcollections.all(), fields)
+
+    return jsonify(deposits), 200
+
+
 @app.route('/users/<int:id>/purchases', methods=['GET'])
 @checkIfUserIsValid
 def get_user_purchases(user, id):

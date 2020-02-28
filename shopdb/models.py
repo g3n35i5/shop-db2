@@ -642,6 +642,11 @@ class User(db.Model):
         'Deposit', lazy='dynamic',
         foreign_keys='Deposit.user_id'
     )
+    # Link to all deposits of a user.
+    replenishmentcollections = db.relationship(
+        'ReplenishmentCollection', lazy='dynamic',
+        foreign_keys='ReplenishmentCollection.seller_id'
+    )
 
     def __repr__(self):
         return f'<User {self.id}: {self.lastname}, {self.firstname}>'
