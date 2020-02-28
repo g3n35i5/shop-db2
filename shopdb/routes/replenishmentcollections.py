@@ -56,7 +56,7 @@ def get_replenishmentcollection(admin, id):
     if not replcoll:
         raise exc.EntryNotFound()
 
-    fields_replcoll = ['id', 'timestamp', 'admin_id', 'price', 'revoked',
+    fields_replcoll = ['id', 'timestamp', 'admin_id', 'seller_id', 'price', 'revoked',
                        'revokehistory', 'comment']
     fields_repl = ['id', 'replcoll_id', 'product_id', 'amount',
                    'total_price', 'revoked']
