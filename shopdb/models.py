@@ -361,7 +361,7 @@ class Purchase(db.Model):
 class Revoke:
     """
     All revokes that must be executed by an administrator (Deposit,
-    Replenishment, Refund, ...) had code duplications. For this reason, there
+    Replenishment, ...) had code duplications. For this reason, there
     is now a class from which all these revokes can inherit to save code.
     """
     id = db.Column(db.Integer, primary_key=True)
@@ -563,52 +563,6 @@ class DepositRevoke(Revoke, db.Model):
                            nullable=False)
 
 
-class Refund(db.Model):
-    __tablename__ = 'refunds'
-    __updateable_fields__ = {'revoked': bool}
-
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    comment = db.Column(db.String(64), nullable=False)
-    revoked = db.Column(db.Boolean, nullable=False, default=False)
-    total_price = db.Column(db.Integer, nullable=False)
-
-    # Link to the user of the refund.
-    user = db.relationship(
-        'User',
-        back_populates='refunds',
-        foreign_keys=[user_id]
-    )
-
-    @hybrid_method
-    def set_revoke(self, revoked, admin_id):
-        rr = RefundRevoke(revoked=revoked, admin_id=admin_id, refund_id=self.id)
-        self.revoked = revoked
-        db.session.add(rr)
-
-    @hybrid_property
-    def revokehistory(self):
-        res = (RefundRevoke.query
-               .filter(RefundRevoke.refund_id == self.id)
-               .all())
-        revokehistory = []
-        for revoke in res:
-            revokehistory.append({
-                'id': revoke.id,
-                'timestamp': revoke.timestamp,
-                'revoked': revoke.revoked
-            })
-        return revokehistory
-
-
-class RefundRevoke(Revoke, db.Model):
-    __tablename__ = 'refundrevokes'
-    refund_id = db.Column(db.Integer, db.ForeignKey('refunds.id'),
-                          nullable=False)
-
-
 class User(db.Model):
     __tablename__ = 'users'
     __updateable_fields__ = {
@@ -669,20 +623,14 @@ class User(db.Model):
                                    .as_scalar())
 
     # Select statement for the sum of all non revoked refunds referring this user.
-    _refund_sum = column_property(select([func.coalesce(func.sum(Refund.total_price), 0)])
-                                  .where(Refund.user_id == id)
-                                  .where(Refund.revoked.is_(False))
-                                  .as_scalar())
-
-    # Select statement for the sum of all non revoked refunds referring this user.
     _replenishmentcollection_sum = column_property(select([func.coalesce(func.sum(ReplenishmentCollection.price), 0)])
                                                    .where(ReplenishmentCollection.seller_id == id)
                                                    .where(ReplenishmentCollection.revoked.is_(False))
                                                    .as_scalar())
 
-    # A users credit is the sum of all amounts that increase his credit (Deposits, Refunds, ReplenishmentCollections)
+    # A users credit is the sum of all amounts that increase his credit (Deposits, ReplenishmentCollections)
     # and all amounts that decrease it (Purchases)
-    credit = column_property(_refund_sum.expression + _replenishmentcollection_sum.expression + _deposit_sum.expression - _purchase_sum.expression)
+    credit = column_property(_replenishmentcollection_sum.expression + _deposit_sum.expression - _purchase_sum.expression)
 
     # Link to all purchases of a user.
     purchases = db.relationship(
@@ -693,11 +641,6 @@ class User(db.Model):
     deposits = db.relationship(
         'Deposit', lazy='dynamic',
         foreign_keys='Deposit.user_id'
-    )
-    # Link to all refunds of a user.
-    refunds = db.relationship(
-        'Refund', lazy='dynamic',
-        foreign_keys='Refund.user_id'
     )
 
     def __repr__(self):

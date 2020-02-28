@@ -567,36 +567,3 @@ and revoked field of each entry related to the purchase.
 | admin_id | *Integer* | This is the id of the admin who changed the revoke status.
 | deposit_id | *Integer* | This is the id of the deposit where the revoked status has been changed.
 | revoked | *Boolean* | This indicates whether the Deposit is revoked (True) or not (False).
-
-#### Refunds
-
-When a user buys things for the community with his own money, which can not
-directly be linked to a product and no replenishment can be made, an admin has
-to make a refund for him. An example would be cleaning agent. A refund
-can be revoked, even more than once. So in addition, a revokehistory for the
-refund can be called. The total_price of all refunds related to the user, which
-are not revoked, are added to the users credit.
-
-| Name | TYPE | Explanation
-| --- | --- | --- |
-| id | *Integer* | The Refund id is unique and is used for identification in the application. It is created automatically with a new Refund.
-| timestamp | *DateTime* | This is the date and time the Refund was created. It is created automatically with the new Refund.
-| user_id | *Integer* | This is the id of the user the Refund was made for.
-| admin_id | *Integer* | This is the id of the admin who made the Refund.
-| total_price | *Integer* | This describes the amount (in cents) of the refund.
-| comment | *String(64)* | This is a short comment where the admin explains what he did and why.
-| revoked | *Boolean* | This indicates whether the Refund is revoked (True) or not (False). If not specified further, it will automatically be set to False.
-
-#### RefundRevoke
-
-When an admin revokes or re-revokes a refund, a RefundRevoke entry is made. It
-is used to determine the revokehistory of a refund by listing the id, timestamp
-and revoked field of each entry related to the refund.
-
-| Name | TYPE | Explanation
-| --- | --- | --- |
-| id | *Integer* | The RefundsRevoke id is unique and is used for identification in the application. It is created automatically with a new RefundsRevoke.
-| timestamp | *DateTime* | This is the date and time the RefundsRevoke was created. It is created automatically with the new RefundsRevoke.
-| admin_id | *Integer* | This is the id of the admin who changed the revoke status.
-| refund_id | *Integer* | This is the id of the refund where the revoked status has been changed.
-| revoked | *Boolean* | This indicates whether the Refund is revoked (True) or not (False).

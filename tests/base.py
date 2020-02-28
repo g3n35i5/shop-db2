@@ -202,21 +202,6 @@ class BaseTestCase(TestCase):
             db.session.add(d)
         db.session.commit()
 
-    def insert_default_refunds(self):
-        r1 = Refund(user_id=1, total_price=100, admin_id=1,
-                    comment='Test refund')
-        r2 = Refund(user_id=2, total_price=200, admin_id=1,
-                    comment='Test refund')
-        r3 = Refund(user_id=2, total_price=500, admin_id=1,
-                    comment='Test refund')
-        r4 = Refund(user_id=3, total_price=300, admin_id=1,
-                    comment='Test refund')
-        r5 = Refund(user_id=1, total_price=600, admin_id=1,
-                    comment='Test refund')
-        for r in [r1, r2, r3, r4, r5]:
-            db.session.add(r)
-        db.session.commit()
-
     def insert_default_turnovers(self):
         for turnover in turnovers:
             db.session.add(Turnover(**turnover))

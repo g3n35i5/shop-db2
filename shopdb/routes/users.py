@@ -102,24 +102,6 @@ def get_user_deposits(user, id):
     return jsonify(deposits), 200
 
 
-@app.route('/users/<int:id>/refunds', methods=['GET'])
-@checkIfUserIsValid
-def get_user_refunds(user, id):
-    """
-    Returns a list with all refunds of a user.
-
-    :param user:               Is the user, determined by @checkIfUserIsValid.
-    :param id:                 Is the user id.
-
-    :return:                   A list with all refunds of the user.
-    """
-
-    fields = ['id', 'timestamp', 'admin_id', 'total_price', 'revoked', 'comment']
-    refunds = convert_minimal(user.refunds.all(), fields)
-
-    return jsonify(refunds), 200
-
-
 @app.route('/users/<int:id>/purchases', methods=['GET'])
 @checkIfUserIsValid
 def get_user_purchases(user, id):

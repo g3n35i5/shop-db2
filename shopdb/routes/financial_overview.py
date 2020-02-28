@@ -7,7 +7,7 @@ from flask import jsonify
 from shopdb.api import app
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
-from shopdb.models import Purchase, Deposit, Turnover, Refund, ReplenishmentCollection, StocktakingCollection
+from shopdb.models import Purchase, Deposit, Turnover, ReplenishmentCollection, StocktakingCollection
 
 
 @app.route('/financial_overview', methods=['GET'])
@@ -15,7 +15,7 @@ from shopdb.models import Purchase, Deposit, Turnover, Refund, ReplenishmentColl
 def get_financial_overview(admin):
     """
     The financial status of the entire project can be retrieved via this route.
-    All purchases, deposits, refunds and replenishmentcollections are
+    All purchases, deposits and replenishmentcollections are
     used for this purpose. The items are cleared once to a number indicating
     whether the community has debt or surplus money. In addition, the
     individual items are returned separately in order to get a better
@@ -34,9 +34,6 @@ def get_financial_overview(admin):
 
     # Query all turnovers.
     turnovers = Turnover.query.filter(Turnover.revoked.is_(False)).all()
-
-    # Query all refunds.
-    refunds = Refund.query.filter(Refund.revoked.is_(False)).all()
 
     # Query all replenishment collections.
     replcolls = (ReplenishmentCollection
@@ -66,7 +63,6 @@ def get_financial_overview(admin):
     # - Deposits                     with a positive amount
     # - Turnovers                    with a positive amount
     # - Replenishmentcollections     with a negative price
-    # - Refunds                      with a negative amount
     # - Profits between stocktakings
 
     pos_pur = sum(
@@ -89,13 +85,8 @@ def get_financial_overview(admin):
                              list(map(lambda x: x.price, replcolls)))))
     )
 
-    neg_ref = sum(
-        map(abs, list(filter(lambda x: x < 0,
-                             list(map(lambda x: x.total_price, refunds)))))
-    )
-
     sum_incomes = sum([
-        pos_pur, pos_dep, pos_turn, neg_rep, neg_ref, pos_stock
+        pos_pur, pos_dep, pos_turn, neg_rep, pos_stock
     ])
 
     incomes = {
@@ -105,7 +96,6 @@ def get_financial_overview(admin):
             {'name': 'Deposits', 'amount': pos_dep},
             {'name': 'Turnovers', 'amount': pos_turn},
             {'name': 'Replenishments', 'amount': neg_rep},
-            {'name': 'Refunds', 'amount': neg_ref},
             {'name': 'Stocktakings', 'amount': pos_stock}
         ]
     }
@@ -115,7 +105,6 @@ def get_financial_overview(admin):
     # - Deposits                 with a negative amount
     # - Turnovers                with a negative amount
     # - Replenishmentcollections with a positive price
-    # - Refunds                  with a positive amount
     # - Losses between stocktakings
     neg_pur = sum(
         map(abs, list(filter(lambda x: x < 0,
@@ -137,13 +126,8 @@ def get_financial_overview(admin):
                              list(map(lambda x: x.price, replcolls)))))
     )
 
-    pos_ref = sum(
-        map(abs, list(filter(lambda x: x >= 0,
-                             list(map(lambda x: x.total_price, refunds)))))
-    )
-
     sum_expenses = sum([
-        neg_pur, neg_dep, neg_turn, pos_rep, pos_ref, neg_stock
+        neg_pur, neg_dep, neg_turn, pos_rep, neg_stock
     ])
 
     expenses = {
@@ -153,7 +137,6 @@ def get_financial_overview(admin):
             {'name': 'Deposits', 'amount': neg_dep},
             {'name': 'Turnovers', 'amount': neg_turn},
             {'name': 'Replenishments', 'amount': pos_rep},
-            {'name': 'Refunds', 'amount': pos_ref},
             {'name': 'Stocktakings', 'amount': neg_stock}
         ]
     }

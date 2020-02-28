@@ -85,21 +85,6 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         for d in [d1, d2, d3, d4, d5]:
             db.session.add(d)
 
-        # Insert some refunds (some are revoked)
-        r1 = Refund(user_id=1, total_price=100, admin_id=1,
-                    comment='Foo', revoked=True)
-        r2 = Refund(user_id=3, total_price=200, admin_id=1,
-                    comment='Foo', revoked=True)
-        r3 = Refund(user_id=2, total_price=150, admin_id=1,
-                    comment='Foo', revoked=False)  # <-
-        r4 = Refund(user_id=1, total_price=700, admin_id=1,
-                    comment='Foo', revoked=False)  # <-
-        for r in [r1, r2, r3, r4]:
-            db.session.add(r)
-
-        # Commit the changes.
-        db.session.commit()
-
         # Insert the replenishmentcollections and revoke the first one.
         self.insert_default_replenishmentcollections()
         rc = ReplenishmentCollection.query.filter_by(id=1).first()
@@ -136,20 +121,17 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         # - Deposits                     with a positive amount
         # - Turnovers                    with a positive amount
         # - Replenishmentcollections     with a negative price
-        # - Refunds                      with a negative amount
         # - Profits between stocktakings
         positive_purchase_amount = 750
         positive_deposits_amount = 400
         positive_turnover_amount = 300
         negative_replenishmentcollections_price = 0
-        negative_refunds_amount = 0
         profit_between_stocktakings = 600
         incomes = sum([
             positive_purchase_amount,
             positive_deposits_amount,
             positive_turnover_amount,
             negative_replenishmentcollections_price,
-            negative_refunds_amount,
             profit_between_stocktakings
         ])
 
@@ -158,20 +140,17 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         # - Deposits                 with a negative amount
         # - Turnovers                with a negative amount
         # - Replenishmentcollections with a positive price
-        # - Refunds                  with a positive amount
         # - Losses between stocktakings
         negative_purchase_amount = 100
         negative_deposits_amount = 100
         negative_turnover_amount = 600
         positive_replenishmentcollections_price = 3500
-        positive_refunds_amount = 850
         loss_between_stocktakings = 950
         expenses = sum([
             negative_purchase_amount,
             negative_deposits_amount,
             negative_turnover_amount,
             positive_replenishmentcollections_price,
-            positive_refunds_amount,
             loss_between_stocktakings
         ])
 
@@ -195,10 +174,8 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(api_incomes[3]['name'], 'Replenishments')
         self.assertEqual(api_incomes[3]['amount'],
                          negative_replenishmentcollections_price)
-        self.assertEqual(api_incomes[4]['name'], 'Refunds')
-        self.assertEqual(api_incomes[4]['amount'], negative_refunds_amount)
-        self.assertEqual(api_incomes[5]['name'], 'Stocktakings')
-        self.assertEqual(api_incomes[5]['amount'], profit_between_stocktakings)
+        self.assertEqual(api_incomes[4]['name'], 'Stocktakings')
+        self.assertEqual(api_incomes[4]['amount'], profit_between_stocktakings)
 
         # Check the expenses
         api_incomes = overview['expenses']['items']
@@ -211,7 +188,5 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(api_incomes[3]['name'], 'Replenishments')
         self.assertEqual(api_incomes[3]['amount'],
                          positive_replenishmentcollections_price)
-        self.assertEqual(api_incomes[4]['name'], 'Refunds')
-        self.assertEqual(api_incomes[4]['amount'], positive_refunds_amount)
-        self.assertEqual(api_incomes[5]['name'], 'Stocktakings')
-        self.assertEqual(api_incomes[5]['amount'], loss_between_stocktakings)
+        self.assertEqual(api_incomes[4]['name'], 'Stocktakings')
+        self.assertEqual(api_incomes[4]['amount'], loss_between_stocktakings)
