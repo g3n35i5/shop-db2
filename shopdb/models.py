@@ -294,6 +294,7 @@ class Purchase(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=func.now(), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'),
                            nullable=False)
@@ -331,8 +332,13 @@ class Purchase(db.Model):
         return user_id
 
     @hybrid_method
-    def set_revoked(self, revoked):
+    def set_revoked(self, revoked, admin_id=None):
         if not self.product.revocable:
+            raise EntryNotRevocable()
+
+        # Purchase, which have been inserted from administrators can only be revoked
+        # by an administrator.
+        if self.admin_id is not None and not admin_id:
             raise EntryNotRevocable()
 
         pr = PurchaseRevoke(purchase_id=self.id, revoked=revoked)

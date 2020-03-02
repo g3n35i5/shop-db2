@@ -149,11 +149,16 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         db.session.commit()
 
         data = {'user_id': 1, 'product_id': 1, 'amount': 2}
-        for role in [None, 'user', 'admin']:
+        for role in [None, 'user']:
             res = self.post(url='/purchases', role=role, data=data)
             self.assertEqual(res.status_code, 400)
             self.assertException(res, exc.EntryIsNotForSale)
             self.assertEqual(len(Purchase.query.all()), 0)
+
+        self.post(url='/purchases', data=data, role='admin')
+        purchases = Purchase.query.all()
+        self.assertEqual(1, len(purchases))
+        self.assertTrue(purchases[0].admin_id is not None)
 
     def test_create_purchase_unknown_field(self):
         """Create a purchase with an unknown field."""

@@ -39,6 +39,31 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
+    def test_revoke_purchase_made_by_admin(self):
+        """Purchase, which have been inserted from administrators can only
+           be revoked by an administrator. """
+        # Create purchase with admin privileges
+        data = {'user_id': 2, 'product_id': 1, 'amount': 1}
+        self.post(url='/purchases', data=data, role='admin')
+        purchase = Purchase.query.order_by(Purchase.id.desc()).first()
+        self.assertTrue(purchase.admin_id is not None)
+        self.assertEqual(1, purchase.amount)
+        self.assertFalse(purchase.revoked)
+
+        # Users are not allowed to revoke (or even update) this purchase
+        for role in [None, 'user']:
+            res = self.put(url=f'/purchases/{purchase.id}', data={'revoked': True}, role=role)
+            self.assertException(res, exc.EntryNotRevocable)
+            purchase = Purchase.query.order_by(Purchase.id.desc()).first()
+            self.assertFalse(purchase.revoked)
+
+        # Administrators are allowed to update this purchase
+        res = self.put(url=f'/purchases/{purchase.id}', data={'revoked': True, 'amount': 2}, role='admin')
+        self.assertEqual(res.status_code, 201)
+        purchase = Purchase.query.order_by(Purchase.id.desc()).first()
+        self.assertTrue(purchase.revoked)
+        self.assertEqual(2, purchase.amount)
+
     def test_update_revoke_purchase_twice(self):
         """Revoking a purchase twice should raise an error and do nothing."""
         self.insert_default_purchases()

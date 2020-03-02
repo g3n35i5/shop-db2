@@ -76,8 +76,8 @@ def insert_purchase(admin: Optional[User], data: dict) -> None:
     if not admin and not product.active:
         raise exc.EntryIsInactive()
 
-    # Check weather the product is for sale
-    if any(map(lambda tag: not tag.is_for_sale, product.tags)):
+    # Check weather the product is for sale if the request is not made by an administrator
+    if not admin and any(map(lambda tag: not tag.is_for_sale, product.tags)):
         raise exc.EntryIsNotForSale()
 
     # Check amount
@@ -94,7 +94,10 @@ def insert_purchase(admin: Optional[User], data: dict) -> None:
             raise exc.InsufficientCredit()
 
     try:
-        purchase = Purchase(**data)
+        if admin:
+            purchase = Purchase(admin_id=admin.id, **data)
+        else:
+            purchase = Purchase(**data)
         db.session.add(purchase)
     except IntegrityError:
         raise exc.CouldNotCreateEntry()

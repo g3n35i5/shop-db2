@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from inspect import signature
+from inspect import signature, Signature
 from typing import Optional
 
 from flask import jsonify
@@ -75,10 +75,17 @@ def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[U
         else:
             # Check, whether the method requires an admin_id
             if 'admin_id' in signature(method).parameters.keys():
-                if admin is None:
+                # If the admin_id parameter has a default value (e.g. def set_foo(admin_id=None, ...)), admin
+                # privileges are not required to update the field
+                admin_required = isinstance(signature(method).parameters['admin_id'].default, Signature.empty)
+                if admin_required and admin is None:
                     raise exc.UnauthorizedAccess()
 
-                method(field_value, admin_id=admin.id)
+                # Call the "set_{FIELDNAME}" method, with or without admin id
+                if admin and not admin_required:
+                    method(field_value, admin_id=admin.id)
+                else:
+                    method(field_value, admin_id=None)
             else:
                 method(field_value)
 
