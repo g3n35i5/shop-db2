@@ -132,7 +132,7 @@ def get_user_purchases(user, id):
     :return:                   A list with all purchases of the user.
     """
 
-    fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount', 'revoked', 'price']
+    fields = ['id', 'timestamp', 'product_id', 'admin_id', 'productprice', 'amount', 'revoked', 'price']
     purchases = convert_minimal(user.purchases.all(), fields)
 
     return jsonify(purchases), 200

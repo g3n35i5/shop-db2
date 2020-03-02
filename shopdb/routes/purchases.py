@@ -29,9 +29,9 @@ def list_purchases(admin):
     :return:      A list of all purchases.
     """
     if admin is not None:
-        fields = ['id', 'timestamp', 'user_id', 'product_id', 'productprice', 'amount', 'revoked', 'price']
+        fields = ['id', 'timestamp', 'user_id', 'admin_id', 'product_id', 'productprice', 'amount', 'revoked', 'price']
     else:
-        fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount']
+        fields = ['id', 'timestamp', 'user_id', 'admin_id', 'product_id', 'amount']
 
     query = QueryFromRequestParameters(Purchase, request.args, fields)
     if admin is None:
@@ -96,7 +96,7 @@ def get_purchase(id):
     purchase = Purchase.query.filter_by(id=id).first()
     if not purchase:
         raise exc.EntryNotFound()
-    fields = ['id', 'timestamp', 'user_id', 'product_id', 'amount', 'price',
+    fields = ['id', 'timestamp', 'user_id', 'admin_id', 'product_id', 'amount', 'price',
               'productprice', 'revoked', 'revokehistory']
     return jsonify(convert_minimal(purchase, fields)[0]), 200
 
