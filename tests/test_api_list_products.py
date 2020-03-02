@@ -49,9 +49,9 @@ class ListProductsAPITestCase(BaseAPITestCase):
         # Make sure that the product is not for sale
         self.assertFalse(Product.query.filter_by(id=1).first().is_for_sale)
 
-        # Make sure that this product isn't listed when an unprivileged user lists all products
+        # Make sure that this product gets listed when an unprivileged user lists all products
         products = json.loads(self.get(url='/products', role='user').data)
-        self.assertTrue(1 not in list(map(lambda p: p['id'], products)))
+        self.assertTrue(1 in list(map(lambda p: p['id'], products)))
 
         # Make sure that this product gets listed for administrators
         products = json.loads(self.get(url='/products', role='admin').data)

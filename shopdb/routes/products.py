@@ -30,17 +30,6 @@ def list_products(admin):
               'revocable', 'imagename', 'tags', 'creation_date']
 
     query = QueryFromRequestParameters(Product, request.args, fields)
-    # If the request is not made by an administrator, only those products should get listed that are for sale
-    if not admin:
-        # Get a list of all invalid tag ids (as SQL subquery)
-        invalid_tag_ids = db.session.query(Tag.id).filter(Tag.is_for_sale.is_(False)).subquery()
-        # Get a list of all products to which this tag is assigned
-        invalid_product_ids = (db.session.query(product_tag_assignments.c.product_id)
-                               .filter(product_tag_assignments.c.tag_id.in_(invalid_tag_ids))
-                               .subquery())
-        # Filter the base query with the invalid product ids
-        query = query.filter(Product.id.notin_(invalid_product_ids))
-
     result, content_range = query.result()
     products = convert_minimal(result, fields)
     for product in products:
