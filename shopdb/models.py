@@ -733,15 +733,24 @@ class User(db.Model):
     def favorites(self):
         """
         Returns the product ids of the user's favorite products in
-        descending order of number. Inactive products are ignored.
+        descending order of number. Inactive products those who are
+        not for sale are ignored.
         Args:
             self: self
         Returns:
             ids: A list of the favorite product ids in descending order.
         """
+        # Get a list of all invalid tag ids (as SQL subquery)
+        invalid_tag_ids = db.session.query(Tag.id).filter(Tag.is_for_sale.is_(False)).subquery()
+        # Get a list of all products to which this tag is assigned
+        invalid_product_ids = (db.session.query(product_tag_assignments.c.product_id)
+                               .filter(product_tag_assignments.c.tag_id.in_(invalid_tag_ids))
+                               .subquery())
+
         result = (db.session.query(Purchase, Product)
                   .filter(Product.id == Purchase.product_id)
                   .filter(Product.active.is_(True))
+                  .filter(Product.id.notin_(invalid_product_ids))
                   .filter(Purchase.user_id == self.id)
                   .filter(Purchase.revoked.is_(False))
                   .group_by(Purchase.product_id)
