@@ -33,6 +33,24 @@ def list_replenishmentcollections(admin):
     return response
 
 
+@app.route('/replenishments', methods=['GET'])
+@adminRequired
+def list_replenishments(admin):
+    """
+    Returns a list of all replenishments.
+
+    :param admin: Is the administrator user, determined by @adminRequired.
+
+    :return:      A list of all replenishments.
+    """
+    fields = ['id', 'product_id', 'amount', 'total_price', 'revoked']
+    query = QueryFromRequestParameters(Replenishment, request.args, fields)
+    result, content_range = query.result()
+    response = jsonify(convert_minimal(result, fields))
+    response.headers['Content-Range'] = content_range
+    return response
+
+
 @app.route('/replenishmentcollections/<int:id>', methods=['GET'])
 @adminRequired
 def get_replenishmentcollection(admin, id):
