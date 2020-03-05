@@ -6,7 +6,7 @@ from flask import Flask, jsonify
 from flask_bcrypt import Bcrypt
 
 import configuration as config
-from shopdb.models import db
+from shopdb.shared import db
 
 app = Flask(__name__)
 

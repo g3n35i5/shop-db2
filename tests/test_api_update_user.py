@@ -136,7 +136,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         """
         data = {'password': 'short', 'password_repeat': 'short'}
         res = self.put(url='/users/1', data=data, role='admin')
-        self.assertException(res, PasswordTooShort)
+        self.assertException(res, exc.PasswordTooShort)
 
     def test_update_user_password(self):
         """Update user password"""

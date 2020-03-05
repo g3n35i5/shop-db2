@@ -4,6 +4,7 @@ __author__ = 'g3n35i5'
 
 from shopdb.models import *
 from shopdb.api import db
+import datetime
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from flask import json

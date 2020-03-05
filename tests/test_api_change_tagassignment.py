@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
+# from shopdb.models import Product, Tag
+from shopdb.models.product import Product
+from shopdb.models.tag import Tag
 from shopdb.api import db
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
