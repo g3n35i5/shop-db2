@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
+import shopdb.exceptions as exc
 from shopdb.api import app
 from tests.base_api import BaseAPITestCase
 
@@ -22,7 +22,7 @@ class GetImageAPITestCase(BaseAPITestCase):
         is requested.
         """
         res = self.get('images/does_not_exist.png')
-        self.assertException(res, EntryNotFound)
+        self.assertException(res, exc.EntryNotFound)
 
     def test_get_image_empty_name(self):
         """

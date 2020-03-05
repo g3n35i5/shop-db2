@@ -13,18 +13,6 @@ from shopdb.exceptions import (CouldNotCreateEntry, UserNeedsPassword, NothingHa
 from shopdb.helpers.uploads import insert_image
 from shopdb.shared import db
 
-from .rank import Rank
-from .rank_update import RankUpdate
-from .user_verification import UserVerification
-from .purchase import Purchase
-from .deposit import Deposit
-from .replenishment import ReplenishmentCollection
-from .upload import Upload
-from .admin_update import AdminUpdate
-from .tag import Tag
-from .product_tag_assignment import product_tag_assignments
-from .product import Product
-
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -32,6 +20,13 @@ class User(db.Model):
         'firstname': str, 'lastname': str, 'password': bytes,
         'is_admin': bool, 'rank_id': int, 'imagename': dict
     }
+
+    from .rank import Rank
+    from .rank_update import RankUpdate
+    from .user_verification import UserVerification
+    from .purchase import Purchase
+    from .deposit import Deposit
+    from .replenishment import ReplenishmentCollection
 
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
@@ -117,6 +112,7 @@ class User(db.Model):
 
     @hybrid_property
     def imagename(self):
+        from .upload import Upload
         upload = Upload.query.filter_by(id=self.image_upload_id).first()
         if upload:
             return upload.filename
@@ -127,6 +123,7 @@ class User(db.Model):
         filename = insert_image(image)
         # Create an upload
         try:
+            from .upload import Upload
             u = Upload(filename=filename, admin_id=admin_id)
             db.session.add(u)
             db.session.flush()
@@ -136,6 +133,7 @@ class User(db.Model):
 
     @hybrid_property
     def is_admin(self):
+        from .admin_update import AdminUpdate
         au = (AdminUpdate.query
               .filter_by(user_id=self.id)
               .order_by(AdminUpdate.id.desc())
@@ -146,6 +144,7 @@ class User(db.Model):
 
     @hybrid_method
     def set_admin(self, is_admin, admin_id):
+        from .admin_update import AdminUpdate
         if is_admin and self.password is None:
             raise UserNeedsPassword()
         if self.is_admin == is_admin:
@@ -155,6 +154,7 @@ class User(db.Model):
 
     @hybrid_method
     def verify(self, admin_id, rank_id):
+        from .user_verification import UserVerification
         if self.is_verified:
             raise UserAlreadyVerified()
         self.is_verified = True
@@ -164,6 +164,7 @@ class User(db.Model):
 
     @hybrid_method
     def set_rank_id(self, rank_id, admin_id):
+        from .rank_update import RankUpdate
         if self.is_verified:
             ru = RankUpdate(rank_id=rank_id, admin_id=admin_id, user_id=self.id)
             db.session.add(ru)
@@ -181,6 +182,7 @@ class User(db.Model):
 
     @hybrid_property
     def rank(self):
+        from .rank import Rank
         if self.rank_id:
             rank = Rank.query.filter(Rank.id == self.rank_id).first()
             if rank:
@@ -198,6 +200,10 @@ class User(db.Model):
         Returns:
             ids: A list of the favorite product ids in descending order.
         """
+        from .tag import Tag
+        from .product_tag_assignment import product_tag_assignments
+        from .purchase import Purchase
+        from .product import Product
         # Get a list of all invalid tag ids (as SQL subquery)
         invalid_tag_ids = db.session.query(Tag.id).filter(Tag.is_for_sale.is_(False)).subquery()
         # Get a list of all products to which this tag is assigned

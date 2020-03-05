@@ -7,7 +7,7 @@ from sqlalchemy import func, and_
 from shopdb.api import db
 from shopdb.helpers.products import _get_product_mean_price_in_time_range
 from shopdb.models import (Purchase, Replenishment, Product, StocktakingCollection, Stocktaking,
-                               ReplenishmentCollection)
+                           ReplenishmentCollection)
 
 
 def _get_balance_between_stocktakings(start, end):

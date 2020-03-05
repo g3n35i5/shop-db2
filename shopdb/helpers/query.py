@@ -11,7 +11,7 @@ from sqlalchemy.sql.expression import BinaryExpression
 from werkzeug import ImmutableMultiDict
 
 import shopdb.exceptions as exc
-from shopdb.models import db
+from shopdb.api import db
 
 
 class QueryFromRequestParameters:

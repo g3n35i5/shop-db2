@@ -13,11 +13,6 @@ from shopdb.exceptions import (UnauthorizedAccess, EntryAlreadyExists, CouldNotC
                                NothingHasChanged, NoRemainingTag, EntryNotFound)
 from shopdb.helpers.uploads import insert_image
 from shopdb.shared import db
-from .product_price import ProductPrice
-from .product_tag_assignment import product_tag_assignments
-from .upload import Upload
-from .tag import Tag
-from .user import User
 
 
 class Product(db.Model):
@@ -29,6 +24,9 @@ class Product(db.Model):
     # that "imagename" is a dict and not a string is because the update compares
     # whether the values have changed. But since a product has no "image" but only an
     # "imagename", the data for the new image must be called "imagename" and thus be a dict.
+
+    from .product_price import ProductPrice
+    from .product_tag_assignment import product_tag_assignments
 
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
@@ -50,6 +48,7 @@ class Product(db.Model):
 
     @validates('created_by')
     def validate_admin(self, key, created_by):
+        from .user import User
         user = User.query.filter(User.id == created_by).first()
         if not user or not user.is_admin:
             raise UnauthorizedAccess()
@@ -65,6 +64,7 @@ class Product(db.Model):
 
     @hybrid_property
     def imagename(self):
+        from .upload import Upload
         upload = Upload.query.filter_by(id=self.image_upload_id).first()
         if upload:
             return upload.filename
@@ -95,6 +95,8 @@ class Product(db.Model):
         start = start.replace(hour=0, minute=0, second=0, microsecond=0)
         end = end.replace(hour=23, minute=59, second=59, microsecond=999999)
 
+        from .product_price import ProductPrice
+
         # Query the pricehistory in the given range
         res = (db.session.query(ProductPrice)
                .filter(ProductPrice.product_id == self.id)
@@ -108,6 +110,7 @@ class Product(db.Model):
 
     @hybrid_method
     def set_price(self, price, admin_id):
+        from .product_price import ProductPrice
         productprice = ProductPrice(
             price=price,
             product_id=self.id,
@@ -126,6 +129,7 @@ class Product(db.Model):
         filename = insert_image(image)
         # Create an upload
         try:
+            from .upload import Upload
             u = Upload(filename=filename, admin_id=admin_id)
             db.session.add(u)
             db.session.flush()
@@ -135,6 +139,7 @@ class Product(db.Model):
 
     @hybrid_method
     def set_tags(self, tags):
+        from .tag import Tag
         # All tag ids must be int
         if not all([isinstance(tag_id, int) for tag_id in tags]):
             raise InvalidData()

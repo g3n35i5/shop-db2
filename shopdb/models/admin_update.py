@@ -3,7 +3,6 @@
 __author__ = 'g3n35i5'
 
 from shopdb.shared import db
-from .user import User
 from shopdb.exceptions import UnauthorizedAccess
 from sqlalchemy.orm import validates
 from sqlalchemy import func
@@ -20,6 +19,8 @@ class AdminUpdate(db.Model):
 
     @validates('admin_id')
     def validate_admin(self, key, admin_id):
+        from .user import User
+
         # If there are no admins in the database, the first user can promote
         # himself
         if not User.query.filter(User.is_admin is True).all():

@@ -3,6 +3,7 @@
 __author__ = 'g3n35i5'
 
 from shopdb.models import *
+import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 from copy import copy
 
@@ -49,7 +50,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             'password_repeat': 'short'
         }
         res = self.post(url='/register', data=data)
-        self.assertException(res, PasswordTooShort)
+        self.assertException(res, exc.PasswordTooShort)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
@@ -59,7 +60,7 @@ class RegisterAPITestCase(BaseAPITestCase):
            on creating a user with missing data."""
         data = {'firstname': 'John'}
         res = self.post(url='/register', data=data)
-        self.assertException(res, DataIsMissing)
+        self.assertException(res, exc.DataIsMissing)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
@@ -79,7 +80,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             data_copy = copy(data)
             data_copy[item] = 1234
             res = self.post(url='/register', data=data_copy)
-            self.assertException(res, WrongType)
+            self.assertException(res, exc.WrongType)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
@@ -94,7 +95,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             'password_repeat': 'supersecret_ooops'
         }
         res = self.post(url='/register', data=data)
-        self.assertException(res, PasswordsDoNotMatch)
+        self.assertException(res, exc.PasswordsDoNotMatch)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
@@ -108,6 +109,6 @@ class RegisterAPITestCase(BaseAPITestCase):
             'password': 'supersecret'
         }
         res = self.post(url='/register', data=data)
-        self.assertException(res, DataIsMissing)
+        self.assertException(res, exc.DataIsMissing)
         users = User.query.all()
         self.assertEqual(len(users), 5)

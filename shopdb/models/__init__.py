@@ -17,3 +17,4 @@ from .tag import Tag
 from .upload import Upload
 from .user import User
 from .user_verification import UserVerification
+from .stocktaking import Stocktaking, StocktakingCollection, StocktakingCollectionRevoke

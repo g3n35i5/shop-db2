@@ -3,7 +3,6 @@
 __author__ = 'g3n35i5'
 
 from shopdb.shared import db
-from .user import User
 from shopdb.exceptions import UnauthorizedAccess
 from sqlalchemy.orm import validates
 from sqlalchemy import func
@@ -19,6 +18,7 @@ class RankUpdate(db.Model):
 
     @validates('admin_id')
     def validate_admin(self, key, admin_id):
+        from .user import User
         user = User.query.filter(User.id == admin_id).first()
         if not user or not user.is_admin:
             raise UnauthorizedAccess()

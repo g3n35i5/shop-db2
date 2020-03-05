@@ -8,8 +8,6 @@ from sqlalchemy.orm import validates
 
 from shopdb.exceptions import UserIsNotVerified, EntryNotRevocable
 from shopdb.shared import db
-from .product_price import ProductPrice
-from .user import User
 
 
 class PurchaseRevoke(db.Model):
@@ -47,6 +45,7 @@ class Purchase(db.Model):
     )
 
     def __init__(self, **kwargs):
+        from .product_price import ProductPrice
         super(Purchase, self).__init__(**kwargs)
         productprice = (ProductPrice.query
                         .filter(ProductPrice.product_id == self.product_id)
@@ -57,6 +56,7 @@ class Purchase(db.Model):
     @validates('user_id')
     def validate_user(self, key, user_id):
         """Make sure that the user is verified"""
+        from .user import User
         user = User.query.filter(User.id == user_id).first()
         if not user or not user.is_verified:
             raise UserIsNotVerified()
