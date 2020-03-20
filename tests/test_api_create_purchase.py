@@ -17,7 +17,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         res = self.post(url='/purchases', data=data)
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Purchase created.')
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 1)
@@ -58,7 +58,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         res = self.post(url='/purchases', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Purchase created.')
 
     def test_create_purchase_wrong_type(self):
@@ -92,7 +92,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
 
         res = self.post(url='/purchases', role='admin', data=data)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Purchase created.')
         purchases = Purchase.query.all()
         self.assertEqual(len(purchases), 1)
@@ -225,7 +225,7 @@ class CreatePurchaseAPITestCase(BaseAPITestCase):
         res = self.post(url='/purchases', role='admin', data=data)
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Purchase created.')
 
     def test_create_purchase_invalid_amount(self):

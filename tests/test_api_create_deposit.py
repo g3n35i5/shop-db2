@@ -17,7 +17,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         res = self.post(url='/deposits', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Created deposit.')
         deposits = Deposit.query.all()
         self.assertEqual(len(deposits), 1)
@@ -32,7 +32,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         res = self.post(url='/deposits', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Created deposit.')
         deposits = Deposit.query.all()
         self.assertEqual(len(deposits), 1)

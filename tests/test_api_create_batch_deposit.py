@@ -18,7 +18,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
         res = self.post(url='/deposits/batch', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Created batch deposit.')
         deposits = Deposit.query.all()
         self.assertEqual(len(deposits), 3)
@@ -34,7 +34,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
         res = self.post(url='/deposits/batch', data=data, role='admin')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Created batch deposit.')
         deposits = Deposit.query.all()
         self.assertEqual(len(deposits), 3)
