@@ -41,6 +41,10 @@ def before_request_hook(admin):
     if admin:
         return
 
+    # If the request method is OPTIONS, return.
+    if request.method == "OPTIONS":
+        return
+
     # Check for maintenance mode.
     exceptions = ['maintenance', 'login']
 
