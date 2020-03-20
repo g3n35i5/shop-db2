@@ -3,9 +3,11 @@
 __author__ = 'g3n35i5'
 
 import os
-import shopdb.exceptions as exc
+
 from flask import json
 from pyfakefs import fake_filesystem_unittest
+
+import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
 
 

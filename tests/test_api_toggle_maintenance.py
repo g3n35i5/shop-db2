@@ -5,11 +5,13 @@ __author__ = 'g3n35i5'
 import os
 import re
 from distutils.util import strtobool
+
+from flask import json
+
+import shopdb.exceptions as exc
 from configuration import PATH
 from shopdb.api import app
-import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
-from flask import json
 
 
 class ToggleMaintenanceAPITestCase(BaseAPITestCase):

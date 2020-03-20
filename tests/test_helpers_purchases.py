@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db
-import shopdb.helpers.purchases as purchase_helpers
-from tests.base_api import BaseAPITestCase
 from datetime import datetime
+
+import shopdb.helpers.purchases as purchase_helpers
+from shopdb.api import db
+from shopdb.models import Purchase
+from tests.base_api import BaseAPITestCase
 
 
 class TestHelpersPurchasesTestCase(BaseAPITestCase):

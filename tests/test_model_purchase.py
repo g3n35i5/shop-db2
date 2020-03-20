@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db
-import shopdb.exceptions as exc
-from tests.base import BaseTestCase
-from copy import copy
 import datetime
+from copy import copy
+
+from shopdb.api import db
+from shopdb.models import Purchase, Product, User, ProductPrice
+from tests.base import BaseTestCase
 
 
 class PurchaseModelTestCase(BaseTestCase):

@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from tests.base import BaseTestCase, u_passwords
-from flask import json
-import urllib
 import sys
+import urllib
+
+from flask import json
+
+from tests.base import BaseTestCase, u_passwords
 
 
 class BaseAPITestCase(BaseTestCase):

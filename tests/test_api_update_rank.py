@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
 import shopdb.exceptions as exc
+from shopdb.models import Rank
 from tests.base_api import BaseAPITestCase
-from flask import json
 
 
 class UpdateRankAPITestCase(BaseAPITestCase):

@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db
-import shopdb.exceptions as exc
-from tests.base_api import BaseAPITestCase
-from flask import json
 from datetime import datetime
+
+from flask import json
+
+import shopdb.exceptions as exc
+from shopdb.api import db
+from shopdb.models import ProductPrice, Purchase, Deposit, ReplenishmentCollection
+from tests.base_api import BaseAPITestCase
 
 
 class GetFinancialOverviewAPITestCase(BaseAPITestCase):
