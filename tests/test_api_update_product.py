@@ -122,9 +122,9 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         # Upload a product image
         filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'
         with open(filepath, 'rb') as test:
-            bytes = test.read()
+            data = test.read()
         image = {'filename': 'valid_image.png',
-                 'value': base64.b64encode(bytes).decode()}
+                 'value': base64.b64encode(data).decode()}
         data = {'imagename': image}
         res = self.put(url='/products/1', data=data, role='admin')
         self.assertEqual(res.status_code, 201)

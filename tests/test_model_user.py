@@ -100,7 +100,7 @@ class UserModelTestCase(BaseTestCase):
         user = User.query.filter_by(id=4).first()
         self.assertFalse(user.is_verified)
         with self.assertRaises(exc.UserIsNotVerified):
-            purchase = Purchase(user_id=4, product_id=1)
+            Purchase(user_id=4, product_id=1)
         db.session.rollback()
         # No purchase may have been made at this point
         purchases = Purchase.query.all()

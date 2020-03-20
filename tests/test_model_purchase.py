@@ -154,7 +154,6 @@ class PurchaseModelTestCase(BaseTestCase):
         # Check user credit
         user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 3)
-        # pdb.set_trace()
         self.assertEqual(user.credit, -(pr_1 + pr_2 + pr_3))
 
         # Check purchase prices
@@ -167,7 +166,7 @@ class PurchaseModelTestCase(BaseTestCase):
         """This unittest is designed to ensure, that purchase revokes will be
            applied to the user credit"""
         # Insert some purchases
-        for i in range(1, 11):
+        for _ in range(1, 11):
             purchase = Purchase(user_id=1, product_id=1, amount=1)
             db.session.add(purchase)
         db.session.commit()

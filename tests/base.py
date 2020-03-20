@@ -15,29 +15,36 @@ from shopdb.models import (User, Product, AdminUpdate, Tag, Replenishment, Reple
 passwords = None
 
 # Default data for users
-u_firstnames = ['William', 'Mary', 'Bryce', 'Daniel', None]
-u_lastnames = ['Jones', 'Smith', 'Jones', 'Lee', 'Seller']
-u_passwords = ['secret1', 'secret2', None, None, None]
+user_data = [
+    {'firstname': 'William', 'lastname': 'Jones', 'password': 'secret1'},
+    {'firstname': 'Mary', 'lastname': 'Smith', 'password': 'secret2'},
+    {'firstname': 'Bryce', 'lastname': 'Jones', 'password': None},
+    {'firstname': 'Daniel', 'lastname': 'Lee', 'password': None},
+    {'firstname': None, 'lastname': 'Seller', 'password': None},
+]
 
 # Default data for products
-p_names = ['Pizza', 'Coffee', 'Cookie', 'Coke']
-p_prices = [300, 50, 100, 200]
-p_tags = [1, 4, 2, 3]
+product_data = [
+    {'name': 'Pizza', 'price': 300, 'tags': [1]},
+    {'name': 'Coffee', 'price': 50, 'tags': [2]},
+    {'name': 'Cookie', 'price': 100, 'tags': [3]},
+    {'name': 'Coke', 'price': 200, 'tags': [4]},
+]
 
 # Default data for ranks
 rank_data = [
-        {'name': 'Contender', 'debt_limit': 0},
-        {'name': 'Member', 'debt_limit': -2000},
-        {'name': 'Alumni', 'debt_limit': -1000},
-        {'name': 'Inactive', 'debt_limit': 0, 'active': False}]
+    {'name': 'Contender', 'debt_limit': 0},
+    {'name': 'Member', 'debt_limit': -2000},
+    {'name': 'Alumni', 'debt_limit': -1000},
+    {'name': 'Inactive', 'debt_limit': 0, 'active': False}]
 
 # Default data for product tags
 tag_data = [
-        {'name': 'Food'},
-        {'name': 'Sweets'},
-        {'name': 'Drinks'},
-        {'name': 'Coffee'},
-        {'name': 'Uncategorized', 'is_for_sale': False}]
+    {'name': 'Food'},
+    {'name': 'Sweets'},
+    {'name': 'Drinks'},
+    {'name': 'Coffee'},
+    {'name': 'Uncategorized', 'is_for_sale': False}]
 
 
 class BaseTestCase(TestCase):
@@ -78,12 +85,12 @@ class BaseTestCase(TestCase):
         return passwords
 
     def insert_default_users(self):
-        hashes = self.generate_passwords(u_passwords)
-        for i in range(0, len(u_firstnames)):
+        hashes = self.generate_passwords(list(map(lambda u: u['password'], user_data)))
+        for index, data in enumerate(user_data):
             user = User(
-                firstname=u_firstnames[i],
-                lastname=u_lastnames[i],
-                password=hashes[i])
+                firstname=data['firstname'],
+                lastname=data['lastname'],
+                password=hashes[index])
             db.session.add(user)
 
         db.session.commit()
@@ -96,20 +103,20 @@ class BaseTestCase(TestCase):
 
     @staticmethod
     def insert_default_tag_assignments():
-        for index in range(len(p_tags)):
-            product = Product.query.filter_by(id=index+1).first()
-            tag = Tag.query.filter_by(id=index+1).first()
+        for p_data in product_data:
+            product = Product.query.filter(Product.name == p_data['name']).first()
+            tag = Tag.query.filter(Tag.id == p_data['tags'][0]).first()
             product.tags.append(tag)
 
         db.session.commit()
 
     @staticmethod
     def insert_default_products():
-        for i in range(0, len(p_names)):
-            product = Product(name=p_names[i], created_by=1)
+        for data in product_data:
+            product = Product(name=data['name'], created_by=1)
             db.session.add(product)
             db.session.flush()  # This is needed so that the product has its id
-            product.set_price(price=p_prices[i], admin_id=1)
+            product.set_price(price=data['price'], admin_id=1)
 
         db.session.commit()
 

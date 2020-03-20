@@ -56,8 +56,8 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Manipulate the product price timestamps
         ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
-        for id in [1, 2, 3, 4]:
-            ProductPrice.query.filter_by(id=id).first().timestamp = ts
+        for product_price_id in [1, 2, 3, 4]:
+            ProductPrice.query.filter_by(id=product_price_id).first().timestamp = ts
         db.session.commit()
 
         # Insert the default stocktaking collections.

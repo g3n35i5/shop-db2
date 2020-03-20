@@ -8,7 +8,7 @@ from flask import json
 import shopdb.exceptions as exc
 from shopdb.api import db
 from shopdb.models import User
-from tests.base import u_passwords, u_firstnames, u_lastnames
+from tests.base import user_data
 from tests.base_api import BaseAPITestCase
 
 
@@ -18,7 +18,7 @@ class LoginAPITestCase(BaseAPITestCase):
            an id and password"""
         data = {
             'id': 1,
-            'password': u_passwords[0]
+            'password': user_data[0]['password']
         }
         res = self.post(url='/login', data=data)
         self.assertEqual(res.status_code, 200)
@@ -28,8 +28,8 @@ class LoginAPITestCase(BaseAPITestCase):
         decode = jwt.decode(data['token'], self.app.config['SECRET_KEY'])
         assert 'user' in decode
         self.assertEqual(decode['user']['id'], 1)
-        self.assertEqual(decode['user']['firstname'], u_firstnames[0])
-        self.assertEqual(decode['user']['lastname'], u_lastnames[0])
+        self.assertEqual(decode['user']['firstname'], user_data[0]['firstname'])
+        self.assertEqual(decode['user']['lastname'], user_data[0]['lastname'])
 
     def test_login_non_verified_user(self):
         """If an authentication attempt is made by a non verified user,
@@ -58,7 +58,7 @@ class LoginAPITestCase(BaseAPITestCase):
         the correct error message must be returned."""
         User.query.filter_by(id=1).first().set_rank_id(4, 1)
         db.session.commit()
-        data = {'id': 1, 'password': u_passwords[0]}
+        data = {'id': 1, 'password': user_data[0]['password']}
         res = self.post(url='/login', data=data)
         self.assertException(res, exc.UserIsInactive)
 
@@ -78,7 +78,7 @@ class LoginAPITestCase(BaseAPITestCase):
         """If an authentication attempt is made without an id,
         the correct error message must be returned."""
         data = {
-            'password': u_passwords[0]
+            'password': user_data[0]['password']
         }
         res = self.post(url='/login', data=data)
         self.assertEqual(res.status_code, 401)
@@ -91,7 +91,7 @@ class LoginAPITestCase(BaseAPITestCase):
            the correct error message must be returned."""
         data = {
             'id': 42,
-            'password': u_passwords[0]
+            'password': user_data[0]['password']
         }
         res = self.post(url='/login', data=data)
         self.assertEqual(res.status_code, 401)

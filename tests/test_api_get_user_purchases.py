@@ -19,7 +19,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         purchases = json.loads(res.data)
         fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount',
-                  'revoked', 'price']        
+                  'revoked', 'price']
         for i in purchases:
             for x in fields:
                 assert x in i

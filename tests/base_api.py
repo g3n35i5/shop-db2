@@ -7,7 +7,7 @@ import urllib
 
 from flask import json
 
-from tests.base import BaseTestCase, u_passwords
+from tests.base import BaseTestCase, user_data
 
 
 class BaseAPITestCase(BaseTestCase):
@@ -19,17 +19,17 @@ class BaseAPITestCase(BaseTestCase):
         self.assertEqual(data['message'], exception.message)
         self.assertEqual(data['result'], exception.type)
 
-    def _request(self, type, url, data, role, content_type, params=None):
+    def _request(self, request_type, url, data, role, content_type, params=None):
         """Helper function to perform a request to the API"""
         if role not in ['admin', 'user', None]:  # pragma: no cover
             sys.exit(f'Wrong role: {role}')
 
         if role == 'admin':
             id = 1
-            password = u_passwords[0]
+            password = user_data[0]['password']
         elif role == 'user':
             id = 2
-            password = u_passwords[1]
+            password = user_data[1]['password']
         else:
             id = None
             password = None
@@ -42,47 +42,47 @@ class BaseAPITestCase(BaseTestCase):
         if id and password:
             res = self.login(id, password)
             headers['token'] = json.loads(res.data)['token']
-        if type == 'POST':
+        if request_type == 'POST':
             res = self.client.post(url, data=data, headers=headers)
-        elif type == 'PUT':
+        elif request_type == 'PUT':
             res = self.client.put(url, data=data, headers=headers)
-        elif type == 'GET':
+        elif request_type == 'GET':
             if params is not None:
                 params = urllib.parse.urlencode(params)
             res = self.client.get(url, data=data, headers=headers, query_string=params)
-        elif type == 'DELETE':
+        elif request_type == 'DELETE':
             res = self.client.delete(url, data=data, headers=headers)
         else:  # pragma: no cover
-            sys.exit('Wrong request type: {}'.format(type))
+            sys.exit('Wrong request type: {}'.format(request_type))
 
         return res
 
     def post(self, url, data=None, role=None,
              content_type='application/json'):
         """Helper function to perform a POST request to the API"""
-        return self._request(type='POST', url=url, data=data, role=role,
+        return self._request(request_type='POST', url=url, data=data, role=role,
                              content_type=content_type)
 
     def get(self, url, data=None, role=None, params=None,
             content_type='application/json'):
         """Helper function to perform a GET request to the API"""
-        return self._request(type='GET', url=url, data=data, role=role,
+        return self._request(request_type='GET', url=url, data=data, role=role,
                              params=params, content_type=content_type)
 
     def put(self, url, data=None, role=None,
             content_type='application/json'):
         """Helper function to perform a GET request to the API"""
-        return self._request(type='PUT', url=url, data=data, role=role,
+        return self._request(request_type='PUT', url=url, data=data, role=role,
                              content_type=content_type)
 
     def delete(self, url, data=None, role=None,
                content_type='application/json'):
         """Helper function to perform a DELETE request to the API"""
-        return self._request(type='DELETE', url=url, data=data, role=role,
+        return self._request(request_type='DELETE', url=url, data=data, role=role,
                              content_type=content_type)
 
-    def login(self, id, password):
+    def login(self, user_id: int, password: str):
         """Helper function to perform a login"""
-        data = {'id': id, 'password': password}
+        data = {'id': user_id, 'password': password}
         return self.client.post('/login', data=json.dumps(data),
                                 headers={'content-type': 'application/json'})

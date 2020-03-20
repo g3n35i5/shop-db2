@@ -5,7 +5,7 @@ __author__ = 'g3n35i5'
 from shopdb.api import bcrypt
 from shopdb.models import User, Rank
 from tests.base import BaseTestCase
-from tests.base import u_passwords, u_firstnames, u_lastnames, rank_data
+from tests.base import user_data, rank_data
 
 
 class DefaultDataTest(BaseTestCase):
@@ -13,14 +13,13 @@ class DefaultDataTest(BaseTestCase):
         """Check if all users have been entered correctly"""
         users = User.query.all()
         # Check number of users
-        self.assertEqual(len(users), len(u_firstnames))
+        self.assertEqual(len(users), len(user_data))
 
-        for i in range(0, len(u_firstnames)):
-            self.assertEqual(users[i].firstname, u_firstnames[i])
-            self.assertEqual(users[i].lastname, u_lastnames[i])
-            if u_passwords[i]:
-                self.assertTrue(bcrypt.check_password_hash(
-                    users[i].password, u_passwords[i]))
+        for index, data in enumerate(user_data):
+            self.assertEqual(users[index].firstname, data['firstname'])
+            self.assertEqual(users[index].lastname, data['lastname'])
+            if data['password']:
+                self.assertTrue(bcrypt.check_password_hash(users[index].password, data['password']))
 
     def test_insert_default_ranks(self):
         """Check if all ranks have been entered correctly"""

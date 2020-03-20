@@ -35,7 +35,7 @@ class CreateRankAPITestCase(BaseAPITestCase):
             self.assertEqual(res.status_code, 201)
             data = json.loads(res.data)
             self.assertEqual(data['message'], 'Created Rank.')
-            rank = Rank.query.filter_by(name=t_data['name']).first()
+            Rank.query.filter_by(name=t_data['name']).first()
 
         self.assertFalse(db.session.query(Rank).filter(Rank.name == rank_data_list[0]['name']).first().is_system_user)
         self.assertTrue(db.session.query(Rank).filter(Rank.name == rank_data_list[1]['name']).first().is_system_user)

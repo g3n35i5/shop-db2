@@ -15,7 +15,7 @@ This is the documentation for shop-db.
 6.  [Unittests](#unittests)
 7.  [Models](#models)
 
-### About shop.db
+## About shop.db
 
 We created shop.db in order to offer a simple way to manage purchases and
 user interactions in a small community. Over time, the project grew bigger
@@ -33,21 +33,30 @@ Furthermore, the complete administration is carried out via the specially
 developed [shop-db2-react-admin](https://github.com/g3n35i5/shop-db2-react-admin "Admin tool for shop-db2")
 interface.
 
-### Dependencies
+## Dependencies
 
 In order to use shop-db, you need to install the following main dependencies:
-  1\. Python 3.7
-  2\. Python 3.7 Virtual Environment
-  3\. pip3
-  4\. git
-  5\. nginx
-  6\. wkhtmltopdf (For generating pdf templates)
+
+### Mandatory
+- Python 3.7
+- Python 3.7 Virtual Environment
+- pip3
+- git
+- nginx
 
 ```bash
 sudo apt install python3.7 python3-venv python3-pip git nginx wkhtmltopdf
 ```
 
-### Getting started
+### Optional
+- wkhtmltopdf (For generating pdf templates)
+
+```bash
+sudo apt install wkhtmltopdf
+```
+
+
+## Getting started
 
 Add an account for shop-db called shopdb_user. Since this account is only for
 running shop-db the extra arguments of -r is added to create a system
@@ -218,7 +227,7 @@ To start shop-db now, use this command:
 sudo systemctl start shop-db2@shopdb_user
 ```
 
-### Development
+## Development
 
 You want to start shop-db in developer mode and participate in the project?
 Great! The command
@@ -232,13 +241,13 @@ is created in memory with default data defined in the dev folder. Your
 production database will not be used in this mode, but you should make sure
 you have a backup in case something goes wrong.
 
-### Backups
+## Backups
 
 To create backups from the database, you can use the `backup.py` script in the
 root directory of shop-db. To do this regularly, either a service or a
 crobjob can be used.
 
-##### Option 1: systemd service
+### Option 1: systemd service
 
 Create two files with the following content:
 
@@ -277,7 +286,7 @@ If you want to check your timer and the states of the backups, you can use
 systemctl list-timers --all
 ```
 
-##### Option 2: cronjob
+### Option 2: cronjob
 
 Create the following cronob:
 
@@ -285,7 +294,7 @@ Create the following cronob:
 0 */3 * * * /srv/shop-db2/backup.py
 ```
 
-### Unittests
+## Unittests
 
 Currently, most of the core features of shop-db are covered with the
 corresponding unittests. In order to execute them you can use the command
@@ -308,12 +317,12 @@ cd htmlcov
 python3.7 -m http.server
 ```
 
-### Models
+## Models
 
 This section covers the models used in shop-db. They are defined in
 .shopdb/models.py
 
-#### User
+### User
 
 In order to interact with the database one needs some sort of user account
 which stores personal data, privileges and that can be referenced by other
@@ -333,7 +342,7 @@ admin, has a rank, a credit to buy products and a list of favorite products.
 | is_verified   | _Boolean_      | To prevent unauthorized access, each user has to be verified from an admin before he can carry out further actions. This column states whether the user is verified (True) or not (False).                                        |
 | purchases     | _relationship_ | This represents all the purchases the user has made.                                                                                                                                                                              |
 
-#### UserVerification
+### UserVerification
 
 When a user is verified, a UserVerification entry is made. It is used to
 separate information about the verification from the user. As a result a user
@@ -347,7 +356,7 @@ UserVerification can only be made by an admin.
 | admin_id  | _Integer_  | This is the id of the admin who made this UserVerification.                                                                                             |
 | user_id   | _Integer_  | This is the id of the user the admin made this UserVerification for.                                                                                    |
 
-#### AdminUpdate
+### AdminUpdate
 
 A lot of functionalities in the application require a user with admin rights.
 The first user in database can make himself an admin. Every other user has to
@@ -364,7 +373,7 @@ field in the latest entry related to the user.
 | admin_id  | _Integer_  | This is the id of the admin who performed the update.                                                                               |
 | is_admin  | _Boolean_  | Specifies whether the corresponding user is an admin (True) after the update or not (False).                                        |
 
-#### Uploads
+### Uploads
 
 An admin can upload an image of a product to the application which is then
 shown in the frontend. The UPLOAD_FOLDER can be set in configuration.py. There,
@@ -379,7 +388,7 @@ the Upload and the image.
 | admin_id  | _Integer_    | This is the id of the admin who performed the Upload.                                                                                     |
 | filename  | _String(64)_ | This is the filename of the image that has been uploaded. It is saved in the UPLOAD_FOLDER and created automatically with the new Upload. |
 
-#### Rank
+### Rank
 
 Depending on the rank, a User has can have different debt limits to his credit.
 
@@ -404,7 +413,7 @@ is checked for the latest entry related to the user.
 | admin_id  | _Integer_  | This is the id of the who performed the update.                                                                                   |
 | rank_id   | _Integer_  | This is the id of the rank the user was updated to.                                                                               |
 
-#### Product
+### Product
 
 Each item that can be sold through the application has to be a product. A
 product can only be created by an admin. A product can have an image which is
@@ -423,7 +432,7 @@ a pricehistory. Furthermore tags are used to group products into categories.
 | revocable       | _Boolean_    | This indicates whether the product is revocable (True) or not (False). If not specified further, it will automatically be set to True.                                                   |
 | image_upload_id | _Integer_    | This is the id of the Upload with the products picture. This entry is optional.                                                                                                          |
 
-#### ProductPrice
+### ProductPrice
 
 After a product was created, an admin has to set the products price, which he
 can always update. Therefor, a ProductPrice entry is made. The products price
@@ -439,7 +448,7 @@ id, timestamp and price of all entries related to the product.
 | admin_id   | _Integer_  | This is the id of the admin who made this change in the products price.                                                               |
 | price      | _Integer_  | This is what the product price was set to.                                                                                            |
 
-#### Tag
+### Tag
 
 A Tag can be assigned to each product. They help to sort products into
 categories in the frontend. All products with the same tag are listed in the
@@ -451,7 +460,7 @@ same category.
 | created_by | _Integer_    | This is the id of the admin who created the Tag.                                                                    |
 | name       | _String(24)_ | This is the name of the Tag used to identify it in the frontend. It has to be unique.                               |
 
-#### product_tag_assignments
+### product_tag_assignments
 
 If a tag is added or removed from the product, a product_tag_assignments entry
 is made or the corresponding entry is deleted. A product can have more than one
@@ -463,7 +472,7 @@ related to the product.
 | product_id | _Integer_ | The id of the product the tag was assigned to.      |
 | tag_id     | _Integer_ | The id of the tag that was assigned to the product. |
 
-#### Purchase
+### Purchase
 
 When a user buys a product, a Purchase entry is made. The user has to be
 verified and the product has to be active. If the purchased product is
@@ -484,7 +493,7 @@ product, a list of the users favorite products can be created.
 | amount       | _Integer_  | This describes the quantity in which the product was purchased. Even products which are not countable are sold in discreet amounts.                                     |
 | revoked      | _Boolean_  | This indicates whether the Purchase is revoked (True) or not (False). If not specified further, it will automatically be set to False. The product has to be revocable. |
 
-#### PurchaseRevoke
+### PurchaseRevoke
 
 If a purchase is revoked or re-revoked, a PurchaseRevoke entry is made. It is
 used to determine the revokehistory of a purchase by listing the id, timestamp
@@ -497,7 +506,7 @@ and revoked field of each entry related to the purchase.
 | purchase_id | _Integer_  | This is the id of the purchase the revoke was changed for.                                                                                |
 | revoked     | _Boolean_  | This indicates whether the Purchase is revoked (True) or not (False). The product has to be revocable.                                    |
 
-#### ReplenishmentCollection
+### ReplenishmentCollection
 
 When an admin fills up the products by buying them at an external supplier with
 the communities money, he creates a ReplenishmentCollection entry. A
@@ -516,7 +525,7 @@ price can be used to give an overview of the communities finances.
 | revoked   | _Boolean_    | This indicates whether the ReplenishmentCollection is revoked (True) or not (False). If not specified further, it will automatically be set to False.       |
 | comment   | _String(64)_ | This is a short comment where the admin explains what he bought and why.                                                                                    |
 
-#### ReplenishmentCollectionRevoke
+### ReplenishmentCollectionRevoke
 
 If a replenishmentcollection is revoked or re-revoked by an admin, a
 ReplenishmentCollectionRevoke entry is made. It is used to determine the
@@ -531,7 +540,7 @@ revoked field of each entry related to the replenishmentcollection.
 | replcoll_id | _Integer_  | This is the id of the replenishmentcollection where the revoked status has been changed.                                                                                |
 | revoked     | _Boolean_  | This indicates whether the ReplenishmentCollection is revoked (True) or not (False).                                                                                    |
 
-#### Replenishment
+### Replenishment
 
 A replenishment is a fill up of a single product and always has to be part of a
 replenishmentcollection. It can be revoked. If all replenishments of a
@@ -549,7 +558,7 @@ added to the price of the related replenishmentcollection.
 | amount      | _Integer_ | This describes the quantity in which the product is refilled.                                                                           |
 | total_price | _Integer_ | This is the price paid by the admin to an external seller, such as a supermarket, for this replenishment.                               |
 
-#### Deposit
+### Deposit
 
 If a user transfers money to the community, an admin has to create a deposit
 for him. A deposit can be revoked, even more than once. So in addition, a
@@ -566,7 +575,7 @@ related to the user, which are not revoked, are added to the users credit.
 | comment   | _String(64)_ | This is a short comment where the admin explains what he did and why.                                                                 |
 | revoked   | _Boolean_    | This indicates whether the Deposit is revoked (True) or not (False). If not specified further, it will automatically be set to False. |
 
-#### DepositRevoke
+### DepositRevoke
 
 When an admin revokes or re-revokes a deposit, a DepositRevoke entry is made. It
 is used to determine the revokehistory of a deposit by listing the id, timestamp

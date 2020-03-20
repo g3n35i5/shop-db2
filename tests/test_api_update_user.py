@@ -10,7 +10,7 @@ from flask import json
 import shopdb.exceptions as exc
 from shopdb.api import app
 from shopdb.models import User
-from tests.base import u_firstnames
+from tests.base import user_data
 from tests.base_api import BaseAPITestCase
 
 
@@ -33,7 +33,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         This test ensures that a non verified user can only be updated if the required data is given
         """
         user = User.query.filter_by(id=4).first()
-        self.assertEqual(user.firstname, u_firstnames[3])
+        self.assertEqual(user.firstname, user_data[3]['firstname'])
         data = {'firstname': 'Bob', 'rank_id': 2}
         res = self.put(url='/users/4', data=data, role='admin')
         self.assertEqual(res.status_code, 201)

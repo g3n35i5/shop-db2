@@ -72,5 +72,5 @@ class UpdateTagAPITestCase(BaseAPITestCase):
         Update the "is_for_sale" field
         """
         self.assertTrue(Tag.query.filter_by(id=1).first().is_for_sale)
-        res = self.put(url='/tags/1', data={'is_for_sale': False}, role='admin')
+        self.put(url='/tags/1', data={'is_for_sale': False}, role='admin')
         self.assertFalse(Tag.query.filter_by(id=1).first().is_for_sale)

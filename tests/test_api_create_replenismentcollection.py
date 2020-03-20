@@ -31,18 +31,18 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Created replenishmentcollection.')
 
-        replcoll = ReplenishmentCollection.query.filter_by(id=3).first()
-        self.assertEqual(replcoll.id, 3)
-        self.assertEqual(replcoll.admin_id, 1)
-        self.assertEqual(replcoll.comment, 'My test comment')
-        self.assertEqual(replcoll.price, 220)
-        self.assertEqual(str(replcoll.timestamp), '2020-02-24 12:00:00')
-        self.assertFalse(replcoll.revoked)
-        self.assertEqual(replcoll.revokehistory, [])
-        repls = replcoll.replenishments.all()
-        for i, dict in enumerate(replenishments):
-            for key in dict:
-                self.assertEqual(getattr(repls[i], key), dict[key])
+        collection = ReplenishmentCollection.query.filter_by(id=3).first()
+        self.assertEqual(collection.id, 3)
+        self.assertEqual(collection.admin_id, 1)
+        self.assertEqual(collection.comment, 'My test comment')
+        self.assertEqual(collection.price, 220)
+        self.assertEqual(str(collection.timestamp), '2020-02-24 12:00:00')
+        self.assertFalse(collection.revoked)
+        self.assertEqual(collection.revokehistory, [])
+        repls = collection.replenishments.all()
+        for i, data_dict in enumerate(replenishments):
+            for key in data_dict:
+                self.assertEqual(getattr(repls[i], key), data_dict[key])
 
     def test_check_users_credit_after_inserting_replenishmentcollection(self):
         """The credit of the user who is referred by the 'seller_id' should change after a replenishmentcollection"""

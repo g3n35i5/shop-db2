@@ -7,7 +7,7 @@ from flask import json
 import shopdb.exceptions as exc
 from shopdb.api import db
 from shopdb.models import User
-from tests.base import u_firstnames, u_lastnames
+from tests.base import user_data
 from tests.base_api import BaseAPITestCase
 
 
@@ -19,8 +19,8 @@ class GetUserAPITestCase(BaseAPITestCase):
         user = json.loads(res.data)
         assert 'password' not in user
         self.assertEqual(user['id'], 1)
-        self.assertEqual(user['firstname'], u_firstnames[0])
-        self.assertEqual(user['lastname'], u_lastnames[0])
+        self.assertEqual(user['firstname'], user_data[0]['firstname'])
+        self.assertEqual(user['lastname'], user_data[0]['lastname'])
         self.assertEqual(user['credit'], 0)
         self.assertTrue(isinstance(user['creation_date'], str))
         self.assertTrue(isinstance(user['verification_date'], str))

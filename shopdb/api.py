@@ -43,9 +43,7 @@ def index():
     return jsonify({'message': 'Backend is online.'})
 
 
-"""
-Below this comment are the imports of all used routes defined in "shopdb.routes"
-"""
+# Below this comment are the imports of all used routes defined in "shopdb.routes"
 
 # App hooks
 # noinspection PyUnresolvedReferences
