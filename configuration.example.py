@@ -5,7 +5,7 @@ PATH = os.path.dirname(__file__)
 
 
 class BaseConfig(object):
-    SECRET_KEY = 'YouWillNeverGuess'
+    SECRET_KEY = 'YouWillNeverGuess'  # nosec
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     BACKUP_DIR = PATH + '/backups/'
     HOST = '127.0.0.1'
