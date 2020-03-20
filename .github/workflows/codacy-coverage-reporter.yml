@@ -23,9 +23,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Copy example.configuration.py to configuration.py
+    - name: Copy configuration.example.py to configuration.py
       run: |
-        cp example.configuration.py configuration.py
+        cp configuration.example.py configuration.py
 
     - name: Update "Secret key"
       run: |
