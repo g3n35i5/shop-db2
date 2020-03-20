@@ -30,7 +30,7 @@ Because this is not an elegant way to use this application, we developed the
 shop.db frontend, which can be found in it's own repository:
 [shop-db2-frontend](https://github.com/g3n35i5/shop-db2-frontend "Frontend for shop-db2").
 Furthermore, the complete administration is carried out via the specially
-developed [shop-db2-admin](https://github.com/g3n35i5/shop-db2-admin "Admin tool for shop-db2")
+developed [shop-db2-react-admin](https://github.com/g3n35i5/shop-db2-react-admin "Admin tool for shop-db2")
 interface.
 
 ### Dependencies
