@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -33,10 +32,11 @@ jobs:
 
     - name: Run coverage
       run: |
-        python test.py --mode auto
+        python run_tests_with_coverage.py
 
-    - uses: actions/checkout@master
     - name: Run codacy-coverage-reporter
-      uses: mrfyda/codacy-coverage-reporter-action@master
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      run: |
+        export CODACY_PROJECT_TOKEN=${{ secrets.CODACY_PROJECT_TOKEN }}
+        wget -qO - https://coverage.codacy.com/get.sh | sh -s report -l Python -r coverage.xml
