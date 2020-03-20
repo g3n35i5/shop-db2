@@ -68,15 +68,15 @@ def create_user():
     return jsonify({'message': 'Created user.'}), 200
 
 
-@app.route('/users/<int:id>/favorites', methods=['GET'])
+@app.route('/users/<int:user_id>/favorites', methods=['GET'])
 @checkIfUserIsValid
-def get_user_favorites(user, id):
+def get_user_favorites(user, user_id):
     """
     Returns a list with the IDs of a user's favorite products. The list is
     empty if no favourite products exist.
 
     :param user:               Is the user, determined by @checkIfUserIsValid.
-    :param id:                 Is the user id.
+    :param user_id:            Is the user id.
 
     :return:                   A list with the IDs of the favorite products.
     """
@@ -84,14 +84,14 @@ def get_user_favorites(user, id):
     return jsonify(user.favorites), 200
 
 
-@app.route('/users/<int:id>/deposits', methods=['GET'])
+@app.route('/users/<int:user_id>/deposits', methods=['GET'])
 @checkIfUserIsValid
-def get_user_deposits(user, id):
+def get_user_deposits(user, user_id):
     """
     Returns a list with all deposits of a user.
 
     :param user:               Is the user, determined by @checkIfUserIsValid.
-    :param id:                 Is the user id.
+    :param user_id:            Is the user id.
 
     :return:                   A list with all deposits of the user.
     """
@@ -102,14 +102,14 @@ def get_user_deposits(user, id):
     return jsonify(deposits), 200
 
 
-@app.route('/users/<int:id>/replenishmentcollections', methods=['GET'])
+@app.route('/users/<int:user_id>/replenishmentcollections', methods=['GET'])
 @checkIfUserIsValid
-def get_user_replenishmentcollections(user, id):
+def get_user_replenishmentcollections(user, user_id):
     """
     Returns a list with all replenishmentcollections of a user.
 
     :param user:               Is the user, determined by @checkIfUserIsValid.
-    :param id:                 Is the user id.
+    :param user_id:            Is the user id.
 
     :return:                   A list with all replenishmentcollections of the user.
     """
@@ -120,14 +120,14 @@ def get_user_replenishmentcollections(user, id):
     return jsonify(deposits), 200
 
 
-@app.route('/users/<int:id>/purchases', methods=['GET'])
+@app.route('/users/<int:user_id>/purchases', methods=['GET'])
 @checkIfUserIsValid
-def get_user_purchases(user, id):
+def get_user_purchases(user, user_id):
     """
     Returns a list with all purchases of a user.
 
     :param user:               Is the user, determined by @checkIfUserIsValid.
-    :param id:                 Is the user id.
+    :param user_id:            Is the user id.
 
     :return:                   A list with all purchases of the user.
     """
@@ -138,19 +138,19 @@ def get_user_purchases(user, id):
     return jsonify(purchases), 200
 
 
-@app.route('/users/<int:id>', methods=['GET'])
+@app.route('/users/<int:user_id>', methods=['GET'])
 @adminOptional
-def get_user(admin, id):
+def get_user(admin, user_id):
     """
     Returns the user with the requested id.
 
-    :param user:               Is the user, determined by @checkIfUserIsValid.
-    :param id:                 Is the user id.
+    :param admin: Is the administrator user, determined by @adminOptional.
+    :param user_id:            Is the user id.
 
     :return:                   The requested user as JSON object.
     """
     # Query user
-    user = User.query.filter(User.id == id).first()
+    user = User.query.filter(User.id == user_id).first()
     if not user:
         raise exc.EntryNotFound()
 
@@ -168,23 +168,23 @@ def get_user(admin, id):
     return jsonify(user), 200
 
 
-@app.route('/users/<int:id>', methods=['PUT'])
+@app.route('/users/<int:user_id>', methods=['PUT'])
 @adminRequired
-def update_user(admin, id):
+def update_user(admin, user_id):
     """
     Update the user with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the user id.
+    :param admin:   Is the administrator user, determined by @adminRequired.
+    :param user_id: Is the user id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:        A message that the update was successful and a list of all updated fields.
     """
     # Get the update data
     data = json_body()
 
     # Query the user. If he/she is not verified yet, there *must* be a
     # rank_id given in the update data.
-    user = User.query.filter(User.id == id).first()
+    user = User.query.filter(User.id == user_id).first()
     if not user:
         raise exc.EntryNotFound()
 
@@ -217,18 +217,18 @@ def update_user(admin, id):
         # All fine, delete repeat_password from the dict and do the rest of the update
         del data['password_repeat']
 
-    return generic_update(User, id, data, admin)
+    return generic_update(User, user_id, data, admin)
 
 
-@app.route('/users/<int:id>', methods=['DELETE'])
+@app.route('/users/<int:user_id>', methods=['DELETE'])
 @adminRequired
-def delete_user(admin, id):
+def delete_user(admin, user_id):
     """
     Delete a user. This is only possible if the user has not yet been verified.
 
     :param admin:                 Is the administrator user, determined by
                                   @adminRequired.
-    :param id:                    Is the user id.
+    :param user_id:               Is the user id.
 
     :return:                      A message that the deletion was successful.
 
@@ -238,7 +238,7 @@ def delete_user(admin, id):
                                   reason.
     """
     # Check if the user exists
-    user = User.query.filter_by(id=id).first()
+    user = User.query.filter_by(id=user_id).first()
     if not user:
         raise exc.EntryNotFound()
 

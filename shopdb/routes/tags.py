@@ -30,18 +30,18 @@ def list_tags():
     return response
 
 
-@app.route('/tags/<int:id>', methods=['GET'])
-def get_tag(id):
+@app.route('/tags/<int:tag_id>', methods=['GET'])
+def get_tag(tag_id):
     """
     Returns the tag with the requested id.
 
-    :param id:             Is the tag id.
+    :param tag_id:         Is the tag id.
 
     :return:               The requested tag as JSON object.
 
     :raises EntryNotFound: If the tag with this ID does not exist.
     """
-    result = Tag.query.filter_by(id=id).first()
+    result = Tag.query.filter_by(id=tag_id).first()
     if not result:
         raise exc.EntryNotFound()
 
@@ -49,22 +49,22 @@ def get_tag(id):
     return jsonify(tag), 200
 
 
-@app.route('/tags/<int:id>', methods=['DELETE'])
+@app.route('/tags/<int:tag_id>', methods=['DELETE'])
 @adminRequired
-def delete_tag(admin, id):
+def delete_tag(admin, tag_id):
     """
     Delete a tag.
 
     :param admin:                 Is the administrator user, determined by
                                   @adminRequired.
-    :param id:                    Is the tag id.
+    :param tag_id:                Is the tag id.
 
     :return:                      A message that the deletion was successful.
 
     :raises EntryNotFound:        If the user with this ID does not exist.
     :raises EntryCanNotBeDeleted: If the tag can not be deleted.
     """
-    tag = Tag.query.filter_by(id=id).first()
+    tag = Tag.query.filter_by(id=tag_id).first()
     if not tag:
         raise exc.EntryNotFound()
 
@@ -132,15 +132,15 @@ def create_tag(admin):
     return jsonify({'message': 'Created Tag.'}), 201
 
 
-@app.route('/tags/<int:id>', methods=['PUT'])
+@app.route('/tags/<int:tag_id>', methods=['PUT'])
 @adminRequired
-def update_tag(admin, id):
+def update_tag(admin, tag_id):
     """
     Update the tag with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the product id.
+    :param admin:  Is the administrator user, determined by @adminRequired.
+    :param tag_id: Is the product id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:       A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(Tag, id, json_body(), admin)
+    return generic_update(Tag, tag_id, json_body(), admin)

@@ -69,18 +69,18 @@ def create_rank(admin):
     return jsonify({'message': 'Created Rank.'}), 201
 
 
-@app.route('/ranks/<int:id>', methods=['GET'])
-def get_rank(id):
+@app.route('/ranks/<int:rank_id>', methods=['GET'])
+def get_rank(rank_id):
     """
     Returns the rank with the requested id.
 
-    :param id:             Is the rank id.
+    :param rank_id:        Is the rank id.
 
     :return:               The requested rank as JSON object.
 
     :raises EntryNotFound: If the rank with this ID does not exist.
     """
-    result = Rank.query.filter_by(id=id).first()
+    result = Rank.query.filter_by(id=rank_id).first()
     if not result:
         raise exc.EntryNotFound()
 
@@ -88,15 +88,15 @@ def get_rank(id):
     return jsonify(rank), 200
 
 
-@app.route('/ranks/<int:id>', methods=['PUT'])
+@app.route('/ranks/<int:rank_id>', methods=['PUT'])
 @adminRequired
-def update_rank(admin, id):
+def update_rank(admin, rank_id):
     """
     Update the rank with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the product id.
+    :param admin:   Is the administrator user, determined by @adminRequired.
+    :param rank_id: Is the product id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:        A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(Rank, id, json_body(), admin)
+    return generic_update(Rank, rank_id, json_body(), admin)

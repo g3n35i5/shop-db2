@@ -112,15 +112,15 @@ def create_product(admin):
     return jsonify({'message': 'Created Product.'}), 201
 
 
-@app.route('/products/<int:id>', methods=['GET'])
+@app.route('/products/<int:product_id>', methods=['GET'])
 @adminOptional
-def get_product(admin, id):
+def get_product(admin, product_id):
     """
     Returns the product with the requested id.
 
     :param admin:               Is the administrator user, determined by
                                 @adminOptional.
-    :param id:                  Is the product id.
+    :param product_id:          Is the product id.
 
     :return:                    The requested product as JSON object.
 
@@ -128,7 +128,7 @@ def get_product(admin, id):
     :raises UnauthorizedAccess: If the product is inactive and the request
                                 does not come from an administrator.
     """
-    product = Product.query.filter(Product.id == id).first()
+    product = Product.query.filter(Product.id == product_id).first()
     if not product:
         raise exc.EntryNotFound()
 
@@ -148,8 +148,8 @@ def get_product(admin, id):
     return jsonify(product), 200
 
 
-@app.route('/products/<int:id>/stock', methods=['GET'])
-def get_product_stock(id):
+@app.route('/products/<int:product_id>/stock', methods=['GET'])
+def get_product_stock(product_id):
     """
     Returns the theoretical stock level of a product.
 
@@ -159,7 +159,7 @@ def get_product_stock(id):
 
     If the requested product is not countable, None will be returned.
 
-    :param id:                  Is the product id.
+    :param product_id:          Is the product id.
 
     :return:                    The theoretical stock level
 
@@ -167,7 +167,7 @@ def get_product_stock(id):
     """
 
     # Check, whether the requested product exists
-    product = Product.query.filter(Product.id == id).first()
+    product = Product.query.filter(Product.id == product_id).first()
     if not product:
         raise exc.EntryNotFound()
 
@@ -176,14 +176,14 @@ def get_product_stock(id):
         return jsonify(None), 200
 
     # Get the theoretical stock level
-    theoretical_stock = product_helpers.get_theoretical_stock_of_product(id)
+    theoretical_stock = product_helpers.get_theoretical_stock_of_product(product_id)
 
     return jsonify(theoretical_stock), 200
 
 
-@app.route('/products/<int:id>/pricehistory', methods=['GET'])
+@app.route('/products/<int:product_id>/pricehistory', methods=['GET'])
 @adminRequired
-def get_product_pricehistory(admin, id):
+def get_product_pricehistory(admin, product_id):
     """
     Returns the pricehistory of the product with the given id. If only want to
     query a part of the history in a range there are optional request arguments:
@@ -192,7 +192,7 @@ def get_product_pricehistory(admin, id):
 
     :param admin:          Is the administrator user, determined by
                            @adminRequired.
-    :param id:             Is the product id.
+    :param product_id:     Is the product id.
 
     :raises EntryNotFound: If the product does not exist.
     :raises WrongType:     If the request args are invalid.
@@ -201,7 +201,7 @@ def get_product_pricehistory(admin, id):
     """
 
     # Check, whether the product exists.
-    product = Product.query.filter(Product.id == id).first()
+    product = Product.query.filter(Product.id == product_id).first()
     if not product:
         raise exc.EntryNotFound()
 
@@ -226,15 +226,15 @@ def get_product_pricehistory(admin, id):
     return jsonify(history), 200
 
 
-@app.route('/products/<int:id>', methods=['PUT'])
+@app.route('/products/<int:product_id>', methods=['PUT'])
 @adminRequired
-def update_product(admin, id):
+def update_product(admin, product_id):
     """
     Update the product with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the product id.
+    :param admin:      Is the administrator user, determined by @adminRequired.
+    :param product_id: Is the product id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:           A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(Product, id, json_body(), admin)
+    return generic_update(Product, product_id, json_body(), admin)

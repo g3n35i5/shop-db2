@@ -28,7 +28,7 @@ def checkIfUserIsValid(f):
 
     @wraps(f)
     def decorator(*args, **kwargs):
-        user = User.query.filter_by(id=kwargs['id']).first()
+        user = User.query.filter_by(id=kwargs['user_id']).first()
         if not user:
             raise exc.EntryNotFound()
 

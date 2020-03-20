@@ -105,19 +105,19 @@ def create_batch_deposit(admin):
     return jsonify({'message': 'Created batch deposit.'}), 200
 
 
-@app.route('/deposits/<int:id>', methods=['GET'])
-def get_deposit(id):
+@app.route('/deposits/<int:deposit_id>', methods=['GET'])
+def get_deposit(deposit_id):
     """
     Returns the deposit with the requested id.
 
-    :param id:             Is the deposit id.
+    :param deposit_id:     Is the deposit id.
 
     :return:               The requested deposit as JSON object.
 
     :raises EntryNotFound: If the deposit with this ID does not exist.
     """
     # Query the deposit
-    res = Deposit.query.filter_by(id=id).first()
+    res = Deposit.query.filter_by(id=deposit_id).first()
     # If it not exists, return an error
     if not res:
         raise exc.EntryNotFound()
@@ -127,15 +127,15 @@ def get_deposit(id):
     return jsonify(convert_minimal(res, fields)[0]), 200
 
 
-@app.route('/deposits/<int:id>', methods=['PUT'])
+@app.route('/deposits/<int:deposit_id>', methods=['PUT'])
 @adminRequired
-def update_deposit(admin, id):
+def update_deposit(admin, deposit_id):
     """
     Update the deposit with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the deposit id.
+    :param admin:         Is the administrator user, determined by @adminRequired.
+    :param deposit_id:    Is the deposit id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:              A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(Deposit, id, json_body(), admin)
+    return generic_update(Deposit, deposit_id, json_body(), admin)

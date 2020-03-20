@@ -120,16 +120,16 @@ def list_stocktakingcollections(admin):
     return response
 
 
-@app.route('/stocktakingcollections/<int:id>', methods=['GET'])
+@app.route('/stocktakingcollections/<int:collection_id>', methods=['GET'])
 @adminRequired
-def get_stocktakingcollections(admin, id):
+def get_stocktakingcollections(admin, collection_id):
     """
     Returns the stocktakingcollection with the requested id. In addition,
     all stocktakings that belong to this collection are returned.
 
     :param admin:          Is the administrator user,
                            determined by @adminRequired.
-    :param id:             Is the stocktakingcollection id.
+    :param collection_id:  Is the stocktakingcollection id.
 
     :return:               The requested stocktakingcollection and all
                            related stocktakings JSON object.
@@ -138,7 +138,7 @@ def get_stocktakingcollections(admin, id):
                            not exist.
     """
     # Query the stocktakingcollection.
-    collection = StocktakingCollection.query.filter_by(id=id).first()
+    collection = StocktakingCollection.query.filter_by(id=collection_id).first()
     # If it does not exist, raise an exception.
     if not collection:
         raise exc.EntryNotFound()
@@ -265,29 +265,29 @@ def create_stocktakingcollections(admin):
     return jsonify({'message': 'Created stocktakingcollection.'}), 201
 
 
-@app.route('/stocktakingcollections/<int:id>', methods=['PUT'])
+@app.route('/stocktakingcollections/<int:collection_id>', methods=['PUT'])
 @adminRequired
-def update_stocktakingcollection(admin, id):
+def update_stocktakingcollection(admin, collection_id):
     """
     Update the stocktakingcollection with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the stocktakingcollection id.
+    :param admin:         Is the administrator user, determined by @adminRequired.
+    :param collection_id: Is the stocktakingcollection id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:              A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(StocktakingCollection, id, json_body(), admin)
+    return generic_update(StocktakingCollection, collection_id, json_body(), admin)
 
 
-@app.route('/stocktakings/<int:id>', methods=['PUT'])
+@app.route('/stocktakings/<int:stocktaking_id>', methods=['PUT'])
 @adminRequired
-def update_stocktaking(admin, id):
+def update_stocktaking(admin, stocktaking_id):
     """
     Update the stocktaking with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the stocktaking id.
+    :param admin:          Is the administrator user, determined by @adminRequired.
+    :param stocktaking_id: Is the stocktaking id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:               A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(Stocktaking, id, json_body(), admin)
+    return generic_update(Stocktaking, stocktaking_id, json_body(), admin)

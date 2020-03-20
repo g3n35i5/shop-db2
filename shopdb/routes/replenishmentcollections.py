@@ -51,16 +51,16 @@ def list_replenishments(admin):
     return response
 
 
-@app.route('/replenishmentcollections/<int:id>', methods=['GET'])
+@app.route('/replenishmentcollections/<int:collection_id>', methods=['GET'])
 @adminRequired
-def get_replenishmentcollection(admin, id):
+def get_replenishmentcollection(admin, collection_id):
     """
     Returns the replenishmentcollection with the requested id. In addition,
     all replenishments that belong to this collection are returned.
 
     :param admin:          Is the administrator user,
                            determined by @adminRequired.
-    :param id:             Is the replenishmentcollection id.
+    :param collection_id:  Is the replenishmentcollection id.
 
     :return:               The requested replenishmentcollection and all
                            related replenishments JSON object.
@@ -69,7 +69,7 @@ def get_replenishmentcollection(admin, id):
                            not exist.
     """
     # Query the replenishmentcollection.
-    replcoll = ReplenishmentCollection.query.filter_by(id=id).first()
+    replcoll = ReplenishmentCollection.query.filter_by(id=collection_id).first()
     # If it does not exist, raise an exception.
     if not replcoll:
         raise exc.EntryNotFound()
@@ -170,29 +170,29 @@ def create_replenishmentcollection(admin):
     return jsonify({'message': 'Created replenishmentcollection.'}), 201
 
 
-@app.route('/replenishmentcollections/<int:id>', methods=['PUT'])
+@app.route('/replenishmentcollections/<int:collection_id>', methods=['PUT'])
 @adminRequired
-def update_replenishmentcollection(admin, id):
+def update_replenishmentcollection(admin, collection_id):
     """
     Update the replenishmentcollection with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the replenishmentcollection id.
+    :param admin:         Is the administrator user, determined by @adminRequired.
+    :param collection_id: Is the replenishmentcollection id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:              A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(ReplenishmentCollection, id, json_body(), admin)
+    return generic_update(ReplenishmentCollection, collection_id, json_body(), admin)
 
 
-@app.route('/replenishments/<int:id>', methods=['PUT'])
+@app.route('/replenishments/<int:replenishment_id>', methods=['PUT'])
 @adminRequired
-def update_replenishment(admin, id):
+def update_replenishment(admin, replenishment_id):
     """
     Update the replenishment with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the replenishment id.
+    :param admin:            Is the administrator user, determined by @adminRequired.
+    :param replenishment_id: Is the replenishment id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:                 A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(Replenishment, id, json_body(), admin)
+    return generic_update(Replenishment, replenishment_id, json_body(), admin)

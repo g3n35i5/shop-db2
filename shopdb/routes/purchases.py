@@ -82,18 +82,18 @@ def create_purchase(admin):
     return jsonify({'message': 'Purchase created.'}), 200
 
 
-@app.route('/purchases/<int:id>', methods=['GET'])
-def get_purchase(id):
+@app.route('/purchases/<int:purchase_id>', methods=['GET'])
+def get_purchase(purchase_id):
     """
     Returns the purchase with the requested id.
 
-    :param id:             Is the purchase id.
+    :param purchase_id:    Is the purchase id.
 
     :return:               The requested purchase as JSON object.
 
     :raises EntryNotFound: If the purchase with this ID does not exist.
     """
-    purchase = Purchase.query.filter_by(id=id).first()
+    purchase = Purchase.query.filter_by(id=purchase_id).first()
     if not purchase:
         raise exc.EntryNotFound()
     fields = ['id', 'timestamp', 'user_id', 'admin_id', 'product_id', 'amount', 'price',
@@ -101,15 +101,15 @@ def get_purchase(id):
     return jsonify(convert_minimal(purchase, fields)[0]), 200
 
 
-@app.route('/purchases/<int:id>', methods=['PUT'])
+@app.route('/purchases/<int:purchase_id>', methods=['PUT'])
 @adminOptional
-def update_purchase(admin, id):
+def update_purchase(admin, purchase_id):
     """
     Update the purchase with the given id.
 
-    :param admin: Is the administrator user, determined by @adminRequired.
-    :param id:    Is the purchase id.
+    :param admin:       Is the administrator user, determined by @adminRequired.
+    :param purchase_id: Is the purchase id.
 
-    :return:      A message that the update was successful and a list of all updated fields.
+    :return:            A message that the update was successful and a list of all updated fields.
     """
-    return generic_update(Purchase, id, json_body(), admin)
+    return generic_update(Purchase, purchase_id, json_body(), admin)
