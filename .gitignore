@@ -4,6 +4,8 @@
 configuration.py
 .idea
 coverage.xml
+.codacy-coverage
+codacy-coverage.json
 shopdb/uploads/*
 !shopdb/uploads/valid*
 !shopdb/uploads/broken*
