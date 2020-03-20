@@ -5,7 +5,7 @@ __author__ = 'g3n35i5'
 import os
 import shutil
 import unittest
-import signal
+from argparse import ArgumentParser
 from http.server import HTTPServer, CGIHTTPRequestHandler
 import webbrowser
 import threading
@@ -40,7 +40,7 @@ def start_server(path, port=8000) -> None:
     httpd.serve_forever()
 
 
-def main() -> None:
+def main(args) -> None:
     # Load .coveragerc.ini configuration file
     config_file = os.path.join(config.PATH, ".coveragerc.ini")
     os.environ["COVERAGE_PROCESS_START"] = config_file
@@ -60,6 +60,10 @@ def main() -> None:
     if os.path.exists(html_cov_path):
         shutil.rmtree(html_cov_path)
     cov.html_report(directory=html_cov_path)
+    cov.xml_report()
+
+    if args.show_results is False:
+        return
 
     # Start webserver
     daemon = threading.Thread(name="Coverage Server", target=start_server, args=(html_cov_path, webserver_port))
@@ -79,4 +83,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser(description='Running unittests for shop-db2 with coverage')
+    parser.add_argument('--show-results', help='Open results in web browser', action='store_true')
+    args = parser.parse_args()
+    main(args)
