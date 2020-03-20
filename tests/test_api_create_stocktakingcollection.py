@@ -46,7 +46,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         res = self.post(url='/stocktakingcollections', data=data, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Created stocktakingcollection.')
 
         collection = StocktakingCollection.query.filter_by(id=3).first()

@@ -18,7 +18,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
                        data={'revoked': True}, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Updated replenishmentcollection')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.revoked, True)
@@ -53,7 +53,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
                        data={'comment': 'FooBar'}, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Updated replenishmentcollection')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.comment, 'FooBar')
@@ -66,7 +66,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
                        data={'timestamp': timestamp}, role='admin')
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        assert 'message' in data
+        self.assertTrue('message' in data)
         self.assertEqual(data['message'], 'Updated replenishmentcollection')
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(str(replcoll.timestamp), "2015-01-01 01:01:01")
