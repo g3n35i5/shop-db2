@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db
-from tests.base_api import BaseAPITestCase
 from flask import json
+
+from shopdb.api import db
+from shopdb.models import Product, Tag
+from tests.base_api import BaseAPITestCase
 
 
 class ListProductsAPITestCase(BaseAPITestCase):

@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
+from flask import json
+
 import shopdb.exceptions as exc
 from tests.base_api import BaseAPITestCase
-from flask import json
-from shopdb.api import app
-from shopdb.models import Purchase
 
 
 class QueryParametersAPITestCase(BaseAPITestCase):

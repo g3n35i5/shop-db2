@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db
-import shopdb.helpers.stocktakings as stocktaking_helpers
-from tests.base_api import BaseAPITestCase
 from datetime import datetime
+
+import shopdb.helpers.stocktakings as stocktaking_helpers
+from shopdb.api import db
+from shopdb.models import StocktakingCollection, Stocktaking, Purchase, ProductPrice, ReplenishmentCollection, Product
+from tests.base_api import BaseAPITestCase
 
 
 class TestHelpersStocktakingsTestCase(BaseAPITestCase):

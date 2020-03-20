@@ -6,7 +6,7 @@ from flask import json
 
 import shopdb.exceptions as exc
 from shopdb.api import db
-from shopdb.models import *
+from shopdb.models import ReplenishmentCollection, User, Product
 from tests.base_api import BaseAPITestCase
 
 

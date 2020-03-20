@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-import shopdb.exceptions as exc
-from tests.base_api import BaseAPITestCase
 from flask import json
+
+import shopdb.exceptions as exc
 from shopdb.api import app
 from shopdb.models import Purchase
+from tests.base_api import BaseAPITestCase
 
 
 class MiscAPITestCase(BaseAPITestCase):

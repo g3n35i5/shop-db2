@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
+import datetime
+
+import jwt
+from flask import json
+
 import shopdb.exceptions as exc
 from tests.base import u_passwords
 from tests.base_api import BaseAPITestCase
-from flask import json
-import jwt
-import datetime
 
 
 class TokenAPITestCase(BaseAPITestCase):

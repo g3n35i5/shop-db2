@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db
+from flask import json
+
 import shopdb.exceptions as exc
+from shopdb.api import db
+from shopdb.models import User
 from tests.base import u_firstnames, u_lastnames
 from tests.base_api import BaseAPITestCase
-from flask import json
 
 
 class GetUserAPITestCase(BaseAPITestCase):

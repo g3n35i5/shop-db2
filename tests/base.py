@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'g3n35i5'
 
-from shopdb.models import *
-from shopdb.api import db, set_app, app, bcrypt
 from flask_testing import TestCase
+
 import configuration as config
+from shopdb.api import db, set_app, app, bcrypt
+from shopdb.models import (User, Product, AdminUpdate, Tag, Replenishment, ReplenishmentCollection, Rank,
+                           StocktakingCollection, Stocktaking, Purchase, Deposit)
 
 # Global password storage. Hashing the passwords for each unit test
 # would take too long. For this reason, the passwords are created once
