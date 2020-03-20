@@ -88,12 +88,14 @@ class BaseTestCase(TestCase):
 
         db.session.commit()
 
-    def insert_first_admin(self):
+    @staticmethod
+    def insert_first_admin():
         au = AdminUpdate(user_id=1, admin_id=1, is_admin=True)
         db.session.add(au)
         db.session.commit()
 
-    def insert_default_tag_assignments(self):
+    @staticmethod
+    def insert_default_tag_assignments():
         for index in range(len(p_tags)):
             product = Product.query.filter_by(id=index+1).first()
             tag = Tag.query.filter_by(id=index+1).first()
@@ -101,7 +103,8 @@ class BaseTestCase(TestCase):
 
         db.session.commit()
 
-    def insert_default_products(self):
+    @staticmethod
+    def insert_default_products():
         for i in range(0, len(p_names)):
             product = Product(name=p_names[i], created_by=1)
             db.session.add(product)
@@ -110,12 +113,14 @@ class BaseTestCase(TestCase):
 
         db.session.commit()
 
-    def insert_default_ranks(self):
+    @staticmethod
+    def insert_default_ranks():
         for rank in rank_data:
             db.session.add(Rank(**rank))
         db.session.commit()
 
-    def verify_all_users_except_last(self):
+    @staticmethod
+    def verify_all_users_except_last():
         users = User.query.all()
         users[0].verify(admin_id=1, rank_id=2)
         users[1].verify(admin_id=1, rank_id=3)
@@ -124,13 +129,15 @@ class BaseTestCase(TestCase):
 
         db.session.commit()
 
-    def insert_default_tags(self):
+    @staticmethod
+    def insert_default_tags():
         for data in tag_data:
             tag = Tag(**data, created_by=1)
             db.session.add(tag)
         db.session.commit()
 
-    def insert_default_replenishmentcollections(self):
+    @staticmethod
+    def insert_default_replenishmentcollections():
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
         product3 = Product.query.filter_by(id=3).first()
@@ -151,7 +158,8 @@ class BaseTestCase(TestCase):
             db.session.add(r)
         db.session.commit()
 
-    def insert_default_stocktakingcollections(self):
+    @staticmethod
+    def insert_default_stocktakingcollections():
         db.session.add(StocktakingCollection(admin_id=1))
         db.session.add(StocktakingCollection(admin_id=1))
         db.session.flush()
@@ -175,7 +183,8 @@ class BaseTestCase(TestCase):
             db.session.add(Stocktaking(**s, collection_id=2))
         db.session.commit()
 
-    def insert_default_purchases(self):
+    @staticmethod
+    def insert_default_purchases():
         p1 = Purchase(user_id=1, product_id=1, amount=1)
         p2 = Purchase(user_id=2, product_id=3, amount=2)
         p3 = Purchase(user_id=2, product_id=2, amount=4)
@@ -185,7 +194,8 @@ class BaseTestCase(TestCase):
             db.session.add(p)
         db.session.commit()
 
-    def insert_default_deposits(self):
+    @staticmethod
+    def insert_default_deposits():
         d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
         d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')

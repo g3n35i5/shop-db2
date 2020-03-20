@@ -11,7 +11,8 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetUserDepositsAPITestCase(BaseAPITestCase):
-    def _insert_deposits(self):
+    @staticmethod
+    def _insert_deposits():
         """Helper function to insert some test deposits."""
         d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')

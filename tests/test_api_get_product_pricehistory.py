@@ -13,7 +13,8 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetProductPricehistoryAPITestCase(BaseAPITestCase):
-    def insert_pricehistory(self, dates=None):
+    @staticmethod
+    def insert_pricehistory(dates=None):
         prices = [42, 43, 44, 45]
         timestamps = []
         if dates:

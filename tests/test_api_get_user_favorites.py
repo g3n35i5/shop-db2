@@ -11,7 +11,8 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetUserFavoritesAPITestCase(BaseAPITestCase):
-    def _insert_purchases(self):
+    @staticmethod
+    def _insert_purchases():
         """Helper function to insert some test purchases."""
         # Insert user 1 purchases.
         p1 = Purchase(user_id=1, product_id=1, amount=4)
