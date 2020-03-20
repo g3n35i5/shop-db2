@@ -7,6 +7,7 @@ import binascii
 import os
 import random
 import shutil
+import tempfile
 
 from PIL import Image
 
@@ -46,16 +47,14 @@ def insert_image(file: dict) -> str:
     # Check if the image is a valid image file.
     try:
         # Save the image to a temporary file.
-        temp_filename = '/tmp/' + file['filename']
-        filedata = file['value'].replace('data:image/png;base64,', '')
-        f = open(temp_filename, 'wb')
-        f.write(base64.b64decode(filedata))
-        f.close()
-        image = Image.open(temp_filename)
+        temporary_file = tempfile.NamedTemporaryFile(delete=False, suffix=f'.{extension}')
+        base64_data = file['value'].replace('data:image/png;base64,', '')
+        temporary_file.write(base64.b64decode(base64_data))
+        temporary_file.close()
+        image = Image.open(temporary_file.name)
 
     # An invalid file will lead to an exception.
     except (IOError, binascii.Error):
-        os.remove(temp_filename)
         raise exc.BrokenImage()
 
     # Check the real extension again
@@ -67,14 +66,8 @@ def insert_image(file: dict) -> str:
     if width != height:
         raise exc.ImageMustBeQuadratic()
 
-    # Create a unique filename.
-    can_be_used = False
-    while not can_be_used:
-        unique = ''.join(random.choice('0123456789abcdef') for i in range(32))
-        filename = '.'.join([unique, extension])
-        path = os.path.join(config.BaseConfig.UPLOAD_FOLDER, filename)
-        can_be_used = not os.path.isfile(path)
-
     # Move the temporary image to its destination path.
-    shutil.move(temp_filename, path)
-    return filename
+    destination_filename = os.path.basename(temporary_file.name)
+    destination_path = os.path.join(config.BaseConfig.UPLOAD_FOLDER, destination_filename)
+    shutil.move(temporary_file.name, destination_path)
+    return destination_filename
