@@ -38,4 +38,4 @@ jobs:
       env:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
-        wget -qO - https://coverage.codacy.com/get.sh | sh -s report -l Python -r coverage.xml
+        wget -qO - https://coverage.codacy.com/get.sh | bash -s report -l Python -r coverage.xml
