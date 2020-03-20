@@ -5,7 +5,12 @@ __author__ = 'g3n35i5'
 import collections
 import datetime
 
-import pdfkit
+try:
+    import pdfkit
+except ImportError:
+    pdfkit = None
+    pass
+
 from flask import jsonify, render_template, make_response, request
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -30,6 +35,10 @@ def get_stocktakingcollection_template():
 
     :return:      A rendered PDF file with all products for the stocktaking.
     """
+    # Check if pdfkit is available
+    if pdfkit is None:
+        return jsonify({'message': 'Not available'}), 503
+
     # Get a list of all products.
     products = (Product.query
                 .filter(Product.active.is_(True))

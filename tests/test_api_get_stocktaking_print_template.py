@@ -14,6 +14,12 @@ class GetStocktakingPrintTemplateAPITestCase(BaseAPITestCase):
         """
         This test verifies that the file format returned by the API is correct.
         """
+        # Skip this test if pdfkit is not available
+        try:
+            import pdfkit
+        except ImportError:
+            self.skipTest('Test skipped because pdfkit is not available on this system')
+
         res = self.get(url='/stocktakingcollections/template', role='admin')
         self.assertEqual(res.status_code, 200)
         self.assertTrue(res.data is not None)
@@ -24,6 +30,12 @@ class GetStocktakingPrintTemplateAPITestCase(BaseAPITestCase):
         This test verifies that the correct exception is made when there are no
         products available for stocktaking.
         """
+        # Skip this test if pdfkit is not available
+        try:
+            import pdfkit
+        except ImportError:
+            self.skipTest('Test skipped because pdfkit is not available on this system')
+
         # Set all products inactive
         for product in Product.query.all():
             product.active = False

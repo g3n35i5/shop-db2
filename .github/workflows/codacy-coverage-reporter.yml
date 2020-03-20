@@ -33,7 +33,7 @@ jobs:
 
     - name: Run coverage
       run: |
-        python run_tests_with_coverage.py
+        python test.py --mode auto
 
     - uses: actions/checkout@master
     - name: Run codacy-coverage-reporter
