@@ -38,14 +38,14 @@ interface.
 In order to use shop-db, you need to install the following main dependencies:
 
 ### Mandatory
-- Python 3.7
-- Python 3.7 Virtual Environment
-- pip3
-- git
-- nginx
+  - Python 3 (>= 3.7)
+  - Python 3 Virtual Environment
+  - pip3
+  - git
+  - nginx
 
 ```bash
-sudo apt install python3.7 python3-venv python3-pip git nginx wkhtmltopdf
+sudo apt install python3 python3-venv python3-pip git nginx
 ```
 
 ### Optional
@@ -54,7 +54,6 @@ sudo apt install python3.7 python3-venv python3-pip git nginx wkhtmltopdf
 ```bash
 sudo apt install wkhtmltopdf
 ```
-
 
 ## Getting started
 
@@ -135,22 +134,23 @@ will be done as the shopdb_user account:
 ```bash
 sudo su -s /bin/bash shopdb_user
 cd /srv/shop-db2
-python3.7 -m venv .
-source bin/activate
+python3 -m venv venv
+source venv/bin/activate
+# Use source venv/bin/activate.fish if you are using fish-shell
 ```
 
 Once you have activated the virtual environment you will notice the prompt
 change and then you can install the required python modules:
 
 ```bash
-(shop-db) pip3.7 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 Now the configuration file of shop-db2 has to be adjusted.
 Copy the `configuration.example.py` to the `configuration.py` file:
 
 ```bash
-(shop-db) cp configuration.example.py configuration.py
+cp configuration.example.py configuration.py
 ```
 
 The most important change is the SECRET_KEY. This is later responsible for
@@ -159,7 +159,7 @@ Change this SECRET_KEY in the file `configuration.py`. You can do this with a
 normal text editor or with the command `sed`:
 
 ```bash
-(shop-db) sed -i 's/YouWillNeverGuess/YOURBETTERSUPERSECRETKEY/g' configuration.py
+sed -i 's/YouWillNeverGuess/YOURBETTERSUPERSECRETKEY/g' configuration.py
 ```
 
 The first user (and at the same time the first administrator) as well as the
@@ -170,20 +170,21 @@ requirements.
 If you are satisfied with them, you can now initialize the database:
 
 ```bash
-(shop-db) python3.7 ./setupdb.py
+python ./setupdb.py
 ```
 
 Ready? Almost. To start shop-db, you only have to type:
 
 ```bash
-(shop-db) python3.7 ./wsgi.py
+python ./wsgi.py
 ```
 
 However, so that the backend does not have to be started manually every time, it
 is advisable to run shop-db as a systemd service:
 
 ```bash
-(shop-db) exit # To switch back to the root user
+deactivate # To deactivate the virtual environment
+exit # To switch back to the root user
 sudo nano /etc/systemd/system/shop-db2@shopdb_user.service
 ```
 
@@ -197,7 +198,7 @@ After=network-online.target
 [Service]
 Type=simple
 User=%i
-ExecStart=/srv/shop-db2/bin/python3.7 /srv/shop-db2/wsgi.py
+ExecStart=/srv/shop-db2/venv/bin/python3 /srv/shop-db2/wsgi.py
 
 [Install]
 WantedBy=multi-user.target
@@ -258,7 +259,7 @@ Description=shop-db2 backup service
 
 [Service]
 Type=oneshot
-ExecStart=/srv/shop-db2/bin/python3.7 /srv/shop-db2/backup.py
+ExecStart=/srv/shop-db2/venv/bin/python /srv/shop-db2/backup.py
 ```
 
 `/etc/systemd/system/shop-db-backup.timer`:
@@ -300,21 +301,9 @@ Currently, most of the core features of shop-db are covered with the
 corresponding unittests. In order to execute them you can use the command
 
 ```bash
-python3 -m coverage run test.py
-```
-
-If you want to check the test coverage, type
-
-```bash
-python3.7 -m coverage html
-```
-
-to generate the html preview and open a web server in the newly created
-directory `htmlcov`
-
-```bash
-cd htmlcov
-python3.7 -m http.server
+cd /srv/shop-db2
+source venv/bin/activate
+./run_tests_with_coverage.py --show-results
 ```
 
 ## Models
