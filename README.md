@@ -38,18 +38,18 @@ interface.
 In order to use shop-db, you need to install the following main dependencies:
 
 ### Mandatory
-  - Python 3 (>= 3.7)
-  - Python 3 Virtual Environment
-  - pip3
-  - git
-  - nginx
+-   Python 3 (>= 3.7)
+-   Python 3 Virtual Environment
+-   pip3
+-   git
+-   nginx
 
 ```bash
 sudo apt install python3 python3-venv python3-pip git nginx
 ```
 
 ### Optional
-- wkhtmltopdf (For generating pdf templates)
+-   wkhtmltopdf (For generating pdf templates)
 
 ```bash
 sudo apt install wkhtmltopdf
