@@ -30,7 +30,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         for p in [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]:
             db.session.add(p)
         db.session.commit()
-        
+
     def test_get_user_favorites(self):
         """
         This test ensures that the user's favorites are generated reliably.

@@ -13,8 +13,8 @@ class GetImageAPITestCase(BaseAPITestCase):
         res = self.get('images/valid_image.png')
         filepath = app.config['UPLOAD_FOLDER'] + 'valid_image.png'
         with open(filepath, 'rb') as image:
-            bytes = image.read()
-        self.assertEqual(res.data, bytes)
+            image_data = image.read()
+        self.assertEqual(res.data, image_data)
 
     def test_get_non_existing_image(self):
         """

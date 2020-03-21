@@ -25,13 +25,13 @@ class BaseAPITestCase(BaseTestCase):
             sys.exit(f'Wrong role: {role}')
 
         if role == 'admin':
-            id = 1
+            user_id = 1
             password = user_data[0]['password']
         elif role == 'user':
-            id = 2
+            user_id = 2
             password = user_data[1]['password']
         else:
-            id = None
+            user_id = None
             password = None
 
         # Only serialize the data to JSON if it is a json object.
@@ -39,8 +39,8 @@ class BaseAPITestCase(BaseTestCase):
             data = json.dumps(data)
 
         headers = {'content-type': content_type}
-        if id and password:
-            res = self.login(id, password)
+        if user_id and password:
+            res = self.login(user_id, password)
             headers['token'] = json.loads(res.data)['token']
         if request_type == 'POST':
             res = self.client.post(url, data=data, headers=headers)

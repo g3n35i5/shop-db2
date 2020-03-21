@@ -28,12 +28,12 @@ class CreateTagAPITestCase(BaseAPITestCase):
 
         tag_data_list = [{'name': 'CoolTag'}, {'name': 'CoolTag2', 'is_for_sale': False}]
 
-        for index, t_data in enumerate(tag_data_list):
-            res = self.post(url='/tags', role='admin', data=t_data)
+        for tag_data in tag_data_list:
+            res = self.post(url='/tags', role='admin', data=tag_data)
             self.assertEqual(res.status_code, 201)
             data = json.loads(res.data)
             self.assertEqual(data['message'], 'Created Tag.')
-            tag = Tag.query.filter_by(name=t_data['name']).first()
+            tag = Tag.query.filter_by(name=tag_data['name']).first()
             self.assertEqual(tag.created_by, 1)
 
         self.assertTrue(db.session.query(Tag).filter(Tag.name == tag_data_list[0]['name']).first().is_for_sale)

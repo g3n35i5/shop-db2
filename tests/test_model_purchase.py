@@ -36,25 +36,30 @@ class PurchaseModelTestCase(BaseTestCase):
 
     def test_insert_multiple_purchases(self):
         """Testing multiple purchases"""
-        product = Product.query.filter_by(id=1).first()
         user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 0)
         self.assertEqual(user.credit, 0)
-        ids = [1, 2, 4, 1, 3, 1]
-        amount = [1, 5, 5, 2, 4, 10]
-        for i in range(0, len(ids)):
-            purchase = Purchase(user_id=1, product_id=ids[i], amount=amount[i])
+        purchase_data = [
+            {'product_id': 1, 'amount': 1},
+            {'product_id': 2, 'amount': 5},
+            {'product_id': 4, 'amount': 5},
+            {'product_id': 1, 'amount': 2},
+            {'product_id': 3, 'amount': 4},
+            {'product_id': 1, 'amount': 10},
+        ]
+        for data in purchase_data:
+            purchase = Purchase(user_id=1, **data)
             db.session.add(purchase)
         db.session.commit()
 
         user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 6)
-        for i in range(0, len(ids)):
-            self.assertEqual(user.purchases.all()[i].amount, amount[i])
+        for index, data in enumerate(purchase_data):
+            self.assertEqual(user.purchases.all()[index].amount, data['amount'])
 
         c = 0
-        for i in range(0, len(ids)):
-            c -= amount[i] * Product.query.filter_by(id=ids[i]).first().price
+        for data in purchase_data:
+            c -= data['amount'] * Product.query.filter_by(id=data['product_id']).first().price
 
         self.assertEqual(user.credit, c)
 

@@ -75,7 +75,7 @@ def create_database(argv):
 
     # Handle the user.
     try:
-        opts, args = getopt.getopt (argv, 'f:l:p:')
+        opts, _ = getopt.getopt(argv, 'f:l:p:')
         for opt, arg in opts:
             if opt == '-f':
                 firstname = arg

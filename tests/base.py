@@ -70,18 +70,17 @@ class BaseTestCase(TestCase):
         db.session.remove()
         db.drop_all()
 
-    def generate_passwords(self, pwds):
+    def generate_passwords(self, password_list):
         """This function generates hashes of passwords and stores them in the
            global variable so that they do not have to be created again."""
         global passwords
         if passwords is None:
-            passwords = [None] * len(pwds)
-            for i in range(0, len(pwds)):
-                password = pwds[i]
+            passwords = [None] * len(password_list)
+            for index, password in enumerate(password_list):
                 if password:
-                    passwords[i] = self.bcrypt.generate_password_hash(password)
+                    passwords[index] = self.bcrypt.generate_password_hash(password)
                 else:
-                    passwords[i] = None
+                    passwords[index] = None
         return passwords
 
     def insert_default_users(self):

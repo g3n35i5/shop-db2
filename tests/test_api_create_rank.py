@@ -30,12 +30,11 @@ class CreateRankAPITestCase(BaseAPITestCase):
             {'name': 'Rank1'}, {'name': 'Rank2', 'is_system_user': True}, {'name': 'Rank3', 'debt_limit': -1234}
         ]
 
-        for index, t_data in enumerate(rank_data_list):
-            res = self.post(url='/ranks', role='admin', data=t_data)
+        for rank_data in rank_data_list:
+            res = self.post(url='/ranks', role='admin', data=rank_data)
             self.assertEqual(res.status_code, 201)
             data = json.loads(res.data)
             self.assertEqual(data['message'], 'Created Rank.')
-            Rank.query.filter_by(name=t_data['name']).first()
 
         self.assertFalse(db.session.query(Rank).filter(Rank.name == rank_data_list[0]['name']).first().is_system_user)
         self.assertTrue(db.session.query(Rank).filter(Rank.name == rank_data_list[1]['name']).first().is_system_user)

@@ -215,13 +215,11 @@ def create_stocktakingcollections(admin):
         timestamp = datetime.datetime.fromtimestamp(data['timestamp'])
         assert timestamp <= datetime.datetime.now()
     except (AssertionError, TypeError, ValueError, OSError, OverflowError):
-        """
-        AssertionError: The timestamp is after the current time.
-        TypeError:      Invalid type for conversion.
-        ValueError:     Timestamp is out of valid range.
-        OSError:        Value exceeds the data type.
-        OverflowError:  Timestamp out of range for platform time_t.
-        """
+        # AssertionError: The timestamp is after the current time.
+        # TypeError:      Invalid type for conversion.
+        # ValueError:     Timestamp is out of valid range.
+        # OSError:        Value exceeds the data type.
+        # OverflowError:  Timestamp out of range for platform time_t.
         raise exc.InvalidData()
     # Create stocktakingcollection
     collection = StocktakingCollection(admin_id=admin.id, timestamp=timestamp)

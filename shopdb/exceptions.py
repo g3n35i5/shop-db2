@@ -4,9 +4,7 @@ __author__ = 'g3n35i5'
 
 from sqlalchemy.exc import DontWrapMixin
 
-"""
-Base exception for all exceptions (needed for instance check)
-"""
+# Base exception for all exceptions (needed for instance check)
 
 
 class ShopdbException(Exception, DontWrapMixin):
@@ -15,11 +13,9 @@ class ShopdbException(Exception, DontWrapMixin):
     code: int = None
 
 
-"""
-App related exceptions.
-
-These exceptions handle all app errors.
-"""
+# App related exceptions.
+#
+# These exceptions handle all app errors.
 
 
 class MaintenanceMode(ShopdbException):
@@ -30,12 +26,10 @@ class MaintenanceMode(ShopdbException):
     code = 503
 
 
-"""
-Data related exceptions.
-
-These exceptions handle all errors that occur when incorrect and/or incomplete
-or unauthorized data is transferred.
-"""
+# Data related exceptions.
+#
+# These exceptions handle all errors that occur when incorrect and/or incomplete
+# or unauthorized data is transferred.
 
 
 class DataIsMissing(ShopdbException):
@@ -122,12 +116,10 @@ class InvalidAmount(ShopdbException):
     code = 401
 
 
-"""
-Entry related exceptions.
-
-These exceptions handle all errors related to entries. This can be, for
-example, that an entry already exists or cannot be updated or deleted. 
-"""
+# Entry related exceptions.
+#
+# These exceptions handle all errors related to entries. This can be, for
+# example, that an entry already exists or cannot be updated or deleted.
 
 
 class NothingHasChanged(ShopdbException):
@@ -190,11 +182,9 @@ class NoRemainingTag(ShopdbException):
     code = 401
 
 
-"""
-User related exceptions.
-
-These exceptions handle all errors related to users.
-"""
+# User related exceptions.
+#
+# These exceptions handle all errors related to users.
 
 
 class UserIsNotVerified(ShopdbException):
@@ -228,14 +218,12 @@ class UserNeedsPassword(ShopdbException):
     code = 401
 
 
-"""
-Credential related exceptions.
-
-These exceptions handle all errors related to permissions. This can be, for
-example, that a user wants to perform an action for which he does not have the
-authorization or that the session has expired, i.e. the token has become
-invalid.
-"""
+# Credential related exceptions.
+#
+# These exceptions handle all errors related to permissions. This can be, for
+# example, that a user wants to perform an action for which he does not have the
+# authorization or that the session has expired, i.e. the token has become
+# invalid.
 
 
 class PasswordsDoNotMatch(ShopdbException):
