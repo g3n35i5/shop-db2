@@ -2,6 +2,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9cc2d5aeb81740988698a9ba562c84c4)](https://app.codacy.com/manual/janfschmidt/shop-db2?utm_source=github.com&utm_medium=referral&utm_content=g3n35i5/shop-db2&utm_campaign=Badge_Grade_Dashboard)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/82150c6b1ff84fb6a5f39c5b8ba4042f)](https://www.codacy.com/manual/g3n35i5/shop-db2?utm_source=github.com&utm_medium=referral&utm_content=g3n35i5/shop-db2&utm_campaign=Badge_Coverage)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/g3n35i5/shop-db2.svg)](http://isitmaintained.com/project/g3n35i5/shop-db2 "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/g3n35i5/shop-db2.svg)](http://isitmaintained.com/project/g3n35i5/shop-db2 "Percentage of issues still open")
 
 This is the documentation for shop-db.
 
