@@ -16,7 +16,7 @@ def _get_balance_between_stocktakings(start, end):
         return None
 
     # Get a list of all product ids.
-    products = Product.query.all()
+    products = Product.query.filter(Product.countable.is_(True)).all()
     product_ids = [p.id for p in products]
 
     start_product_ids = [s.product_id for s in start.stocktakings]
