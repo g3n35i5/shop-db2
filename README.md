@@ -236,7 +236,7 @@ You want to start shop-db in developer mode and participate in the project?
 Great! The command
 
 ```bash
-python3.7 ./shopdb.py --mode development
+python ./shopdb.py --mode development
 ```
 
 starts shop-db for you in developer mode. This means that a temporary database
