@@ -17,7 +17,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         product = json.loads(res.data)
         required = ['id', 'name', 'price', 'barcode', 'active', 'creation_date',
-                    'countable', 'revocable', 'imagename', 'tags']
+                    'countable', 'revocable', 'imagename', 'tags', 'purchase_sum', 'replenishment_sum']
         assert all(x in product for x in required)
 
     def test_list_nonactive_product_without_token(self):
@@ -40,7 +40,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         product = json.loads(res.data)
         required = ['id', 'name', 'price', 'barcode', 'active', 'creation_date',
-                    'countable', 'revocable', 'imagename', 'tags']
+                    'countable', 'revocable', 'imagename', 'tags', 'purchase_sum', 'replenishment_sum']
         assert all(x in product for x in required)
 
     def test_list_non_existing_product(self):

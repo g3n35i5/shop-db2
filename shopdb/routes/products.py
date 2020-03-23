@@ -26,8 +26,8 @@ def list_products(admin):
 
     :return:      A list of all products
     """
-    fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-              'revocable', 'imagename', 'tags', 'creation_date']
+    fields = ['id', 'name', 'price', 'barcode', 'active', 'countable', 'purchase_sum', 'replenishment_sum',
+              'balance_score', 'revocable', 'imagename', 'tags', 'creation_date']
 
     query = QueryFromRequestParameters(Product, request.args, fields)
     result, content_range = query.result()
@@ -132,12 +132,12 @@ def get_product(admin, product_id):
     if not product:
         raise exc.EntryNotFound()
 
-    if not (product.active or admin):
+    if not product.active and not admin:
         fields = ['id', 'name', 'barcode', 'active', 'imagename',
                   'tags', 'creation_date']
     else:
-        fields = ['id', 'name', 'price', 'barcode', 'active', 'countable',
-                  'revocable', 'imagename', 'tags', 'creation_date']
+        fields = ['id', 'name', 'price', 'barcode', 'active', 'countable', 'purchase_sum',
+                  'replenishment_sum', 'balance_score', 'revocable', 'imagename', 'tags', 'creation_date']
 
     # Convert the product to a dictionary
     product = convert_minimal(product, fields)[0]

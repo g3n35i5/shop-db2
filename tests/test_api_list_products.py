@@ -22,7 +22,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
         for product in products:
             for item in ['id', 'name', 'price', 'barcode', 'active',
                          'countable', 'revocable', 'imagename', 'tags',
-                         'creation_date']:
+                         'creation_date', 'purchase_sum', 'replenishment_sum']:
                 assert item in product
         for i in range(0, 3):
             self.assertTrue(products[i]['active'])

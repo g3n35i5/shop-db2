@@ -27,6 +27,8 @@ class Product(db.Model):
 
     from .product_price import ProductPrice
     from .product_tag_assignment import product_tag_assignments
+    from .purchase import Purchase
+    from .replenishment import Replenishment
 
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
@@ -45,6 +47,18 @@ class Product(db.Model):
                             .order_by(ProductPrice.id.desc())
                             .limit(1)
                             .as_scalar())
+
+    # Column property for the purchase sum
+    purchase_sum = column_property(select([func.coalesce(func.sum(Purchase.price), 0)])
+                                   .where(Purchase.product_id == id)
+                                   .where(Purchase.revoked.is_(False))
+                                   .as_scalar())
+
+    # Column property for the replenishment sum
+    replenishment_sum = column_property(select([func.coalesce(func.sum(Replenishment.total_price), 0)])
+                                        .where(Replenishment.product_id == id)
+                                        .where(Replenishment.revoked.is_(False))
+                                        .as_scalar())
 
     @validates('created_by')
     def validate_admin(self, key, created_by):
