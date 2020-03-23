@@ -210,14 +210,15 @@ class User(db.Model):
         invalid_product_ids = (db.session.query(product_tag_assignments.c.product_id)
                                .filter(product_tag_assignments.c.tag_id.in_(invalid_tag_ids))
                                .subquery())
+        # Get a list of all inactive product ids
+        inactive_product_ids = db.session.query(Product.id).filter(Product.active.is_(False)).subquery()
 
-        result = (db.session.query(Purchase, Product)
-                  .filter(Product.id == Purchase.product_id)
-                  .filter(Product.active.is_(True))
-                  .filter(Product.id.notin_(invalid_product_ids))
-                  .filter(Purchase.user_id == self.id)
-                  .filter(Purchase.revoked.is_(False))
-                  .group_by(Purchase.product_id)
-                  .order_by(func.sum(Purchase.amount).desc())
+        result = (db.session.query(Purchase.product_id)
+                  .filter(Purchase.user_id == self.id)                       # Get only user purchases
+                  .group_by(Purchase.product_id)                             # Group by products
+                  .filter(Purchase.product_id.notin_(invalid_product_ids))   # Get only products which are for sale
+                  .filter(Purchase.product_id.notin_(inactive_product_ids))  # Get only products which are active
+                  .filter(Purchase.revoked.is_(False))                       # Get only non revoked purchases
+                  .order_by(func.sum(Purchase.amount).desc())                # Order by the sum of purchase amount
                   .all())
-        return [purchase.product_id for purchase, _ in result]
+        return [item.product_id for item in result]
