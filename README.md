@@ -323,15 +323,15 @@ registering, one has to be verified by an admin to be able to use ones account.
 This prevents unauthorized use of the application. In addition a user can be an
 admin, has a rank, a credit to buy products and a list of favorite products.
 
-| NAME          | TYPE           | Explanation                                                                                                                                                                                                                       |
-| ------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id            | _Integer_      | The user id is unique and is used to identify the user in the application. It is created automatically with the a new user.                                                                                                       |
-| creation_date | _DateTime_     | This is the date and time the user was created. It is created automatically with the new user. It is not modified when user properties are updated.                                                                               |
-| firstname     | _String(32)_   | This is the users firstname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.                                                              |
-| lastname      | _String(32)_   | This is the users lastname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.                                                               |
-| password      | _String(256)_  | This is the password hash which is used to verify the users password when he logs in. It is automatically created from the password passed when creating or updating the user. The password itself is not stored in the database. |
-| is_verified   | _Boolean_      | To prevent unauthorized access, each user has to be verified from an admin before he can carry out further actions. This column states whether the user is verified (True) or not (False).                                        |
-| purchases     | _relationship_ | This represents all the purchases the user has made.                                                                                                                                                                              |
+| NAME            | TYPE           | Explanation                                                                                                                                                                                                                       |
+| --------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id              | _Integer_      | The user id is unique and is used to identify the user in the application. It is created automatically with the a new user.                                                                                                       |
+| creation_date   | _DateTime_     | This is the date and time the user was created. It is created automatically with the new user. It is not modified when user properties are updated.                                                                               |
+| firstname       | _String(32)_   | This is the users firstname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.                                                              |
+| lastname        | _String(32)_   | This is the users lastname. It is used to identify the user in the frontend. It does not have to be unique. It can be updated and changed after the users creation.                                                               |
+| password        | _String(256)_  | This is the password hash which is used to verify the users password when he logs in. It is automatically created from the password passed when creating or updating the user. The password itself is not stored in the database. |
+| is_verified     | _Boolean_      | To prevent unauthorized access, each user has to be verified from an admin before he can carry out further actions. This column states whether the user is verified (True) or not (False).                                        |
+| image_upload_id | _Integer_      | This is the id of the Upload with the user picture. This entry is optional.                                                                                                                                                       |
 
 ### UserVerification
 
@@ -383,11 +383,12 @@ the Upload and the image.
 
 Depending on the rank, a User has can have different debt limits to his credit.
 
-| Name       | TYPE         | Explanation                                                                                                           |
-| ---------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
-| id         | _Integer_    | The Rank id is unique and is used for Identification in the application. It is created automatically with a new Rank. |
-| name       | _String(32)_ | The Rank name is unique and is used for identification in the frontend.                                               |
-| debt_limit | _Integer_    | This specifies the debt limit a user with given Rank can have in his credit.                                          |
+| Name           | TYPE         | Explanation                                                                                                           |
+| -------------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| id             | _Integer_    | The Rank id is unique and is used for Identification in the application. It is created automatically with a new Rank. |
+| name           | _String(32)_ | The Rank name is unique and is used for identification in the frontend.                                               |
+| debt_limit     | _Integer_    | This specifies the debt limit a user with given Rank can have in his credit.                                          |
+| is_system_user | _Boolean_    | Specifies whether users with this rank are system users.                                                              |
 
 ### RankUpdate
 
@@ -445,11 +446,12 @@ A Tag can be assigned to each product. They help to sort products into
 categories in the frontend. All products with the same tag are listed in the
 same category.
 
-| Name       | TYPE         | Explanation                                                                                                         |
-| ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
-| id         | _Integer_    | The Tag id is unique and is used for identification in the application. It is created automatically with a new Tag. |
-| created_by | _Integer_    | This is the id of the admin who created the Tag.                                                                    |
-| name       | _String(24)_ | This is the name of the Tag used to identify it in the frontend. It has to be unique.                               |
+| Name        | TYPE         | Explanation                                                                                                         |
+| ----------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| id          | _Integer_    | The Tag id is unique and is used for identification in the application. It is created automatically with a new Tag. |
+| created_by  | _Integer_    | This is the id of the admin who created the Tag.                                                                    |
+| name        | _String(24)_ | This is the name of the Tag used to identify it in the frontend. It has to be unique.                               |
+| is_for-sale | _Boolean_    | Specifies whether products with this tag are for sale.                                                         |
 
 ### product_tag_assignments
 
@@ -499,7 +501,7 @@ and revoked field of each entry related to the purchase.
 
 ### ReplenishmentCollection
 
-When an admin fills up the products by buying them at an external supplier with
+When an admin fills up the products by buying them from a (system) user with
 the communities money, he creates a ReplenishmentCollection entry. A
 replenishmentcollection can be revoked, even more than once. So in addition, a
 revokehistory for the replenishmentcollection can be called. When creating, the
@@ -513,6 +515,7 @@ price can be used to give an overview of the communities finances.
 | id        | _Integer_    | The ReplenishmentCollection id is unique and is used for identification in the application. It is created automatically with a new ReplenishmentCollection. |
 | timestamp | _DateTime_   | This is the date and time the ReplenishmentCollection was created. It is created automatically with the new ReplenishmentCollection.                        |
 | admin_id  | _Integer_    | This is the id of the admin who made the ReplenishmentCollection.                                                                                           |
+| seller_id | _Integer_    | This is the id of the user from whom the products are purchased.                                                                                            |
 | revoked   | _Boolean_    | This indicates whether the ReplenishmentCollection is revoked (True) or not (False). If not specified further, it will automatically be set to False.       |
 | comment   | _String(64)_ | This is a short comment where the admin explains what he bought and why.                                                                                    |
 
@@ -523,13 +526,13 @@ ReplenishmentCollectionRevoke entry is made. It is used to determine the
 revokehistory of a replenishmentcollection by listing the id, timestamp and
 revoked field of each entry related to the replenishmentcollection.
 
-| Name        | TYPE       | Explanation                                                                                                                                                             |
-| ----------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id          | _Integer_  | The ReplenishmentCollectionRevoke id is unique and is used for identification in the application. It is created automatically with a new ReplenishmentCollectionRevoke. |
-| timestamp   | _DateTime_ | This is the date and time the ReplenishmentCollectionRevoke was created. It is created automatically with the new ReplenishmentCollectionRevoke.                        |
-| admin_id    | _Integer_  | This is the id of the admin who changed the revoke status.                                                                                                              |
-| replcoll_id | _Integer_  | This is the id of the replenishmentcollection where the revoked status has been changed.                                                                                |
-| revoked     | _Boolean_  | This indicates whether the ReplenishmentCollection is revoked (True) or not (False).                                                                                    |
+| Name         | TYPE       | Explanation                                                                                                                                                             |
+| ------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id           | _Integer_  | The ReplenishmentCollectionRevoke id is unique and is used for identification in the application. It is created automatically with a new ReplenishmentCollectionRevoke. |
+| timestamp    | _DateTime_ | This is the date and time the ReplenishmentCollectionRevoke was created. It is created automatically with the new ReplenishmentCollectionRevoke.                        |
+| admin_id     | _Integer_  | This is the id of the admin who changed the revoke status.                                                                                                              |
+| replcoll_id  | _Integer_  | This is the id of the replenishmentcollection where the revoked status has been changed.                                                                                |
+| revoked      | _Boolean_  | This indicates whether the ReplenishmentCollection is revoked (True) or not (False).                                                                                    |
 
 ### Replenishment
 
