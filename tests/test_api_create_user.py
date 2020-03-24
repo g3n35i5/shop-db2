@@ -9,16 +9,16 @@ from shopdb.models import User
 from tests.base_api import BaseAPITestCase
 
 
-class RegisterAPITestCase(BaseAPITestCase):
-    def test_register_user(self):
-        """This test is designed to test the registration of a new user"""
+class CreateUserAPITestCase(BaseAPITestCase):
+    def test_create_user(self):
+        """This test is designed to test the creation of a new user"""
         data = {
             'firstname': 'John',
             'lastname': 'Doe',
             'password': 'supersecret',
             'password_repeat': 'supersecret'
         }
-        res = self.post(url='/register', data=data)
+        res = self.post(url='/users', data=data)
         self.assertEqual(res.status_code, 200)
         self.assertIn(b'Created user.', res.data)
 
@@ -28,12 +28,12 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertEqual(user.lastname, 'Doe')
         self.assertFalse(user.is_verified)
 
-    def test_register_user_only_lastname(self):
+    def test_create_user_only_lastname(self):
         """
         It should be possible to create a user without a firstname.
         """
         data = {'lastname': 'Doe'}
-        res = self.post(url='/register', data=data)
+        res = self.post(url='/users', data=data)
         self.assertEqual(res.status_code, 200)
         self.assertIn(b'Created user.', res.data)
         user = User.query.filter_by(id=6).first()
@@ -41,7 +41,7 @@ class RegisterAPITestCase(BaseAPITestCase):
         self.assertEqual(user.lastname, 'Doe')
         self.assertFalse(user.is_verified)
 
-    def test_register_password_too_short(self):
+    def test_create_user_password_too_short(self):
         """This test should ensure that the correct exception gets returned
            on creating a user with a short password."""
         data = {
@@ -50,23 +50,23 @@ class RegisterAPITestCase(BaseAPITestCase):
             'password': 'short',
             'password_repeat': 'short'
         }
-        res = self.post(url='/register', data=data)
+        res = self.post(url='/users', data=data)
         self.assertException(res, exc.PasswordTooShort)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_register_missing_data(self):
+    def test_create_user_missing_data(self):
         """This test should ensure that the correct exception gets returned
            on creating a user with missing data."""
         data = {'firstname': 'John'}
-        res = self.post(url='/register', data=data)
+        res = self.post(url='/users', data=data)
         self.assertException(res, exc.DataIsMissing)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_register_wrong_type(self):
+    def test_create_user_wrong_type(self):
         """This test should ensure that the correct exception gets returned
            on creating a user with a wrong data type."""
 
@@ -80,13 +80,13 @@ class RegisterAPITestCase(BaseAPITestCase):
         for item in ['firstname', 'lastname', 'password', 'password_repeat']:
             data_copy = copy(data)
             data_copy[item] = 1234
-            res = self.post(url='/register', data=data_copy)
+            res = self.post(url='/users', data=data_copy)
             self.assertException(res, exc.WrongType)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_register_passwords_do_not_match(self):
+    def test_create_user_passwords_do_not_match(self):
         """This test should ensure that the correct exception gets returned
            on creating a user when the passwords do not match."""
         data = {
@@ -95,13 +95,13 @@ class RegisterAPITestCase(BaseAPITestCase):
             'password': 'supersecret',
             'password_repeat': 'supersecret_ooops'
         }
-        res = self.post(url='/register', data=data)
+        res = self.post(url='/users', data=data)
         self.assertException(res, exc.PasswordsDoNotMatch)
 
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_register_passwords_repeat_is_missing(self):
+    def test_create_user_passwords_repeat_is_missing(self):
         """This test should ensure that the correct exception gets returned
            on creating a user when the password_repeat field is missing."""
         data = {
@@ -109,7 +109,7 @@ class RegisterAPITestCase(BaseAPITestCase):
             'lastname': 'Doe',
             'password': 'supersecret'
         }
-        res = self.post(url='/register', data=data)
+        res = self.post(url='/users', data=data)
         self.assertException(res, exc.DataIsMissing)
         users = User.query.all()
         self.assertEqual(len(users), 5)

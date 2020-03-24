@@ -19,7 +19,7 @@ class DeleteUserAPITestCase(BaseAPITestCase):
             'password': 'supersecret',
             'password_repeat': 'supersecret'
         }
-        res = self.post(url='/register', data=data)
+        self.post(url='/users', data=data)
         user = User.query.filter_by(id=6).first()
         self.assertFalse(user.is_verified)
         res = self.delete(url='/users/6', role='admin')

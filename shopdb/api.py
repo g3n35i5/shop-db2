@@ -73,10 +73,6 @@ import shopdb.routes.financial_overview  # noqa: E402
 # noinspection PyUnresolvedReferences
 import shopdb.routes.login  # noqa: E402
 
-# Register route
-# noinspection PyUnresolvedReferences
-import shopdb.routes.register  # noqa: E402
-
 # User routes
 # noinspection PyUnresolvedReferences
 import shopdb.routes.users  # noqa: E402
