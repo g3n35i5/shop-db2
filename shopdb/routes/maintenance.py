@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import os
 import re
@@ -15,7 +15,7 @@ from shopdb.helpers.utils import json_body
 from shopdb.helpers.validators import check_fields_and_types
 
 
-@app.route('/maintenance', methods=['GET'])
+@app.route("/maintenance", methods=["GET"])
 def get_maintenance_mode():
     """
     This route returns whether the app is in maintenance mode.
@@ -23,10 +23,10 @@ def get_maintenance_mode():
     :return: A message with the maintenance mode.
     """
 
-    return jsonify(app.config['MAINTENANCE'])
+    return jsonify(app.config["MAINTENANCE"])
 
 
-@app.route('/maintenance', methods=['POST'], endpoint='maintenance')
+@app.route("/maintenance", methods=["POST"], endpoint="maintenance")
 @adminRequired
 def set_maintenance_mode(admin):
     """
@@ -49,14 +49,14 @@ def set_maintenance_mode(admin):
 
     data = json_body()
     # Check all items in the json body.
-    required = {'state': bool}
+    required = {"state": bool}
     check_fields_and_types(data, required)
 
     # Get the current maintenance state.
-    current_state = app.config['MAINTENANCE']
+    current_state = app.config["MAINTENANCE"]
 
     # Get the new state.
-    new_state = data['state']
+    new_state = data["state"]
 
     # Handle the request.
     if current_state == new_state:
@@ -66,12 +66,14 @@ def set_maintenance_mode(admin):
     RE_MAINENTANCE_PATTERN = r"(.*)(MAINTENANCE)([^\w]*)(True|False)"
     with open(os.path.join(PATH, "configuration.py"), "r") as config_file:
         config_file_content = config_file.read()
-    new_config_file = re.sub(RE_MAINENTANCE_PATTERN, r"\1\2\3{}".format(str(new_state)), config_file_content)
+    new_config_file = re.sub(
+        RE_MAINENTANCE_PATTERN, r"\1\2\3{}".format(str(new_state)), config_file_content
+    )
     with open(os.path.join(PATH, "configuration.py"), "w") as config_file:
         config_file.write(new_config_file)
 
     # Change the current app state
-    app.config['MAINTENANCE'] = new_state
+    app.config["MAINTENANCE"] = new_state
 
-    message = 'Turned maintenance mode ' + ('on.' if new_state else 'off.')
-    return jsonify({'message': message})
+    message = "Turned maintenance mode " + ("on." if new_state else "off.")
+    return jsonify({"message": message})

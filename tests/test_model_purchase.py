@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import datetime
 from copy import copy
 
 from shopdb.api import db
-from shopdb.models import Purchase, Product, User, ProductPrice
+from shopdb.models import Product, ProductPrice, Purchase, User
 from tests.base import BaseTestCase
 
 
@@ -40,12 +40,12 @@ class PurchaseModelTestCase(BaseTestCase):
         self.assertEqual(len(user.purchases.all()), 0)
         self.assertEqual(user.credit, 0)
         purchase_data = [
-            {'product_id': 1, 'amount': 1},
-            {'product_id': 2, 'amount': 5},
-            {'product_id': 4, 'amount': 5},
-            {'product_id': 1, 'amount': 2},
-            {'product_id': 3, 'amount': 4},
-            {'product_id': 1, 'amount': 10},
+            {"product_id": 1, "amount": 1},
+            {"product_id": 2, "amount": 5},
+            {"product_id": 4, "amount": 5},
+            {"product_id": 1, "amount": 2},
+            {"product_id": 3, "amount": 4},
+            {"product_id": 1, "amount": 10},
         ]
         for data in purchase_data:
             purchase = Purchase(user_id=1, **data)
@@ -55,11 +55,14 @@ class PurchaseModelTestCase(BaseTestCase):
         user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 6)
         for index, data in enumerate(purchase_data):
-            self.assertEqual(user.purchases.all()[index].amount, data['amount'])
+            self.assertEqual(user.purchases.all()[index].amount, data["amount"])
 
         c = 0
         for data in purchase_data:
-            c -= data['amount'] * Product.query.filter_by(id=data['product_id']).first().price
+            c -= (
+                data["amount"]
+                * Product.query.filter_by(id=data["product_id"]).first().price
+            )
 
         self.assertEqual(user.credit, c)
 
@@ -109,7 +112,7 @@ class PurchaseModelTestCase(BaseTestCase):
 
     def test_multiple_purchases_update_product_price(self):
         """This test is designed to ensure that purchases still show
-           the correct price even after price changes of products."""
+        the correct price even after price changes of products."""
 
         # Generate timestamps for correct timing of purchases and updates
         t1 = datetime.datetime.now() - datetime.timedelta(seconds=30)
@@ -169,7 +172,7 @@ class PurchaseModelTestCase(BaseTestCase):
 
     def test_purchase_revokes(self):
         """This unittest is designed to ensure, that purchase revokes will be
-           applied to the user credit"""
+        applied to the user credit"""
         # Insert some purchases
         for _ in range(1, 11):
             purchase = Purchase(user_id=1, product_id=1, amount=1)

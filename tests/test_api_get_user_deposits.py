@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import json
 
@@ -14,11 +14,11 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
     @staticmethod
     def _insert_deposits():
         """Helper function to insert some test deposits."""
-        d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
-        d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
-        d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
-        d4 = Deposit(user_id=3, amount=300, admin_id=1, comment='Test deposit')
-        d5 = Deposit(user_id=2, amount=2700, admin_id=1, comment='Test deposit')
+        d1 = Deposit(user_id=1, amount=100, admin_id=1, comment="Test deposit")
+        d2 = Deposit(user_id=2, amount=200, admin_id=1, comment="Test deposit")
+        d3 = Deposit(user_id=2, amount=500, admin_id=1, comment="Test deposit")
+        d4 = Deposit(user_id=3, amount=300, admin_id=1, comment="Test deposit")
+        d5 = Deposit(user_id=2, amount=2700, admin_id=1, comment="Test deposit")
         for d in [d1, d2, d3, d4, d5]:
             db.session.add(d)
         db.session.commit()
@@ -26,10 +26,10 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
     def test_get_user_deposit(self):
         """This test ensures that all deposits made for a user are listed."""
         self._insert_deposits()
-        res = self.get(url='/users/2/deposits')
+        res = self.get(url="/users/2/deposits")
         self.assertEqual(res.status_code, 200)
         deposits = json.loads(res.data)
-        fields = ['id', 'timestamp', 'admin_id', 'amount', 'revoked', 'comment']
+        fields = ["id", "timestamp", "admin_id", "amount", "revoked", "comment"]
         for i in deposits:
             for x in fields:
                 assert x in i
@@ -39,7 +39,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         This test ensures that an empty list will be returned for a user's
         deposits if none have yet been entered for him.
         """
-        res = self.get(url='/users/2/deposits')
+        res = self.get(url="/users/2/deposits")
         self.assertEqual(res.status_code, 200)
         deposits = json.loads(res.data)
         self.assertEqual(deposits, [])
@@ -48,7 +48,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         """
         Getting the deposits from a non existing user should raise an error.
         """
-        res = self.get(url='/users/6/deposits')
+        res = self.get(url="/users/6/deposits")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
@@ -56,7 +56,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         """
         Getting the deposits from a non verified user should raise an error.
         """
-        res = self.get(url='/users/4/deposits')
+        res = self.get(url="/users/4/deposits")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)
 
@@ -66,6 +66,6 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         """
         User.query.filter_by(id=3).first().set_rank_id(4, 1)
         db.session.commit()
-        res = self.get(url='/users/3/deposits')
+        res = self.get(url="/users/3/deposits")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsInactive)

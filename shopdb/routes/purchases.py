@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify, request
 from sqlalchemy.exc import IntegrityError
@@ -11,12 +11,12 @@ from shopdb.api import app, db
 from shopdb.helpers.decorators import adminOptional
 from shopdb.helpers.purchases import insert_purchase
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.updater import generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.models import Purchase, PurchaseRevoke
 
 
-@app.route('/purchases', methods=['GET'])
+@app.route("/purchases", methods=["GET"])
 @adminOptional
 def list_purchases(admin):
     """
@@ -29,9 +29,19 @@ def list_purchases(admin):
     :return:      A list of all purchases.
     """
     if admin is not None:
-        fields = ['id', 'timestamp', 'user_id', 'admin_id', 'product_id', 'productprice', 'amount', 'revoked', 'price']
+        fields = [
+            "id",
+            "timestamp",
+            "user_id",
+            "admin_id",
+            "product_id",
+            "productprice",
+            "amount",
+            "revoked",
+            "price",
+        ]
     else:
-        fields = ['id', 'timestamp', 'user_id', 'admin_id', 'product_id', 'amount']
+        fields = ["id", "timestamp", "user_id", "admin_id", "product_id", "amount"]
 
     query = QueryFromRequestParameters(Purchase, request.args, fields)
     if admin is None:
@@ -39,11 +49,11 @@ def list_purchases(admin):
 
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/purchases', methods=['POST'])
+@app.route("/purchases", methods=["POST"])
 @adminOptional
 def create_purchase(admin):
     """
@@ -79,10 +89,10 @@ def create_purchase(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Purchase created.'}), 200
+    return jsonify({"message": "Purchase created."}), 200
 
 
-@app.route('/purchases/<int:purchase_id>', methods=['GET'])
+@app.route("/purchases/<int:purchase_id>", methods=["GET"])
 def get_purchase(purchase_id):
     """
     Returns the purchase with the requested id.
@@ -96,12 +106,22 @@ def get_purchase(purchase_id):
     purchase = Purchase.query.filter_by(id=purchase_id).first()
     if not purchase:
         raise exc.EntryNotFound()
-    fields = ['id', 'timestamp', 'user_id', 'admin_id', 'product_id', 'amount', 'price',
-              'productprice', 'revoked', 'revokehistory']
+    fields = [
+        "id",
+        "timestamp",
+        "user_id",
+        "admin_id",
+        "product_id",
+        "amount",
+        "price",
+        "productprice",
+        "revoked",
+        "revokehistory",
+    ]
     return jsonify(convert_minimal(purchase, fields)[0]), 200
 
 
-@app.route('/purchases/<int:purchase_id>', methods=['PUT'])
+@app.route("/purchases/<int:purchase_id>", methods=["PUT"])
 @adminOptional
 def update_purchase(admin, purchase_id):
     """

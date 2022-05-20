@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
-from inspect import signature, Signature
+from inspect import Signature, signature
 from typing import Optional
 
 from flask import jsonify
@@ -44,8 +44,10 @@ def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[U
         raise exc.EntryNotFound()
 
     # Get the updateable fields. This only works with supported models.
-    if not hasattr(item, '__updateable_fields__'):
-        raise Exception('The generic_update() function can only used with supported models')
+    if not hasattr(item, "__updateable_fields__"):
+        raise Exception(
+            "The generic_update() function can only used with supported models"
+        )
 
     # Get a dictionary containing all allowed fields and types
     updateable_fields: dict = item.__updateable_fields__
@@ -65,7 +67,7 @@ def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[U
 
         # If the model has a "set_{FIELDNAME}" method, we need to
         # call it instead of the default setattr
-        method = getattr(item, f'set_{field_name}', None)
+        method = getattr(item, f"set_{field_name}", None)
 
         # Simple case: no set_{FIELDNAME} method, so we just call the setattr
         if method is None:
@@ -74,10 +76,12 @@ def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[U
         # There is a set_{FIELDNAME} method
         else:
             # Check, whether the method requires an admin_id
-            if 'admin_id' in signature(method).parameters.keys():
+            if "admin_id" in signature(method).parameters.keys():
                 # If the admin_id parameter has a default value (e.g. def set_foo(admin_id=None, ...)), admin
                 # privileges are not required to update the field
-                admin_required = isinstance(signature(method).parameters['admin_id'].default, Signature.empty)
+                admin_required = isinstance(
+                    signature(method).parameters["admin_id"].default, Signature.empty
+                )
                 if admin_required and admin is None:
                     raise exc.UnauthorizedAccess()
 
@@ -97,7 +101,12 @@ def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[U
     except IntegrityError:
         raise exc.CouldNotUpdateEntry()
 
-    return jsonify({
-        'message': f'Updated {model.__name__.lower()}',
-        'updated_fields': sorted(updated_fields)
-    }), 201
+    return (
+        jsonify(
+            {
+                "message": f"Updated {model.__name__.lower()}",
+                "updated_fields": sorted(updated_fields),
+            }
+        ),
+        201,
+    )

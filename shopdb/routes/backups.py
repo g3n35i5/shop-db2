@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import datetime
 import glob
@@ -13,7 +13,7 @@ from shopdb.api import app
 from shopdb.helpers.decorators import adminRequired
 
 
-@app.route('/backups', methods=['GET'])
+@app.route("/backups", methods=["GET"])
 @adminRequired
 def list_backups(admin):
     """
@@ -28,11 +28,8 @@ def list_backups(admin):
     :return: A dictionary containing all backups and the timestamp of the
              latest backup.
     """
-    data = {
-        'backups': {},
-        'latest': None
-    }
-    root_dir = app.config['BACKUP_DIR']
+    data = {"backups": {}, "latest": None}
+    root_dir = app.config["BACKUP_DIR"]
     start = root_dir.rfind(os.sep) + 1
     for path, dirs, files in os.walk(root_dir):
         # Ignore the root path
@@ -45,7 +42,7 @@ def list_backups(admin):
         folders = path[start:].split(os.sep)
         subdir = dict.fromkeys(files)
 
-        parent = reduce(dict.get, folders[:-1], data['backups'])
+        parent = reduce(dict.get, folders[:-1], data["backups"])
 
         # We are in the day-directory of our tree
         if len(subdir) != 0:
@@ -54,9 +51,9 @@ def list_backups(admin):
             parent[folders[-1]] = subdir
 
     # Get the timestamp of the latest backup
-    all_files = glob.glob(root_dir + '**/*.dump', recursive=True)
+    all_files = glob.glob(root_dir + "**/*.dump", recursive=True)
     if all_files:
         latest = os.path.getctime(max(all_files, key=os.path.getctime))
-        data['latest'] = datetime.datetime.fromtimestamp(latest)
+        data["latest"] = datetime.datetime.fromtimestamp(latest)
 
     return jsonify(data)

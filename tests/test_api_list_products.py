@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import json
 
@@ -15,18 +15,29 @@ class ListProductsAPITestCase(BaseAPITestCase):
         inactive_product = Product.query.filter(Product.id == 4).first()
         inactive_product.active = False
         db.session.commit()
-        res = self.get(url='/products', role='admin')
+        res = self.get(url="/products", role="admin")
         self.assertEqual(res.status_code, 200)
         products = json.loads(res.data)
         self.assertEqual(len(products), 4)
         for product in products:
-            for item in ['id', 'name', 'price', 'barcode', 'active',
-                         'countable', 'revocable', 'imagename', 'tags',
-                         'creation_date', 'purchase_sum', 'replenishment_sum']:
+            for item in [
+                "id",
+                "name",
+                "price",
+                "barcode",
+                "active",
+                "countable",
+                "revocable",
+                "imagename",
+                "tags",
+                "creation_date",
+                "purchase_sum",
+                "replenishment_sum",
+            ]:
                 assert item in product
         for i in range(0, 3):
-            self.assertTrue(products[i]['active'])
-        self.assertFalse(products[3]['active'])
+            self.assertTrue(products[i]["active"])
+        self.assertFalse(products[3]["active"])
 
     def test_list_products_with_products_which_are_not_for_sale(self):
         """
@@ -51,9 +62,9 @@ class ListProductsAPITestCase(BaseAPITestCase):
         self.assertFalse(Product.query.filter_by(id=1).first().is_for_sale)
 
         # Make sure that this product gets listed when an unprivileged user lists all products
-        products = json.loads(self.get(url='/products', role='user').data)
-        self.assertTrue(1 in list(map(lambda p: p['id'], products)))
+        products = json.loads(self.get(url="/products", role="user").data)
+        self.assertTrue(1 in list(map(lambda p: p["id"], products)))
 
         # Make sure that this product gets listed for administrators
-        products = json.loads(self.get(url='/products', role='admin').data)
-        self.assertTrue(1 in list(map(lambda p: p['id'], products)))
+        products = json.loads(self.get(url="/products", role="admin").data)
+        self.assertTrue(1 in list(map(lambda p: p["id"], products)))

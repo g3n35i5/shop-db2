@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask_testing import TestCase
 
 import configuration as config
-from shopdb.api import db, set_app, app, bcrypt
-from shopdb.models import (User, Product, AdminUpdate, Tag, Replenishment, ReplenishmentCollection, Rank,
-                           StocktakingCollection, Stocktaking, Purchase, Deposit)
+from shopdb.api import app, bcrypt, db, set_app
+from shopdb.models import (AdminUpdate, Deposit, Product, Purchase, Rank,
+                           Replenishment, ReplenishmentCollection, Stocktaking,
+                           StocktakingCollection, Tag, User)
 
 # Global password storage. Hashing the passwords for each unit test
 # would take too long. For this reason, the passwords are created once
@@ -16,35 +17,37 @@ passwords = None
 
 # Default data for users
 user_data = [
-    {'firstname': 'William', 'lastname': 'Jones', 'password': 'secret1'},
-    {'firstname': 'Mary', 'lastname': 'Smith', 'password': 'secret2'},
-    {'firstname': 'Bryce', 'lastname': 'Jones', 'password': None},
-    {'firstname': 'Daniel', 'lastname': 'Lee', 'password': None},
-    {'firstname': None, 'lastname': 'Seller', 'password': None},
+    {"firstname": "William", "lastname": "Jones", "password": "secret1"},
+    {"firstname": "Mary", "lastname": "Smith", "password": "secret2"},
+    {"firstname": "Bryce", "lastname": "Jones", "password": None},
+    {"firstname": "Daniel", "lastname": "Lee", "password": None},
+    {"firstname": None, "lastname": "Seller", "password": None},
 ]
 
 # Default data for products
 product_data = [
-    {'name': 'Pizza', 'price': 300, 'tags': [1]},
-    {'name': 'Coffee', 'price': 50, 'tags': [2]},
-    {'name': 'Cookie', 'price': 100, 'tags': [3]},
-    {'name': 'Coke', 'price': 200, 'tags': [4]},
+    {"name": "Pizza", "price": 300, "tags": [1]},
+    {"name": "Coffee", "price": 50, "tags": [2]},
+    {"name": "Cookie", "price": 100, "tags": [3]},
+    {"name": "Coke", "price": 200, "tags": [4]},
 ]
 
 # Default data for ranks
 rank_data = [
-    {'name': 'Contender', 'debt_limit': 0},
-    {'name': 'Member', 'debt_limit': -2000},
-    {'name': 'Alumni', 'debt_limit': -1000},
-    {'name': 'Inactive', 'debt_limit': 0, 'active': False}]
+    {"name": "Contender", "debt_limit": 0},
+    {"name": "Member", "debt_limit": -2000},
+    {"name": "Alumni", "debt_limit": -1000},
+    {"name": "Inactive", "debt_limit": 0, "active": False},
+]
 
 # Default data for product tags
 tag_data = [
-    {'name': 'Food'},
-    {'name': 'Sweets'},
-    {'name': 'Drinks'},
-    {'name': 'Coffee'},
-    {'name': 'Uncategorized', 'is_for_sale': False}]
+    {"name": "Food"},
+    {"name": "Sweets"},
+    {"name": "Drinks"},
+    {"name": "Coffee"},
+    {"name": "Uncategorized", "is_for_sale": False},
+]
 
 
 class BaseTestCase(TestCase):
@@ -72,7 +75,7 @@ class BaseTestCase(TestCase):
 
     def generate_passwords(self, password_list):
         """This function generates hashes of passwords and stores them in the
-           global variable so that they do not have to be created again."""
+        global variable so that they do not have to be created again."""
         global passwords
         if passwords is None:
             passwords = [None] * len(password_list)
@@ -84,12 +87,13 @@ class BaseTestCase(TestCase):
         return passwords
 
     def insert_default_users(self):
-        hashes = self.generate_passwords(list(map(lambda u: u['password'], user_data)))
+        hashes = self.generate_passwords(list(map(lambda u: u["password"], user_data)))
         for index, data in enumerate(user_data):
             user = User(
-                firstname=data['firstname'],
-                lastname=data['lastname'],
-                password=hashes[index])
+                firstname=data["firstname"],
+                lastname=data["lastname"],
+                password=hashes[index],
+            )
             db.session.add(user)
 
         db.session.commit()
@@ -103,8 +107,8 @@ class BaseTestCase(TestCase):
     @staticmethod
     def insert_default_tag_assignments():
         for p_data in product_data:
-            product = Product.query.filter(Product.name == p_data['name']).first()
-            tag = Tag.query.filter(Tag.id == p_data['tags'][0]).first()
+            product = Product.query.filter(Product.name == p_data["name"]).first()
+            tag = Tag.query.filter(Tag.id == p_data["tags"][0]).first()
             product.tags.append(tag)
 
         db.session.commit()
@@ -112,10 +116,10 @@ class BaseTestCase(TestCase):
     @staticmethod
     def insert_default_products():
         for data in product_data:
-            product = Product(name=data['name'], created_by=1)
+            product = Product(name=data["name"], created_by=1)
             db.session.add(product)
             db.session.flush()  # This is needed so that the product has its id
-            product.set_price(price=data['price'], admin_id=1)
+            product.set_price(price=data["price"], admin_id=1)
 
         db.session.commit()
 
@@ -147,19 +151,39 @@ class BaseTestCase(TestCase):
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
         product3 = Product.query.filter_by(id=3).first()
-        rc1 = ReplenishmentCollection(admin_id=1, revoked=False, comment='Foo', seller_id=5)
-        rc2 = ReplenishmentCollection(admin_id=2, revoked=False, comment='Foo', seller_id=5)
+        rc1 = ReplenishmentCollection(
+            admin_id=1, revoked=False, comment="Foo", seller_id=5
+        )
+        rc2 = ReplenishmentCollection(
+            admin_id=2, revoked=False, comment="Foo", seller_id=5
+        )
         for r in [rc1, rc2]:
             db.session.add(r)
         db.session.flush()
-        rep1 = Replenishment(replcoll_id=rc1.id, product_id=product1.id,
-                             amount=10, total_price=10 * product1.price)
-        rep2 = Replenishment(replcoll_id=rc1.id, product_id=product2.id,
-                             amount=20, total_price=20 * product2.price)
-        rep3 = Replenishment(replcoll_id=rc2.id, product_id=product3.id,
-                             amount=5, total_price=5 * product3.price)
-        rep4 = Replenishment(replcoll_id=rc2.id, product_id=product1.id,
-                             amount=10, total_price=10 * product1.price)
+        rep1 = Replenishment(
+            replcoll_id=rc1.id,
+            product_id=product1.id,
+            amount=10,
+            total_price=10 * product1.price,
+        )
+        rep2 = Replenishment(
+            replcoll_id=rc1.id,
+            product_id=product2.id,
+            amount=20,
+            total_price=20 * product2.price,
+        )
+        rep3 = Replenishment(
+            replcoll_id=rc2.id,
+            product_id=product3.id,
+            amount=5,
+            total_price=5 * product3.price,
+        )
+        rep4 = Replenishment(
+            replcoll_id=rc2.id,
+            product_id=product1.id,
+            amount=10,
+            total_price=10 * product1.price,
+        )
         for r in [rep1, rep2, rep3, rep4]:
             db.session.add(r)
         db.session.commit()
@@ -171,19 +195,19 @@ class BaseTestCase(TestCase):
         db.session.flush()
 
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         for s in stocktakings:
             db.session.add(Stocktaking(**s, collection_id=1))
 
         stocktakings = [
-            {'product_id': 1, 'count': 50},
-            {'product_id': 2, 'count': 25},
-            {'product_id': 3, 'count': 12},
-            {'product_id': 4, 'count': 3}
+            {"product_id": 1, "count": 50},
+            {"product_id": 2, "count": 25},
+            {"product_id": 3, "count": 12},
+            {"product_id": 4, "count": 3},
         ]
         for s in stocktakings:
             db.session.add(Stocktaking(**s, collection_id=2))
@@ -202,11 +226,11 @@ class BaseTestCase(TestCase):
 
     @staticmethod
     def insert_default_deposits():
-        d1 = Deposit(user_id=1, amount=100, admin_id=1, comment='Test deposit')
-        d2 = Deposit(user_id=2, amount=200, admin_id=1, comment='Test deposit')
-        d3 = Deposit(user_id=2, amount=500, admin_id=1, comment='Test deposit')
-        d4 = Deposit(user_id=3, amount=300, admin_id=1, comment='Test deposit')
-        d5 = Deposit(user_id=1, amount=600, admin_id=1, comment='Test deposit')
+        d1 = Deposit(user_id=1, amount=100, admin_id=1, comment="Test deposit")
+        d2 = Deposit(user_id=2, amount=200, admin_id=1, comment="Test deposit")
+        d3 = Deposit(user_id=2, amount=500, admin_id=1, comment="Test deposit")
+        d4 = Deposit(user_id=3, amount=300, admin_id=1, comment="Test deposit")
+        d5 = Deposit(user_id=1, amount=600, admin_id=1, comment="Test deposit")
         for d in [d1, d2, d3, d4, d5]:
             db.session.add(d)
         db.session.commit()

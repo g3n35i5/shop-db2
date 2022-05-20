@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import json
 import re
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 from sqlalchemy import func, types
 from sqlalchemy.sql.expression import BinaryExpression
@@ -15,9 +15,11 @@ from shopdb.api import db
 
 
 class QueryFromRequestParameters:
-    __valid_fields_and_types__ = {'filter': dict, 'pagination': dict, 'sort': dict}
+    __valid_fields_and_types__ = {"filter": dict, "pagination": dict, "sort": dict}
 
-    def __init__(self, model: db.Model, arguments: ImmutableMultiDict, fields=List[str]) -> None:
+    def __init__(
+        self, model: db.Model, arguments: ImmutableMultiDict, fields=List[str]
+    ) -> None:
         # Database table
         self._model: db.Model = model
         # Column mapper for validation and column access
@@ -59,9 +61,9 @@ class QueryFromRequestParameters:
 
             # Clean possible non-JSON conforming quoting
             try:
-                argument_value = argument_value.strip("'<>() ").replace('\'', '\"')
-                argument_value = argument_value.replace('False', 'false')
-                argument_value = argument_value.replace('True', 'true')
+                argument_value = argument_value.strip("'<>() ").replace("'", '"')
+                argument_value = argument_value.replace("False", "false")
+                argument_value = argument_value.replace("True", "true")
             except AttributeError:
                 # Maybe there is a chance to parse it anyway
                 pass
@@ -73,7 +75,9 @@ class QueryFromRequestParameters:
             try:
                 parsed_value = json.loads(argument_value)
                 # The type must be correct
-                assert isinstance(parsed_value, self.__valid_fields_and_types__.get(argument_key))
+                assert isinstance(
+                    parsed_value, self.__valid_fields_and_types__.get(argument_key)
+                )
                 parsed_arguments[argument_key] = parsed_value
             except (AssertionError, json.decoder.JSONDecodeError):
                 raise exc.InvalidQueryParameters()
@@ -115,7 +119,12 @@ class QueryFromRequestParameters:
                     elif isinstance(filter_value, list):
                         all_types = [type(x) for x in filter_value]
                         # All types must be {str, int, float}
-                        assert all([isinstance(x, (str, int, float, bool)) for x in filter_value])
+                        assert all(
+                            [
+                                isinstance(x, (str, int, float, bool))
+                                for x in filter_value
+                            ]
+                        )
                         # With this condition it is assured that all types are equal
                         assert all_types.count(all_types[0]) == len(all_types)
                         # All filter values must match the regex_sanitize_pattern to avoid injections
@@ -148,7 +157,7 @@ class QueryFromRequestParameters:
                 # The sorting field must be in the list of valid columns
                 assert self.sorting.get("field") in self._valid_columns
                 # The sorting direction must be in the list ['asc', 'ASC', 'desc', 'DESC']
-                assert self.sorting.get("order") in ['asc', 'ASC', 'desc', 'DESC']
+                assert self.sorting.get("order") in ["asc", "ASC", "desc", "DESC"]
                 # Both, sorting key and direction, must match the regex_sanitize_pattern to avoid injections
                 assert re.fullmatch(regex_sanitize_pattern, self.sorting.get("field"))
                 assert re.fullmatch(regex_sanitize_pattern, self.sorting.get("order"))
@@ -156,7 +165,7 @@ class QueryFromRequestParameters:
         except AssertionError:
             raise exc.InvalidQueryParameters()
 
-    def filter(self, expression: BinaryExpression) -> 'QueryFromRequestParameters':
+    def filter(self, expression: BinaryExpression) -> "QueryFromRequestParameters":
         """
         This method applies a sqlalchemy binary expression to the base query
 
@@ -172,21 +181,21 @@ class QueryFromRequestParameters:
         """
         :return: The pagination parameters if they exist
         """
-        return self._arguments.get('pagination', None)
+        return self._arguments.get("pagination", None)
 
     @property
     def filters(self) -> Optional[dict]:
         """
         :return: The filter parameters if they exist
         """
-        return self._arguments.get('filter', None)
+        return self._arguments.get("filter", None)
 
     @property
     def sorting(self) -> Optional[dict]:
         """
         :return: The sorting parameters if they exist
         """
-        return self._arguments.get('sort', None)
+        return self._arguments.get("sort", None)
 
     def result(self) -> Tuple:
         """
@@ -200,13 +209,19 @@ class QueryFromRequestParameters:
             for filter_field, filter_value in self.filters.items():
                 # Case 1: One filter value and string. We use the contains method for this
                 if isinstance(filter_value, str):
-                    self._query = self._query.filter(self._column_mapper[filter_field].contains(filter_value))
+                    self._query = self._query.filter(
+                        self._column_mapper[filter_field].contains(filter_value)
+                    )
                 # Case 2: One filter value and int/float. We use the is_ method for this
                 elif isinstance(filter_value, (int, float, bool)):
-                    self._query = self._query.filter(self._column_mapper[filter_field].is_(filter_value))
+                    self._query = self._query.filter(
+                        self._column_mapper[filter_field].is_(filter_value)
+                    )
                 # Case 3: Multiple filter values
                 else:
-                    self._query = self._query.filter(self._column_mapper[filter_field].in_(tuple(filter_value)))
+                    self._query = self._query.filter(
+                        self._column_mapper[filter_field].in_(tuple(filter_value))
+                    )
 
         # Apply sorting
         if self.sorting is not None:
@@ -218,7 +233,7 @@ class QueryFromRequestParameters:
             if not isinstance(column.type, types.Integer):
                 column = func.lower(column)
 
-            if self.sorting.get("order").lower() == 'asc':
+            if self.sorting.get("order").lower() == "asc":
                 self._query = self._query.order_by(column.asc())
             else:
                 self._query = self._query.order_by(column.desc())
@@ -227,7 +242,9 @@ class QueryFromRequestParameters:
         if self.pagination is not None:
             page = self.pagination.get("page")
             per_page = self.pagination.get("perPage")
-            self._query = self._query.paginate(page=page, per_page=per_page, error_out=False)
+            self._query = self._query.paginate(
+                page=page, per_page=per_page, error_out=False
+            )
             data = self._query.items
             range_start = (page - 1) * per_page
             range_end = page * per_page - 1
@@ -244,6 +261,8 @@ class QueryFromRequestParameters:
         # The value must be the total number of resources in the collection.
         # This allows the client interface to know how many pages of resources there are in total,
         # and build the pagination controls.
-        content_range = f'{self._model.__table__.name}: {range_start}-{range_end}/{total_items}'
+        content_range = (
+            f"{self._model.__table__.name}: {range_start}-{range_end}/{total_items}"
+        )
 
         return data, content_range

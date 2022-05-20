@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify, request
 from sqlalchemy.exc import IntegrityError
@@ -8,15 +8,15 @@ from sqlalchemy.exc import IntegrityError
 import shopdb.exceptions as exc
 import shopdb.helpers.products as product_helpers
 from shopdb.api import app, db
-from shopdb.helpers.decorators import adminRequired, adminOptional
+from shopdb.helpers.decorators import adminOptional, adminRequired
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.updater import generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Product, Tag, product_tag_assignments
 
 
-@app.route('/products', methods=['GET'])
+@app.route("/products", methods=["GET"])
 @adminOptional
 def list_products(admin):
     """
@@ -26,20 +26,33 @@ def list_products(admin):
 
     :return:      A list of all products
     """
-    fields = ['id', 'name', 'price', 'barcode', 'active', 'countable', 'purchase_sum', 'replenishment_sum',
-              'balance_score', 'revocable', 'imagename', 'tags', 'creation_date']
+    fields = [
+        "id",
+        "name",
+        "price",
+        "barcode",
+        "active",
+        "countable",
+        "purchase_sum",
+        "replenishment_sum",
+        "balance_score",
+        "revocable",
+        "imagename",
+        "tags",
+        "creation_date",
+    ]
 
     query = QueryFromRequestParameters(Product, request.args, fields)
     result, content_range = query.result()
     products = convert_minimal(result, fields)
     for product in products:
-        product['tags'] = [t.id for t in product['tags']]
+        product["tags"] = [t.id for t in product["tags"]]
     response = jsonify(products)
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/products', methods=['POST'])
+@app.route("/products", methods=["POST"])
 @adminRequired
 def create_product(admin):
     """
@@ -62,26 +75,29 @@ def create_product(admin):
                                  database.
     """
     data = json_body()
-    required = {'name': str, 'price': int, 'tags': list}
+    required = {"name": str, "price": int, "tags": list}
     optional = {
-        'barcode': str, 'active': bool, 'countable': bool,
-        'revocable': bool, 'imagename': str
+        "barcode": str,
+        "active": bool,
+        "countable": bool,
+        "revocable": bool,
+        "imagename": str,
     }
 
     # Check all required fields
     check_fields_and_types(data, required, optional)
 
     # Check if a product with this name already exists
-    if Product.query.filter_by(name=data['name']).first():
+    if Product.query.filter_by(name=data["name"]).first():
         raise exc.EntryAlreadyExists()
 
     # Check if a product with this barcode already exists
-    if 'barcode' in data:
-        if Product.query.filter_by(barcode=data['barcode']).first():
+    if "barcode" in data:
+        if Product.query.filter_by(barcode=data["barcode"]).first():
             raise exc.EntryAlreadyExists()
 
     # Check the product tags
-    tags = data['tags']
+    tags = data["tags"]
     for tag_id in tags:
         if not isinstance(tag_id, int):
             raise exc.WrongType
@@ -89,11 +105,11 @@ def create_product(admin):
         if not tag:
             raise exc.EntryNotFound
 
-    del data['tags']
+    del data["tags"]
 
     # Save the price and delete it from the data dictionary
-    price = int(data['price'])
-    del data['price']
+    price = int(data["price"])
+    del data["price"]
 
     try:
         product = Product(**data)
@@ -109,10 +125,10 @@ def create_product(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created Product.'}), 201
+    return jsonify({"message": "Created Product."}), 201
 
 
-@app.route('/products/<int:product_id>', methods=['GET'])
+@app.route("/products/<int:product_id>", methods=["GET"])
 @adminOptional
 def get_product(admin, product_id):
     """
@@ -133,22 +149,42 @@ def get_product(admin, product_id):
         raise exc.EntryNotFound()
 
     if not product.active and not admin:
-        fields = ['id', 'name', 'barcode', 'active', 'imagename',
-                  'tags', 'creation_date']
+        fields = [
+            "id",
+            "name",
+            "barcode",
+            "active",
+            "imagename",
+            "tags",
+            "creation_date",
+        ]
     else:
-        fields = ['id', 'name', 'price', 'barcode', 'active', 'countable', 'purchase_sum',
-                  'replenishment_sum', 'balance_score', 'revocable', 'imagename', 'tags', 'creation_date']
+        fields = [
+            "id",
+            "name",
+            "price",
+            "barcode",
+            "active",
+            "countable",
+            "purchase_sum",
+            "replenishment_sum",
+            "balance_score",
+            "revocable",
+            "imagename",
+            "tags",
+            "creation_date",
+        ]
 
     # Convert the product to a dictionary
     product = convert_minimal(product, fields)[0]
 
     # Convert the product tags
-    product['tags'] = [t.id for t in product['tags']]
+    product["tags"] = [t.id for t in product["tags"]]
 
     return jsonify(product), 200
 
 
-@app.route('/products/<int:product_id>/stock', methods=['GET'])
+@app.route("/products/<int:product_id>/stock", methods=["GET"])
 def get_product_stock(product_id):
     """
     Returns the theoretical stock level of a product.
@@ -181,7 +217,7 @@ def get_product_stock(product_id):
     return jsonify(theoretical_stock), 200
 
 
-@app.route('/products/<int:product_id>/pricehistory', methods=['GET'])
+@app.route("/products/<int:product_id>/pricehistory", methods=["GET"])
 @adminRequired
 def get_product_pricehistory(admin, product_id):
     """
@@ -207,10 +243,10 @@ def get_product_pricehistory(admin, product_id):
 
     # Get the (optional) time range parameters
     try:
-        start = request.args.get('start_date')
+        start = request.args.get("start_date")
         if start:
             start = int(start)
-        end = request.args.get('end_date')
+        end = request.args.get("end_date")
         if end:
             end = int(end)
     except (TypeError, ValueError):
@@ -226,7 +262,7 @@ def get_product_pricehistory(admin, product_id):
     return jsonify(history), 200
 
 
-@app.route('/products/<int:product_id>', methods=['PUT'])
+@app.route("/products/<int:product_id>", methods=["PUT"])
 @adminRequired
 def update_product(admin, product_id):
     """

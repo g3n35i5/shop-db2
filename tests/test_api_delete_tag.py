@@ -1,31 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import json
 
 import shopdb.exceptions as exc
 from shopdb.api import db
-from shopdb.models import Tag, Product
+from shopdb.models import Product, Tag
 from tests.base_api import BaseAPITestCase
 
 
 class DeleteTagAPITestCase(BaseAPITestCase):
     def test_delete_tag_authorization(self):
         """This route should only be available for administrators"""
-        res = self.delete(url='/tags/1', data={})
+        res = self.delete(url="/tags/1", data={})
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
-        res = self.delete(url='/tags/1', data={}, role='user')
+        res = self.delete(url="/tags/1", data={}, role="user")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
     def test_delete_tag(self):
         """Delete a tag as admin."""
-        res = self.delete(url='/tags/1', role='admin')
+        res = self.delete(url="/tags/1", role="admin")
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        self.assertEqual(data['message'], 'Tag deleted.')
+        self.assertEqual(data["message"], "Tag deleted.")
         tag = Tag.query.filter_by(id=1).first()
         self.assertEqual(tag, None)
 
@@ -47,7 +47,7 @@ class DeleteTagAPITestCase(BaseAPITestCase):
         product2 = Product.query.filter_by(id=2).first()
         self.assertEqual(len(product1.tags), 2)
         self.assertEqual(len(product2.tags), 2)
-        self.delete(url='/tags/1', role='admin')
+        self.delete(url="/tags/1", role="admin")
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
         self.assertEqual(len(product1.tags), 1)
@@ -62,12 +62,12 @@ class DeleteTagAPITestCase(BaseAPITestCase):
         tag = Tag.query.filter_by(id=1).first()
         product.tags.append(tag)
         db.session.commit()
-        res = self.delete(url='/tags/1', role='admin')
+        res = self.delete(url="/tags/1", role="admin")
         self.assertException(res, exc.NoRemainingTag)
 
     def test_delete_non_existing_tag(self):
         """Delete a non existing tag."""
-        res = self.delete(url='/tags/6', role='admin')
+        res = self.delete(url="/tags/6", role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
@@ -78,6 +78,6 @@ class DeleteTagAPITestCase(BaseAPITestCase):
             db.session.delete(tags[i])
         db.session.commit()
 
-        res = self.delete(url='/tags/5', role='admin')
+        res = self.delete(url="/tags/5", role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.NoRemainingTag)

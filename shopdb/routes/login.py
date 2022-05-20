@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import datetime
 
@@ -14,7 +14,7 @@ from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import User
 
 
-@app.route('/login', methods=['POST'], endpoint='login')
+@app.route("/login", methods=["POST"], endpoint="login")
 def login():
     """
     Registered users can log in on this route.
@@ -33,11 +33,11 @@ def login():
     """
     data = json_body()
     # Check all items in the json body.
-    required = {'id': int, 'password': str}
+    required = {"id": int, "password": str}
     check_fields_and_types(data, required)
 
     # Try to get the user with the id
-    user = User.query.filter_by(id=data['id']).first()
+    user = User.query.filter_by(id=data["id"]).first()
 
     # If no user with this data exists cancel the authentication.
     if not user:
@@ -56,16 +56,16 @@ def login():
         raise exc.InvalidCredentials()
 
     # Check if the password matches the user's password.
-    if not bcrypt.check_password_hash(user.password, str(data['password'])):
+    if not bcrypt.check_password_hash(user.password, str(data["password"])):
         raise exc.InvalidCredentials()
 
     # Create a dictionary object of the user.
-    fields = ['id', 'firstname', 'lastname', 'credit', 'is_admin']
+    fields = ["id", "firstname", "lastname", "credit", "is_admin"]
     d_user = convert_minimal(user, fields)[0]
 
     # Create a token.
     exp = datetime.datetime.utcnow() + datetime.timedelta(minutes=60)
-    token = jwt.encode({'user': d_user, 'exp': exp}, app.config['SECRET_KEY'])
+    token = jwt.encode({"user": d_user, "exp": exp}, app.config["SECRET_KEY"])
 
     # Return the result.
-    return jsonify({'result': True, 'token': token.decode('UTF-8')}), 200
+    return jsonify({"result": True, "token": token.decode("UTF-8")}), 200

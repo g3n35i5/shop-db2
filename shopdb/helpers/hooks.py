@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import datetime
 import logging
 import time
 
-from flask import request, g
+from flask import g, request
 
 import shopdb.exceptions as exc
 from shopdb.api import app
@@ -46,9 +46,9 @@ def before_request_hook(admin):
         return
 
     # Check for maintenance mode.
-    exceptions = ['maintenance', 'login']
+    exceptions = ["maintenance", "login"]
 
-    if app.config.get('MAINTENANCE') and request.endpoint not in exceptions:
+    if app.config.get("MAINTENANCE") and request.endpoint not in exceptions:
         raise exc.MaintenanceMode()
 
 
@@ -63,6 +63,10 @@ def after_request_hook(response):
     # If the app is in DEBUG mode, log the request execution time
     if app.logger.level == logging.DEBUG:
         execution_time = datetime.timedelta(seconds=(time.time() - g.start))
-        app.logger.debug("Request execution time for '{}': {}".format(request.endpoint, execution_time))
+        app.logger.debug(
+            "Request execution time for '{}': {}".format(
+                request.endpoint, execution_time
+            )
+        )
 
     return response

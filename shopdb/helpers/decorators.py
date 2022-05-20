@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from functools import wraps
 
 import jwt
-from flask import request, Response
+from flask import Response, request
 
 import shopdb.exceptions as exc
 from shopdb.api import app
@@ -28,7 +28,7 @@ def checkIfUserIsValid(f):
 
     @wraps(f)
     def decorator(*args, **kwargs):
-        user = User.query.filter_by(id=kwargs['user_id']).first()
+        user = User.query.filter_by(id=kwargs["user_id"]).first()
         if not user:
             raise exc.EntryNotFound()
 
@@ -70,13 +70,13 @@ def adminRequired(f):
     def decorated(*args, **kwargs):
         # Does the request header contain a token?
         try:
-            token = request.headers['token']
+            token = request.headers["token"]
         except KeyError:
             raise exc.UnauthorizedAccess()
 
         # Is the token valid?
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
+            data = jwt.decode(token, app.config["SECRET_KEY"])
         except jwt.exceptions.DecodeError:
             raise exc.TokenIsInvalid()
         except jwt.ExpiredSignatureError:
@@ -85,7 +85,7 @@ def adminRequired(f):
         # If there is no admin object in the token and does the user does have
         # admin rights?
         try:
-            admin_id = data['user']['id']
+            admin_id = data["user"]["id"]
             admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
         except KeyError:
@@ -124,20 +124,20 @@ def adminOptional(f):
     def decorated(*args, **kwargs):
         # Does the request header contain a token?
         try:
-            token = request.headers['token']
+            token = request.headers["token"]
         except KeyError:
             return f(admin=None, *args, **kwargs)
 
         # Is the token valid?
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
+            data = jwt.decode(token, app.config["SECRET_KEY"])
         except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError):
             return f(admin=None, *args, **kwargs)
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
         try:
-            admin_id = data['user']['id']
+            admin_id = data["user"]["id"]
             admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
         except KeyError:
@@ -154,7 +154,7 @@ def adminOptional(f):
     return decorated
 
 
-def deprecate_route(message=''):
+def deprecate_route(message=""):
     """
     This decorator adds a warning message to the response header when the route is marked as deprecated.
 
@@ -173,7 +173,7 @@ def deprecate_route(message=''):
                 response: Response = data
             else:
                 return data
-            response.headers['Warning'] = message
+            response.headers["Warning"] = message
             return data
 
         return _wrapper

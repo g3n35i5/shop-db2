@@ -55,19 +55,20 @@ def _get_product_mean_price_in_time_range(product_id, start, end):
         raise exc.EntryNotFound()
 
     # Get product price at the time of the first stocktaking.
-    res1 = (ProductPrice.query
-            .filter(ProductPrice.product_id == product_id)
-            .filter(ProductPrice.timestamp <= start)
-            .order_by(ProductPrice.timestamp.desc())
-            .first())
+    res1 = (
+        ProductPrice.query.filter(ProductPrice.product_id == product_id)
+        .filter(ProductPrice.timestamp <= start)
+        .order_by(ProductPrice.timestamp.desc())
+        .first()
+    )
 
     # Get all price changes in the range between the two stocktakings
-    res2 = (ProductPrice.query
-            .filter(ProductPrice.product_id == product_id)
-            .filter(and_(ProductPrice.timestamp < end,
-                         ProductPrice.timestamp > start))
-            .order_by(ProductPrice.timestamp)
-            .all())
+    res2 = (
+        ProductPrice.query.filter(ProductPrice.product_id == product_id)
+        .filter(and_(ProductPrice.timestamp < end, ProductPrice.timestamp > start))
+        .order_by(ProductPrice.timestamp)
+        .all()
+    )
 
     # Get a list of all product price changes
     changes = [res1] + res2
@@ -108,8 +109,9 @@ def _get_product_mean_price_in_time_range(product_id, start, end):
             day_count += 1
             sum_price += current_price
             if current_date in list(map(lambda x: x.timestamp, changes)):
-                current_price = next(item for item in changes if
-                                     item.timestamp == current_date).price
+                current_price = next(
+                    item for item in changes if item.timestamp == current_date
+                ).price
 
         # Return the mean product price as integer.
         return int(round(sum_price / day_count))
@@ -125,7 +127,9 @@ def get_theoretical_stock_of_product(product_id: int) -> int:
     """
 
     # Get the latest stocktaking of a product
-    latest_stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(product_id)
+    latest_stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(
+        product_id
+    )
 
     # If there has been a stocktaking, it defines the start timestamp.
     # Otherwise, we have to take all purchases of this product into account.
@@ -139,10 +143,16 @@ def get_theoretical_stock_of_product(product_id: int) -> int:
     end = datetime.datetime.utcnow()
 
     # Get the sum of all purchase amounts in the selected interval
-    sum_purchase_amount = purchase_helpers.get_purchase_amount_in_interval(product_id, start, end)
+    sum_purchase_amount = purchase_helpers.get_purchase_amount_in_interval(
+        product_id, start, end
+    )
 
     # Get the sum of all refund amounts in the selected interval
-    sum_replenishment_amount = replenishment_helpers.get_replenishment_amount_in_interval(product_id, start, end)
+    sum_replenishment_amount = (
+        replenishment_helpers.get_replenishment_amount_in_interval(
+            product_id, start, end
+        )
+    )
 
     # Theoretical stock level
     return stocktaking_count - sum_purchase_amount + sum_replenishment_amount

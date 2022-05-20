@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import datetime
 from typing import Optional
@@ -12,22 +12,24 @@ import shopdb.exceptions as exc
 from shopdb.api import db
 from shopdb.helpers.utils import parse_timestamp
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.models import Purchase
-from shopdb.models import User, Product, Rank
+from shopdb.models import Product, Purchase, Rank, User
 
 
-def get_purchase_amount_in_interval(product_id: int, start: datetime.datetime, end: datetime.datetime) -> int:
+def get_purchase_amount_in_interval(
+    product_id: int, start: datetime.datetime, end: datetime.datetime
+) -> int:
     """
     Returns the sum of the amount of all purchases of the given product.
     """
 
-    result = (db.session.query(
-        func.sum(Purchase.amount))
-              .filter(Purchase.product_id == product_id)
-              .filter(Purchase.revoked.is_(False))
-              .filter(Purchase.timestamp >= start)
-              .filter(Purchase.timestamp <= end)
-              .first())
+    result = (
+        db.session.query(func.sum(Purchase.amount))
+        .filter(Purchase.product_id == product_id)
+        .filter(Purchase.revoked.is_(False))
+        .filter(Purchase.timestamp >= start)
+        .filter(Purchase.timestamp <= end)
+        .first()
+    )
     return result[0] or 0
 
 
@@ -40,17 +42,17 @@ def insert_purchase(admin: Optional[User], data: dict) -> None:
 
     :return:                     None
     """
-    required = {'user_id': int, 'product_id': int, 'amount': int}
-    optional = {'timestamp': str}
+    required = {"user_id": int, "product_id": int, "amount": int}
+    optional = {"timestamp": str}
 
     # If the request is not made by an administrator, the timestamp can't be set
-    if admin is None and 'timestamp' in data:
+    if admin is None and "timestamp" in data:
         raise exc.ForbiddenField()
 
     check_fields_and_types(data, required, optional)
 
     # Check user
-    user = User.query.filter_by(id=data['user_id']).first()
+    user = User.query.filter_by(id=data["user_id"]).first()
     if not user:
         raise exc.EntryNotFound()
 
@@ -70,7 +72,7 @@ def insert_purchase(admin: Optional[User], data: dict) -> None:
     data = parse_timestamp(data, required=False)
 
     # Check product
-    product = Product.query.filter_by(id=data['product_id']).first()
+    product = Product.query.filter_by(id=data["product_id"]).first()
     if not product:
         raise exc.EntryNotFound()
     if not admin and not product.active:
@@ -81,7 +83,7 @@ def insert_purchase(admin: Optional[User], data: dict) -> None:
         raise exc.EntryIsNotForSale()
 
     # Check amount
-    if data['amount'] <= 0:
+    if data["amount"] <= 0:
         raise exc.InvalidAmount()
 
     # If the purchase is made by an administrator, the credit limit
@@ -89,7 +91,7 @@ def insert_purchase(admin: Optional[User], data: dict) -> None:
     if not admin:
         limit = Rank.query.filter_by(id=user.rank_id).first().debt_limit
         current_credit = user.credit
-        future_credit = current_credit - (product.price * data['amount'])
+        future_credit = current_credit - (product.price * data["amount"])
         if future_credit < limit:
             raise exc.InsufficientCredit()
 
