@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
-from flask import request
 import datetime
+
 import dateutil.parser
+from flask import request
 
 import shopdb.exceptions as exc
 
@@ -62,14 +63,14 @@ def parse_timestamp(data: dict, required: bool) -> dict:
     """
     # If the timestamp is missing but it is required, raise an exception.
     # Otherwise return the (non-modified) input data.
-    if 'timestamp' not in data:
+    if "timestamp" not in data:
         if required:
             raise exc.DataIsMissing()
         else:
             return data
 
     # Get the timestamp
-    timestamp = data.get('timestamp')
+    timestamp = data.get("timestamp")
 
     # If the timestamp is not a string, raise an exception
     if not isinstance(timestamp, str):
@@ -77,18 +78,18 @@ def parse_timestamp(data: dict, required: bool) -> dict:
 
     # Catch empty string timestamp which is caused by some JS date pickers
     # inputs when they get cleared. If the timestamp is required, raise an exception.
-    if timestamp == '':
+    if timestamp == "":
         if required:
             raise exc.DataIsMissing()
         else:
-            del data['timestamp']
+            del data["timestamp"]
             return data
     else:
         try:
-            timestamp = dateutil.parser.parse(data['timestamp'])
+            timestamp = dateutil.parser.parse(data["timestamp"])
             assert isinstance(timestamp, datetime.datetime)
             assert timestamp < datetime.datetime.now(datetime.timezone.utc)
-            data['timestamp'] = timestamp.replace(microsecond=0)
+            data["timestamp"] = timestamp.replace(microsecond=0)
         except (TypeError, ValueError, AssertionError):
             raise exc.InvalidData()
 

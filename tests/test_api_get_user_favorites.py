@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import json
 
 import shopdb.exceptions as exc
 from shopdb.api import db
-from shopdb.models import Purchase, Product, User
+from shopdb.models import Product, Purchase, User
 from tests.base_api import BaseAPITestCase
 
 
@@ -36,7 +36,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         This test ensures that the user's favorites are generated reliably.
         """
         self._insert_purchases()
-        res = self.get(url='/users/1/favorites')
+        res = self.get(url="/users/1/favorites")
         favorites = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(favorites, [3, 2, 1, 4])
@@ -52,7 +52,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         db.session.commit()
 
         # Get the favorites
-        res = self.get(url='/users/1/favorites')
+        res = self.get(url="/users/1/favorites")
         favorites = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(favorites, [3, 2, 4])
@@ -62,7 +62,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         This test ensures that an empty list is displayed for the user's
         favorites if no purchases have yet been made.
         """
-        res = self.get(url='/users/1/favorites')
+        res = self.get(url="/users/1/favorites")
         favorites = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(favorites, [])
@@ -71,7 +71,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         """
         Getting the favorites from a non existing user should raise an error.
         """
-        res = self.get(url='/users/6/favorites')
+        res = self.get(url="/users/6/favorites")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
@@ -79,7 +79,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         """
         Getting the favorites from a non verified user should raise an error.
         """
-        res = self.get(url='/users/4/favorites')
+        res = self.get(url="/users/4/favorites")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)
 
@@ -89,6 +89,6 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         """
         User.query.filter_by(id=3).first().set_rank_id(4, 1)
         db.session.commit()
-        res = self.get(url='/users/3/favorites')
+        res = self.get(url="/users/3/favorites")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsInactive)

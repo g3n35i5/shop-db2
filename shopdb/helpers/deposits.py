@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from sqlalchemy.exc import IntegrityError
 
 import shopdb.exceptions as exc
 from shopdb.api import db
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.models import User, Deposit
+from shopdb.models import Deposit, User
 
 
 def insert_deposit(data, admin):
@@ -22,11 +22,11 @@ def insert_deposit(data, admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
 
-    required = {'user_id': int, 'amount': int, 'comment': str}
+    required = {"user_id": int, "amount": int, "comment": str}
     check_fields_and_types(data, required)
 
     # Check user
-    user = User.query.filter_by(id=data['user_id']).first()
+    user = User.query.filter_by(id=data["user_id"]).first()
     if not user:
         raise exc.EntryNotFound()
 
@@ -39,7 +39,7 @@ def insert_deposit(data, admin):
         raise exc.UserIsInactive()
 
     # Check amount
-    if data['amount'] == 0:
+    if data["amount"] == 0:
         raise exc.InvalidAmount()
 
     # Create and insert deposit

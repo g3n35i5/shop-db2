@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify, request
 from sqlalchemy.exc import IntegrityError
 
 import shopdb.exceptions as exc
-from shopdb.api import app, db, bcrypt
-from shopdb.helpers.decorators import adminRequired, adminOptional, checkIfUserIsValid
+from shopdb.api import app, bcrypt, db
+from shopdb.helpers.decorators import (adminOptional, adminRequired,
+                                       checkIfUserIsValid)
 from shopdb.helpers.query import QueryFromRequestParameters
+from shopdb.helpers.updater import generic_update
 from shopdb.helpers.users import insert_user
 from shopdb.helpers.utils import convert_minimal, json_body
-from shopdb.helpers.updater import generic_update
 from shopdb.models import User
 
 
-@app.route('/users', methods=['GET'])
+@app.route("/users", methods=["GET"])
 @adminOptional
 def list_users(admin):
     """
@@ -30,27 +31,40 @@ def list_users(admin):
 
     # Define fields
     if admin is None:
-        fields = ['id', 'firstname', 'lastname', 'fullname', 'rank_id', 'imagename']
+        fields = ["id", "firstname", "lastname", "fullname", "rank_id", "imagename"]
     else:
-        fields = ['id', 'firstname', 'lastname', 'fullname', 'credit', 'rank_id', 'imagename', 'active',
-                  'is_admin', 'creation_date', 'verification_date', 'is_verified']
+        fields = [
+            "id",
+            "firstname",
+            "lastname",
+            "fullname",
+            "credit",
+            "rank_id",
+            "imagename",
+            "active",
+            "is_admin",
+            "creation_date",
+            "verification_date",
+            "is_verified",
+        ]
 
     query = QueryFromRequestParameters(User, request.args, fields=fields)
 
     # Hide non verified, inactive and system users for non-administrators
     if admin is None:
-        query = (query
-                 .filter(User.is_verified.is_(True))
-                 .filter(User.active.is_(True))
-                 .filter(User.is_system_user.is_(False)))
+        query = (
+            query.filter(User.is_verified.is_(True))
+            .filter(User.active.is_(True))
+            .filter(User.is_system_user.is_(False))
+        )
 
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/users', methods=['POST'])
+@app.route("/users", methods=["POST"])
 def create_user():
     """
     Registration of new users.
@@ -65,10 +79,10 @@ def create_user():
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created user.'}), 200
+    return jsonify({"message": "Created user."}), 200
 
 
-@app.route('/users/<int:user_id>/favorites', methods=['GET'])
+@app.route("/users/<int:user_id>/favorites", methods=["GET"])
 @checkIfUserIsValid
 def get_user_favorites(user, user_id):
     """
@@ -84,7 +98,7 @@ def get_user_favorites(user, user_id):
     return jsonify(user.favorites), 200
 
 
-@app.route('/users/<int:user_id>/deposits', methods=['GET'])
+@app.route("/users/<int:user_id>/deposits", methods=["GET"])
 @checkIfUserIsValid
 def get_user_deposits(user, user_id):
     """
@@ -96,13 +110,13 @@ def get_user_deposits(user, user_id):
     :return:                   A list with all deposits of the user.
     """
 
-    fields = ['id', 'timestamp', 'admin_id', 'amount', 'revoked', 'comment']
+    fields = ["id", "timestamp", "admin_id", "amount", "revoked", "comment"]
     deposits = convert_minimal(user.deposits.all(), fields)
 
     return jsonify(deposits), 200
 
 
-@app.route('/users/<int:user_id>/replenishmentcollections', methods=['GET'])
+@app.route("/users/<int:user_id>/replenishmentcollections", methods=["GET"])
 @checkIfUserIsValid
 def get_user_replenishmentcollections(user, user_id):
     """
@@ -114,13 +128,13 @@ def get_user_replenishmentcollections(user, user_id):
     :return:                   A list with all replenishmentcollections of the user.
     """
 
-    fields = ['id', 'timestamp', 'admin_id', 'price', 'revoked', 'comment']
+    fields = ["id", "timestamp", "admin_id", "price", "revoked", "comment"]
     deposits = convert_minimal(user.replenishmentcollections.all(), fields)
 
     return jsonify(deposits), 200
 
 
-@app.route('/users/<int:user_id>/purchases', methods=['GET'])
+@app.route("/users/<int:user_id>/purchases", methods=["GET"])
 @checkIfUserIsValid
 def get_user_purchases(user, user_id):
     """
@@ -132,13 +146,22 @@ def get_user_purchases(user, user_id):
     :return:                   A list with all purchases of the user.
     """
 
-    fields = ['id', 'timestamp', 'product_id', 'admin_id', 'productprice', 'amount', 'revoked', 'price']
+    fields = [
+        "id",
+        "timestamp",
+        "product_id",
+        "admin_id",
+        "productprice",
+        "amount",
+        "revoked",
+        "price",
+    ]
     purchases = convert_minimal(user.purchases.all(), fields)
 
     return jsonify(purchases), 200
 
 
-@app.route('/users/<int:user_id>', methods=['GET'])
+@app.route("/users/<int:user_id>", methods=["GET"])
 @adminOptional
 def get_user(admin, user_id):
     """
@@ -162,13 +185,25 @@ def get_user(admin, user_id):
         if not user.active:
             raise exc.UserIsInactive()
 
-    fields = ['id', 'firstname', 'lastname', 'fullname', 'credit', 'rank_id', 'imagename', 'active',
-              'is_admin', 'creation_date', 'verification_date', 'is_verified']
+    fields = [
+        "id",
+        "firstname",
+        "lastname",
+        "fullname",
+        "credit",
+        "rank_id",
+        "imagename",
+        "active",
+        "is_admin",
+        "creation_date",
+        "verification_date",
+        "is_verified",
+    ]
     user = convert_minimal(user, fields)[0]
     return jsonify(user), 200
 
 
-@app.route('/users/<int:user_id>', methods=['PUT'])
+@app.route("/users/<int:user_id>", methods=["PUT"])
 @adminRequired
 def update_user(admin, user_id):
     """
@@ -188,39 +223,41 @@ def update_user(admin, user_id):
     if not user:
         raise exc.EntryNotFound()
 
-    if not user.is_verified and 'rank_id' not in data:
+    if not user.is_verified and "rank_id" not in data:
         raise exc.UserIsNotVerified()
 
     # The password pre-check must be done here...
-    if 'password' in data:
+    if "password" in data:
         # The repeat password must be there, too!
-        if 'password_repeat' not in data:
+        if "password_repeat" not in data:
             raise exc.DataIsMissing()
 
         # Both must be strings
-        if not all([isinstance(x, str) for x in [data['password'], data['password_repeat']]]):
+        if not all(
+            [isinstance(x, str) for x in [data["password"], data["password_repeat"]]]
+        ):
             raise exc.WrongType()
 
         # Passwords must match
-        if data['password'] != data['password_repeat']:
+        if data["password"] != data["password_repeat"]:
             raise exc.PasswordsDoNotMatch()
 
         # Minimum password length
-        if len(data['password']) < app.config['MINIMUM_PASSWORD_LENGTH']:
+        if len(data["password"]) < app.config["MINIMUM_PASSWORD_LENGTH"]:
             raise exc.PasswordTooShort()
 
         # Convert the password into a salted hash
         # DONT YOU DARE TO REMOVE THIS LINE
-        data['password'] = bcrypt.generate_password_hash(data['password'])
+        data["password"] = bcrypt.generate_password_hash(data["password"])
         # DONT YOU DARE TO REMOVE THIS LINE
 
         # All fine, delete repeat_password from the dict and do the rest of the update
-        del data['password_repeat']
+        del data["password_repeat"]
 
     return generic_update(User, user_id, data, admin)
 
 
-@app.route('/users/<int:user_id>', methods=['DELETE'])
+@app.route("/users/<int:user_id>", methods=["DELETE"])
 @adminRequired
 def delete_user(admin, user_id):
     """
@@ -253,4 +290,4 @@ def delete_user(admin, user_id):
     except IntegrityError:
         raise exc.EntryCanNotBeDeleted()
 
-    return jsonify({'message': 'User deleted.'}), 200
+    return jsonify({"message": "User deleted."}), 200

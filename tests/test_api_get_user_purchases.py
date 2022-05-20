@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import json
 
@@ -11,15 +11,21 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetUserPurchasesAPITestCase(BaseAPITestCase):
-
     def test_get_user_purchases(self):
         """This test ensures that all purchases made by a user are listed."""
         self.insert_default_purchases()
-        res = self.get(url='/users/2/purchases')
+        res = self.get(url="/users/2/purchases")
         self.assertEqual(res.status_code, 200)
         purchases = json.loads(res.data)
-        fields = ['id', 'timestamp', 'product_id', 'productprice', 'amount',
-                  'revoked', 'price']
+        fields = [
+            "id",
+            "timestamp",
+            "product_id",
+            "productprice",
+            "amount",
+            "revoked",
+            "price",
+        ]
         for i in purchases:
             for x in fields:
                 assert x in i
@@ -29,7 +35,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         This test ensures that an exception is made if the user does not exist.
         """
         self.insert_default_purchases()
-        res = self.get(url='/users/6/purchases')
+        res = self.get(url="/users/6/purchases")
         self.assertException(res, exc.EntryNotFound)
 
     def test_get_user_purchases_non_verified_user(self):
@@ -38,7 +44,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         verified yet.
         """
         self.insert_default_purchases()
-        res = self.get(url='/users/4/purchases')
+        res = self.get(url="/users/4/purchases")
         self.assertException(res, exc.UserIsNotVerified)
 
     def test_get_users_purchases_no_insert(self):
@@ -46,7 +52,7 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         This test ensures that an empty list is returned for a user's
         purchases if he has not yet made any purchases.
         """
-        res = self.get(url='/users/2/purchases')
+        res = self.get(url="/users/2/purchases")
         self.assertEqual(res.status_code, 200)
         purchases = json.loads(res.data)
         self.assertEqual(purchases, [])
@@ -57,6 +63,6 @@ class GetUserPurchasesAPITestCase(BaseAPITestCase):
         """
         User.query.filter_by(id=3).first().set_rank_id(4, 1)
         db.session.commit()
-        res = self.get(url='/users/3/purchases')
+        res = self.get(url="/users/3/purchases")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsInactive)

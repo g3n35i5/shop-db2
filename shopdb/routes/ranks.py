@@ -1,6 +1,6 @@
 ##!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify, request
 from sqlalchemy.exc import IntegrityError
@@ -9,28 +9,28 @@ import shopdb.exceptions as exc
 from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.updater import generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Rank
 
 
-@app.route('/ranks', methods=['GET'])
+@app.route("/ranks", methods=["GET"])
 def list_ranks():
     """
     Returns a list of all ranks.
 
     :return: A list of all ranks.
     """
-    fields = ['id', 'name', 'debt_limit', 'is_system_user']
+    fields = ["id", "name", "debt_limit", "is_system_user"]
     query = QueryFromRequestParameters(Rank, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/ranks', methods=['POST'])
+@app.route("/ranks", methods=["POST"])
 @adminRequired
 def create_rank(admin):
     """
@@ -49,14 +49,14 @@ def create_rank(admin):
 
     """
     data = json_body()
-    required = {'name': str}
-    optional = {'is_system_user': bool, 'debt_limit': int}
+    required = {"name": str}
+    optional = {"is_system_user": bool, "debt_limit": int}
 
     # Check all required fields
     check_fields_and_types(data, required, optional)
 
     # Check if a tag with this name already exists
-    if Rank.query.filter_by(name=data['name']).first():
+    if Rank.query.filter_by(name=data["name"]).first():
         raise exc.EntryAlreadyExists()
 
     try:
@@ -66,10 +66,10 @@ def create_rank(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created Rank.'}), 201
+    return jsonify({"message": "Created Rank."}), 201
 
 
-@app.route('/ranks/<int:rank_id>', methods=['GET'])
+@app.route("/ranks/<int:rank_id>", methods=["GET"])
 def get_rank(rank_id):
     """
     Returns the rank with the requested id.
@@ -84,11 +84,11 @@ def get_rank(rank_id):
     if not result:
         raise exc.EntryNotFound()
 
-    rank = convert_minimal(result, ['id', 'name', 'debt_limit', 'is_system_user'])[0]
+    rank = convert_minimal(result, ["id", "name", "debt_limit", "is_system_user"])[0]
     return jsonify(rank), 200
 
 
-@app.route('/ranks/<int:rank_id>', methods=['PUT'])
+@app.route("/ranks/<int:rank_id>", methods=["PUT"])
 @adminRequired
 def update_rank(admin, rank_id):
     """

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify, request
 from sqlalchemy.exc import IntegrityError
@@ -9,28 +9,28 @@ import shopdb.exceptions as exc
 from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.updater import generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Tag
 
 
-@app.route('/tags', methods=['GET'])
+@app.route("/tags", methods=["GET"])
 def list_tags():
     """
     Returns a list of all tags.
 
     :return: A list of all tags.
     """
-    fields = ['id', 'name', 'created_by', 'is_for_sale']
+    fields = ["id", "name", "created_by", "is_for_sale"]
     query = QueryFromRequestParameters(Tag, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/tags/<int:tag_id>', methods=['GET'])
+@app.route("/tags/<int:tag_id>", methods=["GET"])
 def get_tag(tag_id):
     """
     Returns the tag with the requested id.
@@ -45,11 +45,11 @@ def get_tag(tag_id):
     if not result:
         raise exc.EntryNotFound()
 
-    tag = convert_minimal(result, ['id', 'name', 'created_by', 'is_for_sale'])[0]
+    tag = convert_minimal(result, ["id", "name", "created_by", "is_for_sale"])[0]
     return jsonify(tag), 200
 
 
-@app.route('/tags/<int:tag_id>', methods=['DELETE'])
+@app.route("/tags/<int:tag_id>", methods=["DELETE"])
 @adminRequired
 def delete_tag(admin, tag_id):
     """
@@ -85,10 +85,10 @@ def delete_tag(admin, tag_id):
     except IntegrityError:
         raise exc.EntryCanNotBeDeleted()
 
-    return jsonify({'message': 'Tag deleted.'}), 200
+    return jsonify({"message": "Tag deleted."}), 200
 
 
-@app.route('/tags', methods=['POST'])
+@app.route("/tags", methods=["POST"])
 @adminRequired
 def create_tag(admin):
     """
@@ -111,14 +111,14 @@ def create_tag(admin):
 
     """
     data = json_body()
-    required = {'name': str}
-    optional = {'is_for_sale': bool}
+    required = {"name": str}
+    optional = {"is_for_sale": bool}
 
     # Check all required fields
     check_fields_and_types(data, required, optional)
 
     # Check if a tag with this name already exists
-    if Tag.query.filter_by(name=data['name']).first():
+    if Tag.query.filter_by(name=data["name"]).first():
         raise exc.EntryAlreadyExists()
 
     try:
@@ -129,10 +129,10 @@ def create_tag(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created Tag.'}), 201
+    return jsonify({"message": "Created Tag."}), 201
 
 
-@app.route('/tags/<int:tag_id>', methods=['PUT'])
+@app.route("/tags/<int:tag_id>", methods=["PUT"])
 @adminRequired
 def update_tag(admin, tag_id):
     """

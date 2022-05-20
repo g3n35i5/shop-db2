@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import datetime
 
@@ -8,21 +8,20 @@ from flask import json
 
 import shopdb.exceptions as exc
 from shopdb.api import db
-from shopdb.models import StocktakingCollection, Product
+from shopdb.models import Product, StocktakingCollection
 from tests.base_api import BaseAPITestCase
 
 
 class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
 
-    TIMESTAMP = datetime.datetime.strptime('2019-03-18 08:00:00',
-                                           '%Y-%m-%d %H:%M:%S')
+    TIMESTAMP = datetime.datetime.strptime("2019-03-18 08:00:00", "%Y-%m-%d %H:%M:%S")
 
     def test_authorization(self):
         """This route should only be available for administrators"""
-        res = self.post(url='/stocktakingcollections', data={})
+        res = self.post(url="/stocktakingcollections", data={})
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
-        res = self.post(url='/stocktakingcollections', data={}, role='user')
+        res = self.post(url="/stocktakingcollections", data={}, role="user")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
@@ -36,20 +35,20 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         db.session.commit()
 
         stocktakings = [
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
 
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data, role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
-        self.assertTrue('message' in data)
-        self.assertEqual(data['message'], 'Created stocktakingcollection.')
+        self.assertTrue("message" in data)
+        self.assertEqual(data["message"], "Created stocktakingcollection.")
 
         collection = StocktakingCollection.query.filter_by(id=3).first()
 
@@ -72,17 +71,17 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         db.session.commit()
 
         stocktakings = [
-            {'product_id': 1, 'count': 10},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 10},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
 
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data, role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidData)
         self.assertFalse(StocktakingCollection.query.all())
@@ -92,12 +91,12 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         If a product does not exist of an stocktakingcollection, an exception
         must be raised.
         """
-        stocktakings = [{'product_id': 42, 'count': 100}]
+        stocktakings = [{"product_id": 42, "count": 100}]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data, role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
@@ -107,48 +106,41 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         specified in the stocktaking.
         """
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 0, 'keep_active': True},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 0}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 0, "keep_active": True},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 0},
         ]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data, role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 201)
         self.assertTrue(Product.query.filter_by(id=2).first().active)
         self.assertFalse(Product.query.filter_by(id=4).first().active)
 
     def test_create_stocktakingcollection_with_missing_data_I(self):
         """Creating a StocktakingCollection with missing data"""
-        res = self.post(url='/stocktakingcollections', data={},
-                        role='admin')
+        res = self.post(url="/stocktakingcollections", data={}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
     def test_create_stocktakingcollection_with_missing_data_II(self):
         """Creating a StocktakingCollection with missing data for stocktaking"""
-        stocktakings = [{'product_id': 1, 'count': 200},
-                        {'product_id': 2}]
+        stocktakings = [{"product_id": 1, "count": 200}, {"product_id": 2}]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
     def test_create_stocktakingcollection_with_missing_data_III(self):
         """Creating a StocktakingCollection with empty stocktakings"""
-        data = {
-            'stocktakings': [],
-            'timestamp': int(self.TIMESTAMP.timestamp())
-        }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        data = {"stocktakings": [], "timestamp": int(self.TIMESTAMP.timestamp())}
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
@@ -158,18 +150,17 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         collection itself should raise an exception.
         """
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp()),
-            'Nonsense': 9
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
+            "Nonsense": 9,
         }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
@@ -179,17 +170,16 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         stocktakings should raise an exception.
         """
         stocktakings = [
-            {'product_id': 1, 'count': 100, 'Nonsense': 42},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100, "Nonsense": 42},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
@@ -198,12 +188,8 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         Creating a stocktakingcollection with wrong type in the
         stocktakingcollection itself should raise an exception.
         """
-        data = {
-            'stocktakings': 42,
-            'timestamp': int(self.TIMESTAMP.timestamp())
-        }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        data = {"stocktakings": 42, "timestamp": int(self.TIMESTAMP.timestamp())}
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
@@ -213,82 +199,74 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         stocktakings should raise an exception.
         """
         stocktakings = [
-            {'product_id': 1, 'count': '100'},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": "100"},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
     def test_create_stocktakingcollection_with_invalid_amount(self):
         """Creating a stocktakingcollection with negative amount"""
         stocktakings = [
-            {'product_id': 1, 'count': -2},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": -2},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidAmount)
 
     def test_create_stocktakingcollection_with_missing_product(self):
         """Creating a stocktakingcollection with missing product"""
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
         ]
         data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(self.TIMESTAMP.timestamp())
+            "stocktakings": stocktakings,
+            "timestamp": int(self.TIMESTAMP.timestamp()),
         }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
     def test_create_stocktakingcollection_with_missing_timestamp(self):
         """Creating a stocktakingcollection with missing product"""
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
-        data = {'stocktakings': stocktakings}
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        data = {"stocktakings": stocktakings}
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
     def test_create_stocktakingcollection_with_invalid_timestamp(self):
         """Creating a stocktakingcollection with invalid timestamp"""
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         # Timestamp is invalid because it is in the future.
         timestamp = datetime.datetime.now() + datetime.timedelta(days=2)
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(timestamp.timestamp())
-        }
-        res = self.post(url='/stocktakingcollections', data=data,
-                        role='admin')
+        data = {"stocktakings": stocktakings, "timestamp": int(timestamp.timestamp())}
+        res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidData)

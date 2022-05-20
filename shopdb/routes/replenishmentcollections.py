@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify, request
 from sqlalchemy.exc import IntegrityError
@@ -9,13 +9,13 @@ import shopdb.exceptions as exc
 from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body, parse_timestamp
 from shopdb.helpers.updater import generic_update
+from shopdb.helpers.utils import convert_minimal, json_body, parse_timestamp
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.models import Replenishment, ReplenishmentCollection, Product, User
+from shopdb.models import Product, Replenishment, ReplenishmentCollection, User
 
 
-@app.route('/replenishmentcollections', methods=['GET'])
+@app.route("/replenishmentcollections", methods=["GET"])
 @adminRequired
 def list_replenishmentcollections(admin):
     """
@@ -25,15 +25,15 @@ def list_replenishmentcollections(admin):
 
     :return:      A list of all replenishmentcollections.
     """
-    fields = ['id', 'timestamp', 'admin_id', 'seller_id', 'price', 'revoked', 'comment']
+    fields = ["id", "timestamp", "admin_id", "seller_id", "price", "revoked", "comment"]
     query = QueryFromRequestParameters(ReplenishmentCollection, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/replenishments', methods=['GET'])
+@app.route("/replenishments", methods=["GET"])
 @adminRequired
 def list_replenishments(admin):
     """
@@ -43,15 +43,15 @@ def list_replenishments(admin):
 
     :return:      A list of all replenishments.
     """
-    fields = ['id', 'product_id', 'amount', 'total_price', 'revoked']
+    fields = ["id", "product_id", "amount", "total_price", "revoked"]
     query = QueryFromRequestParameters(Replenishment, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/replenishmentcollections/<int:collection_id>', methods=['GET'])
+@app.route("/replenishmentcollections/<int:collection_id>", methods=["GET"])
 @adminRequired
 def get_replenishmentcollection(admin, collection_id):
     """
@@ -74,18 +74,32 @@ def get_replenishmentcollection(admin, collection_id):
     if not replcoll:
         raise exc.EntryNotFound()
 
-    fields_replcoll = ['id', 'timestamp', 'admin_id', 'seller_id', 'price', 'revoked',
-                       'revokehistory', 'comment']
-    fields_repl = ['id', 'replcoll_id', 'product_id', 'amount',
-                   'total_price', 'revoked']
+    fields_replcoll = [
+        "id",
+        "timestamp",
+        "admin_id",
+        "seller_id",
+        "price",
+        "revoked",
+        "revokehistory",
+        "comment",
+    ]
+    fields_repl = [
+        "id",
+        "replcoll_id",
+        "product_id",
+        "amount",
+        "total_price",
+        "revoked",
+    ]
     repls = replcoll.replenishments.all()
 
     result = convert_minimal(replcoll, fields_replcoll)[0]
-    result['replenishments'] = convert_minimal(repls, fields_repl)
+    result["replenishments"] = convert_minimal(repls, fields_repl)
     return jsonify(result), 200
 
 
-@app.route('/replenishmentcollections', methods=['POST'])
+@app.route("/replenishmentcollections", methods=["POST"])
 @adminRequired
 def create_replenishmentcollection(admin):
     """
@@ -106,14 +120,19 @@ def create_replenishmentcollection(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required = {'replenishments': list, 'comment': str, 'timestamp': str, 'seller_id': int}
-    required_repl = {'product_id': int, 'amount': int, 'total_price': int}
+    required = {
+        "replenishments": list,
+        "comment": str,
+        "timestamp": str,
+        "seller_id": int,
+    }
+    required_repl = {"product_id": int, "amount": int, "total_price": int}
 
     # Check all required fields
     check_fields_and_types(data, required)
 
     # Check seller
-    seller = User.query.filter_by(id=data['seller_id']).first()
+    seller = User.query.filter_by(id=data["seller_id"]).first()
     if not seller:
         raise exc.EntryNotFound()
 
@@ -124,7 +143,7 @@ def create_replenishmentcollection(admin):
     # Parse timestamp
     data = parse_timestamp(data, required=True)
 
-    replenishments = data['replenishments']
+    replenishments = data["replenishments"]
     # Check for the replenishments in the collection
     if not replenishments:
         raise exc.DataIsMissing()
@@ -133,8 +152,8 @@ def create_replenishmentcollection(admin):
         # Check all required fields
         check_fields_and_types(repl, required_repl)
 
-        product_id = repl.get('product_id')
-        amount = repl.get('amount')
+        product_id = repl.get("product_id")
+        amount = repl.get("amount")
 
         # Check amount
         if amount <= 0:
@@ -151,11 +170,13 @@ def create_replenishmentcollection(admin):
 
     # Create and insert replenishmentcollection
     try:
-        collection = ReplenishmentCollection(admin_id=admin.id,
-                                             seller_id=seller.id,
-                                             timestamp=data['timestamp'],
-                                             comment=data['comment'],
-                                             revoked=False)
+        collection = ReplenishmentCollection(
+            admin_id=admin.id,
+            seller_id=seller.id,
+            timestamp=data["timestamp"],
+            comment=data["comment"],
+            revoked=False,
+        )
         db.session.add(collection)
         db.session.flush()
 
@@ -167,10 +188,10 @@ def create_replenishmentcollection(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created replenishmentcollection.'}), 201
+    return jsonify({"message": "Created replenishmentcollection."}), 201
 
 
-@app.route('/replenishmentcollections/<int:collection_id>', methods=['PUT'])
+@app.route("/replenishmentcollections/<int:collection_id>", methods=["PUT"])
 @adminRequired
 def update_replenishmentcollection(admin, collection_id):
     """
@@ -184,7 +205,7 @@ def update_replenishmentcollection(admin, collection_id):
     return generic_update(ReplenishmentCollection, collection_id, json_body(), admin)
 
 
-@app.route('/replenishments/<int:replenishment_id>', methods=['PUT'])
+@app.route("/replenishments/<int:replenishment_id>", methods=["PUT"])
 @adminRequired
 def update_replenishment(admin, replenishment_id):
     """

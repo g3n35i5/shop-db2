@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import errno
-import sqlite3
 import datetime
+import errno
+import os
+import sqlite3
+import sys
+
 from configuration import ProductiveConfig
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _currentDate = datetime.datetime.now()
-    _path = ProductiveConfig.BACKUP_DIR + _currentDate.strftime('%Y/%m/%d/')
-    _name = 'shop-db_' + _currentDate.strftime('%Y-%m-%d_%H-%M-%S') + '.dump'
+    _path = ProductiveConfig.BACKUP_DIR + _currentDate.strftime("%Y/%m/%d/")
+    _name = "shop-db_" + _currentDate.strftime("%Y-%m-%d_%H-%M-%S") + ".dump"
     dumpfile = _path + _name
 
     if not os.path.exists(_path):
@@ -24,13 +25,13 @@ if __name__ == '__main__':
     try:
         con = sqlite3.connect(ProductiveConfig.DATABASE_PATH)
     except:
-        sys.exit('Could not open shop-db database')
+        sys.exit("Could not open shop-db database")
 
     try:
-        f = open(dumpfile, 'w+')
+        f = open(dumpfile, "w+")
 
         for line in con.iterdump():
-            f.write('{}\n'.format(line))
+            f.write("{}\n".format(line))
 
         f.close()
     except:

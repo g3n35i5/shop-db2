@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.orm import validates, column_property
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.orm import column_property, validates
 
-from shopdb.exceptions import (UnauthorizedAccess, EntryAlreadyExists, CouldNotCreateEntry, InvalidData,
-                               NothingHasChanged, NoRemainingTag, EntryNotFound)
+from shopdb.exceptions import (CouldNotCreateEntry, EntryAlreadyExists,
+                               EntryNotFound, InvalidData, NoRemainingTag,
+                               NothingHasChanged, UnauthorizedAccess)
 from shopdb.helpers.uploads import insert_image
 from shopdb.shared import db
 
 
 class Product(db.Model):
-    __tablename__ = 'products'
+    __tablename__ = "products"
     __updateable_fields__ = {
-        'name': str, 'price': int, 'barcode': str, 'tags': list,
-        'countable': bool, 'revocable': bool, 'imagename': dict
+        "name": str,
+        "price": int,
+        "barcode": str,
+        "tags": list,
+        "countable": bool,
+        "revocable": bool,
+        "imagename": dict,
     }
     # that "imagename" is a dict and not a string is because the update compares
     # whether the values have changed. But since a product has no "image" but only an
@@ -32,37 +38,48 @@ class Product(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     creation_date = db.Column(db.DateTime, default=func.now(), nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     name = db.Column(db.String(64), unique=True, nullable=False)
     barcode = db.Column(db.String(32), unique=True, nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
     countable = db.Column(db.Boolean, nullable=False, default=True)
     revocable = db.Column(db.Boolean, nullable=False, default=True)
-    image_upload_id = db.Column(db.Integer, db.ForeignKey('uploads.id'), nullable=True)
-    tags = db.relationship('Tag', secondary=product_tag_assignments, backref=db.backref('products', lazy='dynamic'))
+    image_upload_id = db.Column(db.Integer, db.ForeignKey("uploads.id"), nullable=True)
+    tags = db.relationship(
+        "Tag",
+        secondary=product_tag_assignments,
+        backref=db.backref("products", lazy="dynamic"),
+    )
 
     # Column property for the price
-    price = column_property(select([ProductPrice.price])
-                            .where(ProductPrice.product_id == id)
-                            .order_by(ProductPrice.id.desc())
-                            .limit(1)
-                            .as_scalar())
+    price = column_property(
+        select([ProductPrice.price])
+        .where(ProductPrice.product_id == id)
+        .order_by(ProductPrice.id.desc())
+        .limit(1)
+        .as_scalar()
+    )
 
     # Column property for the purchase sum
-    purchase_sum = column_property(select([func.coalesce(func.sum(Purchase.price), 0)])
-                                   .where(Purchase.product_id == id)
-                                   .where(Purchase.revoked.is_(False))
-                                   .as_scalar())
+    purchase_sum = column_property(
+        select([func.coalesce(func.sum(Purchase.price), 0)])
+        .where(Purchase.product_id == id)
+        .where(Purchase.revoked.is_(False))
+        .as_scalar()
+    )
 
     # Column property for the replenishment sum
-    replenishment_sum = column_property(select([func.coalesce(func.sum(Replenishment.total_price), 0)])
-                                        .where(Replenishment.product_id == id)
-                                        .where(Replenishment.revoked.is_(False))
-                                        .as_scalar())
+    replenishment_sum = column_property(
+        select([func.coalesce(func.sum(Replenishment.total_price), 0)])
+        .where(Replenishment.product_id == id)
+        .where(Replenishment.revoked.is_(False))
+        .as_scalar()
+    )
 
-    @validates('created_by')
+    @validates("created_by")
     def validate_admin(self, key, created_by):
         from .user import User
+
         user = User.query.filter(User.id == created_by).first()
         if not user or not user.is_admin:
             raise UnauthorizedAccess()
@@ -79,6 +96,7 @@ class Product(db.Model):
     @hybrid_property
     def imagename(self):
         from .upload import Upload
+
         upload = Upload.query.filter_by(id=self.image_upload_id).first()
         if upload:
             return upload.filename
@@ -112,24 +130,23 @@ class Product(db.Model):
         from .product_price import ProductPrice
 
         # Query the pricehistory in the given range
-        res = (db.session.query(ProductPrice)
-               .filter(ProductPrice.product_id == self.id)
-               .filter(ProductPrice.timestamp.between(start, end))
-               .all())
+        res = (
+            db.session.query(ProductPrice)
+            .filter(ProductPrice.product_id == self.id)
+            .filter(ProductPrice.timestamp.between(start, end))
+            .all()
+        )
 
         # Map the result to a dictionary containing all price changes.
-        return list(map(lambda p: {
-            'id': p.id, 'timestamp': p.timestamp, 'price': p.price
-        }, res))
+        return list(
+            map(lambda p: {"id": p.id, "timestamp": p.timestamp, "price": p.price}, res)
+        )
 
     @hybrid_method
     def set_price(self, price, admin_id):
         from .product_price import ProductPrice
-        productprice = ProductPrice(
-            price=price,
-            product_id=self.id,
-            admin_id=admin_id
-        )
+
+        productprice = ProductPrice(price=price, product_id=self.id, admin_id=admin_id)
         db.session.add(productprice)
 
     @hybrid_method
@@ -144,6 +161,7 @@ class Product(db.Model):
         # Create an upload
         try:
             from .upload import Upload
+
             u = Upload(filename=filename, admin_id=admin_id)
             db.session.add(u)
             db.session.flush()
@@ -154,6 +172,7 @@ class Product(db.Model):
     @hybrid_method
     def set_tags(self, tags):
         from .tag import Tag
+
         # All tag ids must be int
         if not all([isinstance(tag_id, int) for tag_id in tags]):
             raise InvalidData()
@@ -189,4 +208,4 @@ class Product(db.Model):
         return [tag.id for tag in self.tags]
 
     def __repr__(self):
-        return f'<Product {self.name}>'
+        return f"<Product {self.name}>"

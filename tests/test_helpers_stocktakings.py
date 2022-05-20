@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from datetime import datetime
 
 import shopdb.helpers.stocktakings as stocktaking_helpers
 from shopdb.api import db
-from shopdb.models import StocktakingCollection, Stocktaking, Purchase, ProductPrice, ReplenishmentCollection, Product
+from shopdb.models import (Product, ProductPrice, Purchase,
+                           ReplenishmentCollection, Stocktaking,
+                           StocktakingCollection)
 from tests.base_api import BaseAPITestCase
 
 
@@ -18,20 +20,16 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         """
         # Insert the initial stocktaking.
         stocktakings = [
-            {'product_id': 1, 'count': 10},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 10},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
 
-        timestamp = datetime.strptime('2018-01-01 09:00:00',
-                                      '%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.strptime("2018-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
 
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(timestamp.timestamp())
-        }
-        self.post(url='/stocktakingcollections', data=data, role='admin')
+        data = {"stocktakings": stocktakings, "timestamp": int(timestamp.timestamp())}
+        self.post(url="/stocktakingcollections", data=data, role="admin")
 
         # Query the first stocktaking
         start = StocktakingCollection.query.first()
@@ -46,16 +44,11 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         """
 
         # Insert a purchase which lies before the first stocktaking.
-        t = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
-        db.session.add(Purchase(
-            user_id=1,
-            product_id=1,
-            amount=100,
-            timestamp=t)
-        )
+        t = datetime.strptime("2017-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
+        db.session.add(Purchase(user_id=1, product_id=1, amount=100, timestamp=t))
 
         # Manipulate the product price timestamps
-        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2017-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         for product_price_id in [1, 2, 3, 4]:
             ProductPrice.query.filter_by(id=product_price_id).first().timestamp = ts
         db.session.commit()
@@ -65,10 +58,10 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Manipulate the stocktaking timestamps
         # First stocktaking: 01.01.2018
-        ts = datetime.strptime('2018-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2018-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         StocktakingCollection.query.filter_by(id=1).first().timestamp = ts
         # Second stocktaking: 01.03.2018
-        ts = datetime.strptime('2018-03-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2018-03-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         StocktakingCollection.query.filter_by(id=2).first().timestamp = ts
 
         # Insert the default replenishment collections.
@@ -76,20 +69,20 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Manipulate the replenishment timestamps
         # First replenishment: 01.01.2017 (Before the first stocktaking!)
-        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2017-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         ReplenishmentCollection.query.filter_by(id=1).first().timestamp = ts
         # Second replenishment: 05.02.2019 (Between the stocktakings)
-        ts = datetime.strptime('2018-02-05 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2018-02-05 09:00:00", "%Y-%m-%d %H:%M:%S")
         ReplenishmentCollection.query.filter_by(id=2).first().timestamp = ts
 
         # Insert some purchases
-        t = datetime.strptime('2018-02-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-02-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=1, product_id=1, amount=1, timestamp=t))
-        t = datetime.strptime('2018-02-02 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-02-02 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=1, product_id=2, amount=5, timestamp=t))
-        t = datetime.strptime('2018-02-03 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-02-03 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=2, product_id=3, amount=8, timestamp=t))
-        t = datetime.strptime('2018-02-04 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-02-04 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=3, product_id=1, amount=2, timestamp=t))
 
         # Query the stocktakings.
@@ -138,46 +131,46 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         # Product 4:  33 -  3 = 30
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
-        self.assertTrue('products' in result)
-        products = result['products']
+        self.assertTrue("products" in result)
+        products = result["products"]
 
         # Check if all products are in the balance
         self.assertEqual({1, 2, 3, 4}, set(products.keys()))
 
         # Check purchase count
-        self.assertEqual(products[1]['purchase_count'], 3)
-        self.assertEqual(products[2]['purchase_count'], 5)
-        self.assertEqual(products[3]['purchase_count'], 8)
-        self.assertEqual(products[4]['purchase_count'], 0)
+        self.assertEqual(products[1]["purchase_count"], 3)
+        self.assertEqual(products[2]["purchase_count"], 5)
+        self.assertEqual(products[3]["purchase_count"], 8)
+        self.assertEqual(products[4]["purchase_count"], 0)
 
         # Check purchase sum price
-        self.assertEqual(products[1]['purchase_sum_price'], 900)
-        self.assertEqual(products[2]['purchase_sum_price'], 250)
-        self.assertEqual(products[3]['purchase_sum_price'], 800)
-        self.assertEqual(products[4]['purchase_sum_price'], 0)
+        self.assertEqual(products[1]["purchase_sum_price"], 900)
+        self.assertEqual(products[2]["purchase_sum_price"], 250)
+        self.assertEqual(products[3]["purchase_sum_price"], 800)
+        self.assertEqual(products[4]["purchase_sum_price"], 0)
 
         # Check replenish count
-        self.assertEqual(products[1]['replenish_count'], 10)
-        self.assertEqual(products[2]['replenish_count'], 0)
-        self.assertEqual(products[3]['replenish_count'], 5)
-        self.assertEqual(products[4]['replenish_count'], 0)
+        self.assertEqual(products[1]["replenish_count"], 10)
+        self.assertEqual(products[2]["replenish_count"], 0)
+        self.assertEqual(products[3]["replenish_count"], 5)
+        self.assertEqual(products[4]["replenish_count"], 0)
 
         # Check differences
-        self.assertEqual(products[1]['difference'], -57)
-        self.assertEqual(products[2]['difference'], -20)
-        self.assertEqual(products[3]['difference'], -10)
-        self.assertEqual(products[4]['difference'], -30)
+        self.assertEqual(products[1]["difference"], -57)
+        self.assertEqual(products[2]["difference"], -20)
+        self.assertEqual(products[3]["difference"], -10)
+        self.assertEqual(products[4]["difference"], -30)
 
         # Check balance
-        self.assertEqual(products[1]['balance'], -57 * 300)
-        self.assertEqual(products[2]['balance'], -20 * 50)
-        self.assertEqual(products[3]['balance'], -10 * 100)
-        self.assertEqual(products[4]['balance'], -30 * 200)
+        self.assertEqual(products[1]["balance"], -57 * 300)
+        self.assertEqual(products[2]["balance"], -20 * 50)
+        self.assertEqual(products[3]["balance"], -10 * 100)
+        self.assertEqual(products[4]["balance"], -30 * 200)
 
         # Check overall balance
-        self.assertEqual(result['balance'], -25100)
-        self.assertEqual(result['loss'], 25100)
-        self.assertEqual(result['profit'], 0)
+        self.assertEqual(result["balance"], -25100)
+        self.assertEqual(result["loss"], 25100)
+        self.assertEqual(result["profit"], 0)
 
     def test_balance_between_stocktakings_multiple_stocktakings(self):
         """
@@ -189,24 +182,24 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.test_balance_between_stocktakings_two_stocktakings()
 
         # Insert some purchases between the second and the third stocktaking
-        t = datetime.strptime('2018-03-05 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-03-05 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=1, product_id=1, amount=2, timestamp=t))
-        t = datetime.strptime('2018-03-06 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-03-06 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=1, product_id=2, amount=10, timestamp=t))
-        t = datetime.strptime('2018-03-07 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-03-07 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=2, product_id=3, amount=5, timestamp=t))
-        t = datetime.strptime('2018-03-08 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-03-08 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=3, product_id=1, amount=4, timestamp=t))
 
         # Insert the third stocktaking.
-        t = datetime.strptime('2018-04-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-04-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(StocktakingCollection(admin_id=1, timestamp=t))
         db.session.flush()
         stocktakings = [
-            {'product_id': 1, 'count': 40},
-            {'product_id': 2, 'count': 5},
-            {'product_id': 3, 'count': 5},
-            {'product_id': 4, 'count': 0}
+            {"product_id": 1, "count": 40},
+            {"product_id": 2, "count": 5},
+            {"product_id": 3, "count": 5},
+            {"product_id": 4, "count": 0},
         ]
 
         for s in stocktakings:
@@ -268,46 +261,46 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         # Product 4:  33 -  0 = 33
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
-        self.assertTrue('products' in result)
-        products = result['products']
+        self.assertTrue("products" in result)
+        products = result["products"]
 
         # Check if all products are in the balance
         self.assertEqual({1, 2, 3, 4}, set(products.keys()))
 
         # Check purchase count
-        self.assertEqual(products[1]['purchase_count'], 9)
-        self.assertEqual(products[2]['purchase_count'], 15)
-        self.assertEqual(products[3]['purchase_count'], 13)
-        self.assertEqual(products[4]['purchase_count'], 0)
+        self.assertEqual(products[1]["purchase_count"], 9)
+        self.assertEqual(products[2]["purchase_count"], 15)
+        self.assertEqual(products[3]["purchase_count"], 13)
+        self.assertEqual(products[4]["purchase_count"], 0)
 
         # Check purchase sum price
-        self.assertEqual(products[1]['purchase_sum_price'], 2700)
-        self.assertEqual(products[2]['purchase_sum_price'], 750)
-        self.assertEqual(products[3]['purchase_sum_price'], 1300)
-        self.assertEqual(products[4]['purchase_sum_price'], 0)
+        self.assertEqual(products[1]["purchase_sum_price"], 2700)
+        self.assertEqual(products[2]["purchase_sum_price"], 750)
+        self.assertEqual(products[3]["purchase_sum_price"], 1300)
+        self.assertEqual(products[4]["purchase_sum_price"], 0)
 
         # Check replenish count
-        self.assertEqual(products[1]['replenish_count'], 10)
-        self.assertEqual(products[2]['replenish_count'], 0)
-        self.assertEqual(products[3]['replenish_count'], 5)
-        self.assertEqual(products[4]['replenish_count'], 0)
+        self.assertEqual(products[1]["replenish_count"], 10)
+        self.assertEqual(products[2]["replenish_count"], 0)
+        self.assertEqual(products[3]["replenish_count"], 5)
+        self.assertEqual(products[4]["replenish_count"], 0)
 
         # Check differences
-        self.assertEqual(products[1]['difference'], -61)
-        self.assertEqual(products[2]['difference'], -30)
-        self.assertEqual(products[3]['difference'], -12)
-        self.assertEqual(products[4]['difference'], -33)
+        self.assertEqual(products[1]["difference"], -61)
+        self.assertEqual(products[2]["difference"], -30)
+        self.assertEqual(products[3]["difference"], -12)
+        self.assertEqual(products[4]["difference"], -33)
 
         # Check balance
-        self.assertEqual(products[1]['balance'], -61 * 300)
-        self.assertEqual(products[2]['balance'], -30 * 50)
-        self.assertEqual(products[3]['balance'], -12 * 100)
-        self.assertEqual(products[4]['balance'], -33 * 200)
+        self.assertEqual(products[1]["balance"], -61 * 300)
+        self.assertEqual(products[2]["balance"], -30 * 50)
+        self.assertEqual(products[3]["balance"], -12 * 100)
+        self.assertEqual(products[4]["balance"], -33 * 200)
 
         # Check overall balance
-        self.assertEqual(result['balance'], -27600)
-        self.assertEqual(result['loss'], 27600)
-        self.assertEqual(result['profit'], 0)
+        self.assertEqual(result["balance"], -27600)
+        self.assertEqual(result["loss"], 27600)
+        self.assertEqual(result["profit"], 0)
 
     def test_balance_between_stocktakings_forgotten_purchases_inactive_products(self):
         """
@@ -319,18 +312,18 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Ooops. We forgot to insert some two purchases (inactive products). Lets do it now (AFTER THIRD STOCKTAKING!)
         self.assertFalse(Product.query.filter_by(id=4).first().active)
-        t = datetime.strptime('2018-04-02 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-04-02 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=3, product_id=4, amount=2, timestamp=t))
 
         # Insert the fourth stocktaking.
-        t = datetime.strptime('2018-04-05 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-04-05 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(StocktakingCollection(admin_id=1, timestamp=t))
         db.session.flush()
         stocktakings = [
-            {'product_id': 1, 'count': 40},
-            {'product_id': 2, 'count': 5},
-            {'product_id': 3, 'count': 5},
-            {'product_id': 4, 'count': 0}
+            {"product_id": 1, "count": 40},
+            {"product_id": 2, "count": 5},
+            {"product_id": 3, "count": 5},
+            {"product_id": 4, "count": 0},
         ]
 
         for s in stocktakings:
@@ -343,46 +336,46 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         end = StocktakingCollection.query.filter_by(id=4).first()
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
-        self.assertTrue('products' in result)
-        products = result['products']
+        self.assertTrue("products" in result)
+        products = result["products"]
 
         # Check if all products are in the balance
         self.assertEqual({1, 2, 3, 4}, set(products.keys()))
 
         # Check purchase count
-        self.assertEqual(products[1]['purchase_count'], 9)
-        self.assertEqual(products[2]['purchase_count'], 15)
-        self.assertEqual(products[3]['purchase_count'], 13)
-        self.assertEqual(products[4]['purchase_count'], 2)
+        self.assertEqual(products[1]["purchase_count"], 9)
+        self.assertEqual(products[2]["purchase_count"], 15)
+        self.assertEqual(products[3]["purchase_count"], 13)
+        self.assertEqual(products[4]["purchase_count"], 2)
 
         # Check purchase sum price
-        self.assertEqual(products[1]['purchase_sum_price'], 2700)
-        self.assertEqual(products[2]['purchase_sum_price'], 750)
-        self.assertEqual(products[3]['purchase_sum_price'], 1300)
-        self.assertEqual(products[4]['purchase_sum_price'], 400)
+        self.assertEqual(products[1]["purchase_sum_price"], 2700)
+        self.assertEqual(products[2]["purchase_sum_price"], 750)
+        self.assertEqual(products[3]["purchase_sum_price"], 1300)
+        self.assertEqual(products[4]["purchase_sum_price"], 400)
 
         # Check replenish count
-        self.assertEqual(products[1]['replenish_count'], 10)
-        self.assertEqual(products[2]['replenish_count'], 0)
-        self.assertEqual(products[3]['replenish_count'], 5)
-        self.assertEqual(products[4]['replenish_count'], 0)
+        self.assertEqual(products[1]["replenish_count"], 10)
+        self.assertEqual(products[2]["replenish_count"], 0)
+        self.assertEqual(products[3]["replenish_count"], 5)
+        self.assertEqual(products[4]["replenish_count"], 0)
 
         # Check differences
-        self.assertEqual(products[1]['difference'], -61)
-        self.assertEqual(products[2]['difference'], -30)
-        self.assertEqual(products[3]['difference'], -12)
-        self.assertEqual(products[4]['difference'], -31)
+        self.assertEqual(products[1]["difference"], -61)
+        self.assertEqual(products[2]["difference"], -30)
+        self.assertEqual(products[3]["difference"], -12)
+        self.assertEqual(products[4]["difference"], -31)
 
         # Check balance
-        self.assertEqual(products[1]['balance'], -61 * 300)
-        self.assertEqual(products[2]['balance'], -30 * 50)
-        self.assertEqual(products[3]['balance'], -12 * 100)
-        self.assertEqual(products[4]['balance'], -31 * 200)
+        self.assertEqual(products[1]["balance"], -61 * 300)
+        self.assertEqual(products[2]["balance"], -30 * 50)
+        self.assertEqual(products[3]["balance"], -12 * 100)
+        self.assertEqual(products[4]["balance"], -31 * 200)
 
         # Check overall balance
-        self.assertEqual(result['balance'], -27200)
-        self.assertEqual(result['loss'], 27200)
-        self.assertEqual(result['profit'], 0)
+        self.assertEqual(result["balance"], -27200)
+        self.assertEqual(result["loss"], 27200)
+        self.assertEqual(result["profit"], 0)
 
     def test_balance_between_stocktakings_product_set_to_inactive(self):
         """
@@ -391,7 +384,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         stocktaking.
         """
         # Manipulate the product price timestamps
-        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2017-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         for product_price_id in [1, 2, 3, 4]:
             ProductPrice.query.filter_by(id=product_price_id).first().timestamp = ts
         db.session.commit()
@@ -401,49 +394,43 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         db.session.flush()
 
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         for s in stocktakings:
             db.session.add(Stocktaking(**s, collection_id=1))
 
         # Manipulate first stocktaking timestamp
         # First stocktaking: 01.01.2018
-        ts = datetime.strptime('2018-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2018-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         StocktakingCollection.query.filter_by(id=1).first().timestamp = ts
 
         # Insert a purchase.
-        t = datetime.strptime('2018-03-05 09:00:00', '%Y-%m-%d %H:%M:%S')
+        t = datetime.strptime("2018-03-05 09:00:00", "%Y-%m-%d %H:%M:%S")
         db.session.add(Purchase(user_id=1, product_id=1, amount=90, timestamp=t))
 
         # Insert the second stocktaking.
         stocktakings = [
-            {'product_id': 1, 'count': 0},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 0},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
-        t = datetime.strptime('2018-04-01 09:00:00', '%Y-%m-%d %H:%M:%S')
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(t.timestamp())
-        }
-        self.post(url='/stocktakingcollections', data=data, role='admin')
+        t = datetime.strptime("2018-04-01 09:00:00", "%Y-%m-%d %H:%M:%S")
+        data = {"stocktakings": stocktakings, "timestamp": int(t.timestamp())}
+        self.post(url="/stocktakingcollections", data=data, role="admin")
 
         # Insert the third stocktaking. (Product 1 is not included)
         stocktakings = [
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
-        t = datetime.strptime('2018-04-02 09:00:00', '%Y-%m-%d %H:%M:%S')
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(t.timestamp())
-        }
-        self.post(url='/stocktakingcollections', data=data, role='admin')
+        t = datetime.strptime("2018-04-02 09:00:00", "%Y-%m-%d %H:%M:%S")
+        data = {"stocktakings": stocktakings, "timestamp": int(t.timestamp())}
+        self.post(url="/stocktakingcollections", data=data, role="admin")
 
         # Query the stocktakings.
         start = StocktakingCollection.query.filter_by(id=1).first()
@@ -453,46 +440,46 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertFalse(1 in [s.product_id for s in end.stocktakings])
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
-        self.assertTrue('products' in result)
-        products = result['products']
+        self.assertTrue("products" in result)
+        products = result["products"]
 
         # Check if all products are in the balance
         self.assertEqual({1, 2, 3, 4}, set(products.keys()))
 
         # Check purchase count
-        self.assertEqual(products[1]['purchase_count'], 90)
-        self.assertEqual(products[2]['purchase_count'], 0)
-        self.assertEqual(products[3]['purchase_count'], 0)
-        self.assertEqual(products[4]['purchase_count'], 0)
+        self.assertEqual(products[1]["purchase_count"], 90)
+        self.assertEqual(products[2]["purchase_count"], 0)
+        self.assertEqual(products[3]["purchase_count"], 0)
+        self.assertEqual(products[4]["purchase_count"], 0)
 
         # Check purchase sum price
-        self.assertEqual(products[1]['purchase_sum_price'], 27000)
-        self.assertEqual(products[2]['purchase_sum_price'], 0)
-        self.assertEqual(products[3]['purchase_sum_price'], 0)
-        self.assertEqual(products[4]['purchase_sum_price'], 0)
+        self.assertEqual(products[1]["purchase_sum_price"], 27000)
+        self.assertEqual(products[2]["purchase_sum_price"], 0)
+        self.assertEqual(products[3]["purchase_sum_price"], 0)
+        self.assertEqual(products[4]["purchase_sum_price"], 0)
 
         # Check replenish count
-        self.assertEqual(products[1]['replenish_count'], 0)
-        self.assertEqual(products[2]['replenish_count'], 0)
-        self.assertEqual(products[3]['replenish_count'], 0)
-        self.assertEqual(products[4]['replenish_count'], 0)
+        self.assertEqual(products[1]["replenish_count"], 0)
+        self.assertEqual(products[2]["replenish_count"], 0)
+        self.assertEqual(products[3]["replenish_count"], 0)
+        self.assertEqual(products[4]["replenish_count"], 0)
 
         # Check differences
-        self.assertEqual(products[1]['difference'], -10)
-        self.assertEqual(products[2]['difference'], 0)
-        self.assertEqual(products[3]['difference'], 0)
-        self.assertEqual(products[4]['difference'], 0)
+        self.assertEqual(products[1]["difference"], -10)
+        self.assertEqual(products[2]["difference"], 0)
+        self.assertEqual(products[3]["difference"], 0)
+        self.assertEqual(products[4]["difference"], 0)
 
         # Check balance
-        self.assertEqual(products[1]['balance'], -10 * 300)
-        self.assertEqual(products[2]['balance'], 0)
-        self.assertEqual(products[3]['balance'], 0)
-        self.assertEqual(products[4]['balance'], 0)
+        self.assertEqual(products[1]["balance"], -10 * 300)
+        self.assertEqual(products[2]["balance"], 0)
+        self.assertEqual(products[3]["balance"], 0)
+        self.assertEqual(products[4]["balance"], 0)
 
         # Check overall balance
-        self.assertEqual(result['balance'], -3000)
-        self.assertEqual(result['loss'], 3000)
-        self.assertEqual(result['profit'], 0)
+        self.assertEqual(result["balance"], -3000)
+        self.assertEqual(result["loss"], 3000)
+        self.assertEqual(result["profit"], 0)
 
     def test_balance_between_stocktakings_product_creation(self):
         """
@@ -505,56 +492,53 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         db.session.flush()
 
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
         for s in stocktakings:
             db.session.add(Stocktaking(**s, collection_id=1))
 
         # Manipulate first stocktaking timestamp
         # First stocktaking: 01.01.2018
-        ts = datetime.strptime('2018-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2018-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         StocktakingCollection.query.filter_by(id=1).first().timestamp = ts
 
         # Create a product.
-        data = {'name': 'Bread', 'price': 100, 'tags': [1]}
-        self.post(url='/products', role='admin', data=data)
+        data = {"name": "Bread", "price": 100, "tags": [1]}
+        self.post(url="/products", role="admin", data=data)
 
         # Manipulate the product price timestamps
-        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2017-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         for product_price_id in [1, 2, 3, 4, 5]:
             ProductPrice.query.filter_by(id=product_price_id).first().timestamp = ts
         db.session.commit()
 
         # Create replenishment.
-        replenishments = [{'product_id': 5, 'amount': 20, 'total_price': 2000}]
+        replenishments = [{"product_id": 5, "amount": 20, "total_price": 2000}]
         data = {
-            'replenishments': replenishments,
-            'comment': 'My test comment',
-            'timestamp': '2020-02-24 12:00:00Z',
-            'seller_id': 5
+            "replenishments": replenishments,
+            "comment": "My test comment",
+            "timestamp": "2020-02-24 12:00:00Z",
+            "seller_id": 5,
         }
-        self.post(url='/replenishmentcollections', data=data, role='admin')
-        ts = datetime.strptime('2018-03-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        self.post(url="/replenishmentcollections", data=data, role="admin")
+        ts = datetime.strptime("2018-03-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         ReplenishmentCollection.query.filter_by(id=1).first().timestamp = ts
         db.session.commit()
 
         # Insert the second stocktaking.
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33},
-            {'product_id': 5, 'count': 10}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
+            {"product_id": 5, "count": 10},
         ]
-        t = datetime.strptime('2018-04-01 09:00:00', '%Y-%m-%d %H:%M:%S')
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(t.timestamp())
-        }
-        self.post(url='/stocktakingcollections', data=data, role='admin')
+        t = datetime.strptime("2018-04-01 09:00:00", "%Y-%m-%d %H:%M:%S")
+        data = {"stocktakings": stocktakings, "timestamp": int(t.timestamp())}
+        self.post(url="/stocktakingcollections", data=data, role="admin")
 
         # Query the stocktakings.
         start = StocktakingCollection.query.filter_by(id=1).first()
@@ -564,50 +548,50 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertTrue(5 in [s.product_id for s in end.stocktakings])
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
-        self.assertTrue('products' in result)
-        products = result['products']
+        self.assertTrue("products" in result)
+        products = result["products"]
 
         # Check if all products are in the balance
         self.assertEqual({1, 2, 3, 4, 5}, set(products.keys()))
 
         # Check purchase count
-        self.assertEqual(products[1]['purchase_count'], 0)
-        self.assertEqual(products[2]['purchase_count'], 0)
-        self.assertEqual(products[3]['purchase_count'], 0)
-        self.assertEqual(products[4]['purchase_count'], 0)
-        self.assertEqual(products[5]['purchase_count'], 0)
+        self.assertEqual(products[1]["purchase_count"], 0)
+        self.assertEqual(products[2]["purchase_count"], 0)
+        self.assertEqual(products[3]["purchase_count"], 0)
+        self.assertEqual(products[4]["purchase_count"], 0)
+        self.assertEqual(products[5]["purchase_count"], 0)
 
         # Check purchase sum price
-        self.assertEqual(products[1]['purchase_sum_price'], 0)
-        self.assertEqual(products[2]['purchase_sum_price'], 0)
-        self.assertEqual(products[3]['purchase_sum_price'], 0)
-        self.assertEqual(products[4]['purchase_sum_price'], 0)
-        self.assertEqual(products[5]['purchase_sum_price'], 0)
+        self.assertEqual(products[1]["purchase_sum_price"], 0)
+        self.assertEqual(products[2]["purchase_sum_price"], 0)
+        self.assertEqual(products[3]["purchase_sum_price"], 0)
+        self.assertEqual(products[4]["purchase_sum_price"], 0)
+        self.assertEqual(products[5]["purchase_sum_price"], 0)
 
         # Check replenish count
-        self.assertEqual(products[1]['replenish_count'], 0)
-        self.assertEqual(products[2]['replenish_count'], 0)
-        self.assertEqual(products[3]['replenish_count'], 0)
-        self.assertEqual(products[4]['replenish_count'], 0)
-        self.assertEqual(products[5]['replenish_count'], 20)
+        self.assertEqual(products[1]["replenish_count"], 0)
+        self.assertEqual(products[2]["replenish_count"], 0)
+        self.assertEqual(products[3]["replenish_count"], 0)
+        self.assertEqual(products[4]["replenish_count"], 0)
+        self.assertEqual(products[5]["replenish_count"], 20)
 
         # Check differences
-        self.assertEqual(products[1]['difference'], 0)
-        self.assertEqual(products[2]['difference'], 0)
-        self.assertEqual(products[3]['difference'], 0)
-        self.assertEqual(products[4]['difference'], 0)
-        self.assertEqual(products[5]['difference'], -10)
+        self.assertEqual(products[1]["difference"], 0)
+        self.assertEqual(products[2]["difference"], 0)
+        self.assertEqual(products[3]["difference"], 0)
+        self.assertEqual(products[4]["difference"], 0)
+        self.assertEqual(products[5]["difference"], -10)
 
         # Check balance
-        self.assertEqual(products[1]['balance'], 0)
-        self.assertEqual(products[2]['balance'], 0)
-        self.assertEqual(products[3]['balance'], 0)
-        self.assertEqual(products[4]['balance'], 0)
-        self.assertEqual(products[5]['balance'], -10 * 100)
+        self.assertEqual(products[1]["balance"], 0)
+        self.assertEqual(products[2]["balance"], 0)
+        self.assertEqual(products[3]["balance"], 0)
+        self.assertEqual(products[4]["balance"], 0)
+        self.assertEqual(products[5]["balance"], -10 * 100)
 
         # Check overall balance
-        self.assertEqual(result['balance'], -1000)
-        self.assertEqual(result['profit'], 0)
+        self.assertEqual(result["balance"], -1000)
+        self.assertEqual(result["profit"], 0)
 
     def test_balance_between_stocktakings_new_product_and_set_inactive(self):
         """
@@ -622,32 +606,26 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
 
         # Set the product 5 inactive with another stocktaking.
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33},
-            {'product_id': 5, 'count': 0}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
+            {"product_id": 5, "count": 0},
         ]
-        t = datetime.strptime('2018-05-01 09:00:00', '%Y-%m-%d %H:%M:%S')
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(t.timestamp())
-        }
-        self.post(url='/stocktakingcollections', data=data, role='admin')
+        t = datetime.strptime("2018-05-01 09:00:00", "%Y-%m-%d %H:%M:%S")
+        data = {"stocktakings": stocktakings, "timestamp": int(t.timestamp())}
+        self.post(url="/stocktakingcollections", data=data, role="admin")
 
         # Insert the last stocktaking. (Product 5 is not included)
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 50},
-            {'product_id': 3, 'count': 25},
-            {'product_id': 4, 'count': 33}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 50},
+            {"product_id": 3, "count": 25},
+            {"product_id": 4, "count": 33},
         ]
-        t = datetime.strptime('2018-06-02 09:00:00', '%Y-%m-%d %H:%M:%S')
-        data = {
-            'stocktakings': stocktakings,
-            'timestamp': int(t.timestamp())
-        }
-        self.post(url='/stocktakingcollections', data=data, role='admin')
+        t = datetime.strptime("2018-06-02 09:00:00", "%Y-%m-%d %H:%M:%S")
+        data = {"stocktakings": stocktakings, "timestamp": int(t.timestamp())}
+        self.post(url="/stocktakingcollections", data=data, role="admin")
 
         # Query the stocktakings.
         start = StocktakingCollection.query.filter_by(id=1).first()
@@ -657,51 +635,51 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertFalse(5 in [s.product_id for s in end.stocktakings])
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
-        self.assertTrue('products' in result)
-        products = result['products']
+        self.assertTrue("products" in result)
+        products = result["products"]
 
         # Check if all products are in the balance
         self.assertEqual({1, 2, 3, 4, 5}, set(products.keys()))
 
         # Check purchase count
-        self.assertEqual(products[1]['purchase_count'], 0)
-        self.assertEqual(products[2]['purchase_count'], 0)
-        self.assertEqual(products[3]['purchase_count'], 0)
-        self.assertEqual(products[4]['purchase_count'], 0)
-        self.assertEqual(products[5]['purchase_count'], 0)
+        self.assertEqual(products[1]["purchase_count"], 0)
+        self.assertEqual(products[2]["purchase_count"], 0)
+        self.assertEqual(products[3]["purchase_count"], 0)
+        self.assertEqual(products[4]["purchase_count"], 0)
+        self.assertEqual(products[5]["purchase_count"], 0)
 
         # Check purchase sum price
-        self.assertEqual(products[1]['purchase_sum_price'], 0)
-        self.assertEqual(products[2]['purchase_sum_price'], 0)
-        self.assertEqual(products[3]['purchase_sum_price'], 0)
-        self.assertEqual(products[4]['purchase_sum_price'], 0)
-        self.assertEqual(products[5]['purchase_sum_price'], 0)
+        self.assertEqual(products[1]["purchase_sum_price"], 0)
+        self.assertEqual(products[2]["purchase_sum_price"], 0)
+        self.assertEqual(products[3]["purchase_sum_price"], 0)
+        self.assertEqual(products[4]["purchase_sum_price"], 0)
+        self.assertEqual(products[5]["purchase_sum_price"], 0)
 
         # Check replenish count
-        self.assertEqual(products[1]['replenish_count'], 0)
-        self.assertEqual(products[2]['replenish_count'], 0)
-        self.assertEqual(products[3]['replenish_count'], 0)
-        self.assertEqual(products[4]['replenish_count'], 0)
-        self.assertEqual(products[5]['replenish_count'], 20)
+        self.assertEqual(products[1]["replenish_count"], 0)
+        self.assertEqual(products[2]["replenish_count"], 0)
+        self.assertEqual(products[3]["replenish_count"], 0)
+        self.assertEqual(products[4]["replenish_count"], 0)
+        self.assertEqual(products[5]["replenish_count"], 20)
 
         # Check differences
-        self.assertEqual(products[1]['difference'], 0)
-        self.assertEqual(products[2]['difference'], 0)
-        self.assertEqual(products[3]['difference'], 0)
-        self.assertEqual(products[4]['difference'], 0)
-        self.assertEqual(products[5]['difference'], -20)
+        self.assertEqual(products[1]["difference"], 0)
+        self.assertEqual(products[2]["difference"], 0)
+        self.assertEqual(products[3]["difference"], 0)
+        self.assertEqual(products[4]["difference"], 0)
+        self.assertEqual(products[5]["difference"], -20)
 
         # Check balance
-        self.assertEqual(products[1]['balance'], 0)
-        self.assertEqual(products[2]['balance'], 0)
-        self.assertEqual(products[3]['balance'], 0)
-        self.assertEqual(products[4]['balance'], 0)
-        self.assertEqual(products[5]['balance'], -20 * 100)
+        self.assertEqual(products[1]["balance"], 0)
+        self.assertEqual(products[2]["balance"], 0)
+        self.assertEqual(products[3]["balance"], 0)
+        self.assertEqual(products[4]["balance"], 0)
+        self.assertEqual(products[5]["balance"], -20 * 100)
 
         # Check overall balance
-        self.assertEqual(result['balance'], -2000)
-        self.assertEqual(result['loss'], 2000)
-        self.assertEqual(result['profit'], 0)
+        self.assertEqual(result["balance"], -2000)
+        self.assertEqual(result["loss"], 2000)
+        self.assertEqual(result["profit"], 0)
 
     def test_balance_between_stocktakings_with_profit_and_loss(self):
         """
@@ -709,7 +687,7 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         balance are calculated correctly.
         """
         # Manipulate the product price timestamps
-        ts = datetime.strptime('2017-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2017-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         for id in [1, 2, 3, 4]:
             ProductPrice.query.filter_by(id=id).first().timestamp = ts
         db.session.commit()
@@ -719,17 +697,17 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         db.session.flush()
 
         stocktakings = [
-            {'product_id': 1, 'count': 100},
-            {'product_id': 2, 'count': 100},
-            {'product_id': 3, 'count': 100},
-            {'product_id': 4, 'count': 100}
+            {"product_id": 1, "count": 100},
+            {"product_id": 2, "count": 100},
+            {"product_id": 3, "count": 100},
+            {"product_id": 4, "count": 100},
         ]
         for s in stocktakings:
             db.session.add(Stocktaking(**s, collection_id=1))
 
         # Manipulate first stocktaking timestamp
         # First stocktaking: 01.01.2018
-        ts = datetime.strptime('2018-01-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2018-01-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         StocktakingCollection.query.filter_by(id=1).first().timestamp = ts
 
         # Insert the second stocktaking
@@ -737,17 +715,17 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         db.session.flush()
 
         stocktakings = [
-            {'product_id': 1, 'count': 110},  # Products have been added!
-            {'product_id': 2, 'count': 90},   # Products have been lost!
-            {'product_id': 3, 'count': 100},
-            {'product_id': 4, 'count': 100}
+            {"product_id": 1, "count": 110},  # Products have been added!
+            {"product_id": 2, "count": 90},  # Products have been lost!
+            {"product_id": 3, "count": 100},
+            {"product_id": 4, "count": 100},
         ]
         for s in stocktakings:
             db.session.add(Stocktaking(**s, collection_id=2))
 
         # Manipulate second stocktaking timestamp
         # Second stocktaking: 01.02.2018
-        ts = datetime.strptime('2018-02-01 09:00:00', '%Y-%m-%d %H:%M:%S')
+        ts = datetime.strptime("2018-02-01 09:00:00", "%Y-%m-%d %H:%M:%S")
         StocktakingCollection.query.filter_by(id=2).first().timestamp = ts
 
         # Query the stocktakings.
@@ -755,46 +733,46 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         end = StocktakingCollection.query.filter_by(id=2).first()
 
         result = stocktaking_helpers._get_balance_between_stocktakings(start, end)
-        self.assertTrue('products' in result)
-        products = result['products']
+        self.assertTrue("products" in result)
+        products = result["products"]
 
         # Check if all products are in the balance
         self.assertEqual({1, 2, 3, 4}, set(products.keys()))
 
         # Check purchase count
-        self.assertEqual(products[1]['purchase_count'], 0)
-        self.assertEqual(products[2]['purchase_count'], 0)
-        self.assertEqual(products[3]['purchase_count'], 0)
-        self.assertEqual(products[4]['purchase_count'], 0)
+        self.assertEqual(products[1]["purchase_count"], 0)
+        self.assertEqual(products[2]["purchase_count"], 0)
+        self.assertEqual(products[3]["purchase_count"], 0)
+        self.assertEqual(products[4]["purchase_count"], 0)
 
         # Check purchase sum price
-        self.assertEqual(products[1]['purchase_sum_price'], 0)
-        self.assertEqual(products[2]['purchase_sum_price'], 0)
-        self.assertEqual(products[3]['purchase_sum_price'], 0)
-        self.assertEqual(products[4]['purchase_sum_price'], 0)
+        self.assertEqual(products[1]["purchase_sum_price"], 0)
+        self.assertEqual(products[2]["purchase_sum_price"], 0)
+        self.assertEqual(products[3]["purchase_sum_price"], 0)
+        self.assertEqual(products[4]["purchase_sum_price"], 0)
 
         # Check replenish count
-        self.assertEqual(products[1]['replenish_count'], 0)
-        self.assertEqual(products[2]['replenish_count'], 0)
-        self.assertEqual(products[3]['replenish_count'], 0)
-        self.assertEqual(products[4]['replenish_count'], 0)
+        self.assertEqual(products[1]["replenish_count"], 0)
+        self.assertEqual(products[2]["replenish_count"], 0)
+        self.assertEqual(products[3]["replenish_count"], 0)
+        self.assertEqual(products[4]["replenish_count"], 0)
 
         # Check differences
-        self.assertEqual(products[1]['difference'], 10)
-        self.assertEqual(products[2]['difference'], -10)
-        self.assertEqual(products[3]['difference'], 0)
-        self.assertEqual(products[4]['difference'], 0)
+        self.assertEqual(products[1]["difference"], 10)
+        self.assertEqual(products[2]["difference"], -10)
+        self.assertEqual(products[3]["difference"], 0)
+        self.assertEqual(products[4]["difference"], 0)
 
         # Check balance
-        self.assertEqual(products[1]['balance'], 10 * 300)
-        self.assertEqual(products[2]['balance'], -10 * 50)
-        self.assertEqual(products[3]['balance'], 0)
-        self.assertEqual(products[4]['balance'], 0)
+        self.assertEqual(products[1]["balance"], 10 * 300)
+        self.assertEqual(products[2]["balance"], -10 * 50)
+        self.assertEqual(products[3]["balance"], 0)
+        self.assertEqual(products[4]["balance"], 0)
 
         # Check overall balance
-        self.assertEqual(result['balance'], 2500)
-        self.assertEqual(result['loss'], 500)
-        self.assertEqual(result['profit'], 3000)
+        self.assertEqual(result["balance"], 2500)
+        self.assertEqual(result["loss"], 500)
+        self.assertEqual(result["profit"], 3000)
 
     def test_get_latest_non_revoked_stocktakingcollection(self):
         """
@@ -808,7 +786,9 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertEqual(2, collection.id)
 
         # Revoke the latest stocktakingcollection
-        StocktakingCollection.query.filter(StocktakingCollection.id == 2).first().revoked = True
+        StocktakingCollection.query.filter(
+            StocktakingCollection.id == 2
+        ).first().revoked = True
         db.session.commit()
 
         # Check the latest collection again
@@ -816,7 +796,9 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.assertEqual(1, collection.id)
 
         # Revoke the last remaining non revoked stocktakingcollection
-        StocktakingCollection.query.filter(StocktakingCollection.id == 1).first().revoked = True
+        StocktakingCollection.query.filter(
+            StocktakingCollection.id == 1
+        ).first().revoked = True
         collection = stocktaking_helpers.get_latest_non_revoked_stocktakingcollection()
 
         # The result should be None
@@ -830,15 +812,19 @@ class TestHelpersStocktakingsTestCase(BaseAPITestCase):
         self.insert_default_stocktakingcollections()
 
         # Check the latest stock
-        stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(product_id=1)
+        stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(
+            product_id=1
+        )
         self.assertEqual(50, stocktaking.count)
 
         # Revoke the latest stocktakingcollection
-        StocktakingCollection.query.filter(StocktakingCollection.id == 2).first().revoked = True
+        StocktakingCollection.query.filter(
+            StocktakingCollection.id == 2
+        ).first().revoked = True
         db.session.commit()
 
         # Check the latest stock again
-        stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(product_id=1)
+        stocktaking = stocktaking_helpers.get_latest_stocktaking_of_product(
+            product_id=1
+        )
         self.assertEqual(100, stocktaking.count)
-
-

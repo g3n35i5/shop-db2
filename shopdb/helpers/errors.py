@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import werkzeug.exceptions as werkzeug_exceptions
 from flask import jsonify
@@ -31,15 +31,15 @@ def handle_error(error):
 
     # Catch the 404-error.
     if isinstance(error, werkzeug_exceptions.NotFound):
-        return jsonify(result='error', message='Page does not exist.'), 404
+        return jsonify(result="error", message="Page does not exist."), 404
 
     # Catch the 'MethodNotAllowed' exception
     if isinstance(error, werkzeug_exceptions.MethodNotAllowed):
-        return jsonify(result='error', message='Method not allowed.'), 405
+        return jsonify(result="error", message="Method not allowed."), 405
 
     # As long as the application is in debug mode, all other exceptions
     # should be output immediately.
-    if app.config['DEBUG'] and not app.config['DEVELOPMENT']:
+    if app.config["DEBUG"] and not app.config["DEVELOPMENT"]:
         raise error  # pragma: no cover
 
     # Create, if possible, a user friendly response.

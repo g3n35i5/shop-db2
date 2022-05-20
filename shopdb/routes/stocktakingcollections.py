@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import collections
 import datetime
@@ -10,7 +10,7 @@ try:
 except ImportError:
     pdfkit = None
 
-from flask import jsonify, render_template, make_response, request
+from flask import jsonify, make_response, render_template, request
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
@@ -20,13 +20,14 @@ from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.query import QueryFromRequestParameters
 from shopdb.helpers.stocktakings import _get_balance_between_stocktakings
-from shopdb.helpers.utils import convert_minimal, json_body, parse_timestamp
 from shopdb.helpers.updater import generic_update
-from shopdb.helpers.validators import check_fields_and_types, check_allowed_parameters
-from shopdb.models import StocktakingCollection, Stocktaking, Product
+from shopdb.helpers.utils import convert_minimal, json_body, parse_timestamp
+from shopdb.helpers.validators import (check_allowed_parameters,
+                                       check_fields_and_types)
+from shopdb.models import Product, Stocktaking, StocktakingCollection
 
 
-@app.route('/stocktakingcollections/template', methods=['GET'])
+@app.route("/stocktakingcollections/template", methods=["GET"])
 def get_stocktakingcollection_template():
     """
     This route can be used to retrieve a template to print out for a
@@ -36,14 +37,15 @@ def get_stocktakingcollection_template():
     """
     # Check if pdfkit is available
     if pdfkit is None:
-        return jsonify({'message': 'Not available'}), 503
+        return jsonify({"message": "Not available"}), 503
 
     # Get a list of all products.
-    products = (Product.query
-                .filter(Product.active.is_(True))
-                .filter(Product.countable.is_(True))
-                .order_by(func.lower(Product.name))
-                .all())
+    products = (
+        Product.query.filter(Product.active.is_(True))
+        .filter(Product.countable.is_(True))
+        .order_by(func.lower(Product.name))
+        .all()
+    )
 
     # If no products exist that are active and countable, an exception must be
     # made.
@@ -54,21 +56,23 @@ def get_stocktakingcollection_template():
     for product in products:
         product_name = product.name
         theoretical_stock = product_helpers.get_theoretical_stock_of_product(product.id)
-        rows.append({'product_name': product_name, 'theoretical_stock': theoretical_stock})
+        rows.append(
+            {"product_name": product_name, "theoretical_stock": theoretical_stock}
+        )
 
     # Render the template
-    rendered = render_template('stocktakingcollections_template.html', rows=rows)
+    rendered = render_template("stocktakingcollections_template.html", rows=rows)
     # Create a PDF file from the rendered template.
     pdf = pdfkit.from_string(rendered, False)
     response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "inline; filename=output.pdf"
 
     # Return the PDF file.
     return response
 
 
-@app.route('/stocktakingcollections/balance', methods=['GET'])
+@app.route("/stocktakingcollections/balance", methods=["GET"])
 @adminRequired
 def get_balance_between_stocktakings(admin):
     """
@@ -79,10 +83,10 @@ def get_balance_between_stocktakings(admin):
     :return:      A dictionary containing all information about the balance
                   between the stocktakings.
     """
-    allowed_params = {'start_id': int, 'end_id': int}
+    allowed_params = {"start_id": int, "end_id": int}
     args = check_allowed_parameters(allowed_params)
-    start_id = args.get('start_id', None)
-    end_id = args.get('end_id', None)
+    start_id = args.get("start_id", None)
+    end_id = args.get("end_id", None)
 
     # Check for all required arguments
     if not all([start_id, end_id]):
@@ -101,7 +105,7 @@ def get_balance_between_stocktakings(admin):
     return jsonify(balance), 200
 
 
-@app.route('/stocktakingcollections', methods=['GET'])
+@app.route("/stocktakingcollections", methods=["GET"])
 @adminRequired
 def list_stocktakingcollections(admin):
     """
@@ -111,15 +115,15 @@ def list_stocktakingcollections(admin):
 
     :return:      A list of all stocktakingcollections.
     """
-    fields = ['id', 'timestamp', 'admin_id', 'revoked']
+    fields = ["id", "timestamp", "admin_id", "revoked"]
     query = QueryFromRequestParameters(StocktakingCollection, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/stocktakingcollections/<int:collection_id>', methods=['GET'])
+@app.route("/stocktakingcollections/<int:collection_id>", methods=["GET"])
 @adminRequired
 def get_stocktakingcollections(admin, collection_id):
     """
@@ -142,17 +146,16 @@ def get_stocktakingcollections(admin, collection_id):
     if not collection:
         raise exc.EntryNotFound()
 
-    fields_collection = ['id', 'timestamp', 'admin_id', 'revoked',
-                         'revokehistory']
-    fields_stocktaking = ['id', 'product_id', 'count', 'collection_id']
+    fields_collection = ["id", "timestamp", "admin_id", "revoked", "revokehistory"]
+    fields_stocktaking = ["id", "product_id", "count", "collection_id"]
     stocktakings = collection.stocktakings.all()
 
     result = convert_minimal(collection, fields_collection)[0]
-    result['stocktakings'] = convert_minimal(stocktakings, fields_stocktaking)
+    result["stocktakings"] = convert_minimal(stocktakings, fields_stocktaking)
     return jsonify(result), 200
 
 
-@app.route('/stocktakingcollections', methods=['POST'])
+@app.route("/stocktakingcollections", methods=["POST"])
 @adminRequired
 def create_stocktakingcollections(admin):
     """
@@ -173,20 +176,20 @@ def create_stocktakingcollections(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required = {'stocktakings': list, 'timestamp': int}
-    required_s = {'product_id': int, 'count': int}
-    optional_s = {'keep_active': bool}
+    required = {"stocktakings": list, "timestamp": int}
+    required_s = {"product_id": int, "count": int}
+    optional_s = {"keep_active": bool}
 
     # Check all required fields
     check_fields_and_types(data, required)
 
-    stocktakings = data['stocktakings']
+    stocktakings = data["stocktakings"]
     # Check for stocktakings in the collection
     if not stocktakings:
         raise exc.DataIsMissing()
 
     for stocktaking in stocktakings:
-        product_id = stocktaking.get('product_id')
+        product_id = stocktaking.get("product_id")
         product = Product.query.filter_by(id=product_id).first()
         if not product:
             raise exc.EntryNotFound()
@@ -194,12 +197,13 @@ def create_stocktakingcollections(admin):
             raise exc.InvalidData()
 
     # Get all active product ids
-    products = (Product.query
-                .filter(Product.active.is_(True))
-                .filter(Product.countable.is_(True))
-                .all())
+    products = (
+        Product.query.filter(Product.active.is_(True))
+        .filter(Product.countable.is_(True))
+        .all()
+    )
     active_ids = list(map(lambda p: p.id, products))
-    data_product_ids = list(map(lambda d: d['product_id'], stocktakings))
+    data_product_ids = list(map(lambda d: d["product_id"], stocktakings))
 
     # Compare function
     def compare(x, y):
@@ -212,7 +216,7 @@ def create_stocktakingcollections(admin):
 
     # Check the timestamp
     try:
-        timestamp = datetime.datetime.fromtimestamp(data['timestamp'])
+        timestamp = datetime.datetime.fromtimestamp(data["timestamp"])
         assert timestamp <= datetime.datetime.now()
     except (AssertionError, TypeError, ValueError, OSError, OverflowError):
         # AssertionError: The timestamp is after the current time.
@@ -233,9 +237,9 @@ def create_stocktakingcollections(admin):
         check_fields_and_types(stocktaking, required_s, optional_s)
 
         # Get all fields
-        product_id = stocktaking.get('product_id')
-        count = stocktaking.get('count')
-        keep_active = stocktaking.get('keep_active', False)
+        product_id = stocktaking.get("product_id")
+        count = stocktaking.get("count")
+        keep_active = stocktaking.get("keep_active", False)
 
         # Check amount
         if count < 0:
@@ -251,18 +255,19 @@ def create_stocktakingcollections(admin):
         for stocktaking in stocktakings:
             s = Stocktaking(
                 collection_id=collection.id,
-                product_id=stocktaking.get('product_id'),
-                count=stocktaking.get('count'))
+                product_id=stocktaking.get("product_id"),
+                count=stocktaking.get("count"),
+            )
             db.session.add(s)
         db.session.commit()
 
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created stocktakingcollection.'}), 201
+    return jsonify({"message": "Created stocktakingcollection."}), 201
 
 
-@app.route('/stocktakingcollections/<int:collection_id>', methods=['PUT'])
+@app.route("/stocktakingcollections/<int:collection_id>", methods=["PUT"])
 @adminRequired
 def update_stocktakingcollection(admin, collection_id):
     """
@@ -276,7 +281,7 @@ def update_stocktakingcollection(admin, collection_id):
     return generic_update(StocktakingCollection, collection_id, json_body(), admin)
 
 
-@app.route('/stocktakings/<int:stocktaking_id>', methods=['PUT'])
+@app.route("/stocktakings/<int:stocktaking_id>", methods=["PUT"])
 @adminRequired
 def update_stocktaking(admin, stocktaking_id):
     """

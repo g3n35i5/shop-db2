@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 import shopdb.exceptions as exc
 from shopdb.api import db
-from shopdb.models import User, Purchase, UserVerification
+from shopdb.models import Purchase, User, UserVerification
 from tests.base import BaseTestCase
 
 
@@ -12,7 +12,7 @@ class UserModelTestCase(BaseTestCase):
     def test_user_representation(self):
         """Testing the user representation"""
         user = User.query.filter_by(id=1).first()
-        self.assertEqual(repr(user), '<User 1: Jones, William>')
+        self.assertEqual(repr(user), "<User 1: Jones, William>")
 
     def test_get_user_purchases(self):
         """Testing get user purchase list"""
@@ -33,12 +33,12 @@ class UserModelTestCase(BaseTestCase):
     def test_user_set_password(self):
         """Test the password setter method"""
         user = User.query.filter_by(id=1).first()
-        check = self.bcrypt.check_password_hash(user.password, 'test_password')
+        check = self.bcrypt.check_password_hash(user.password, "test_password")
         self.assertFalse(check)
-        user.password = self.bcrypt.generate_password_hash('test_password')
+        user.password = self.bcrypt.generate_password_hash("test_password")
         db.session.commit()
         user = User.query.filter_by(id=1).first()
-        check = self.bcrypt.check_password_hash(user.password, 'test_password')
+        check = self.bcrypt.check_password_hash(user.password, "test_password")
         self.assertTrue(check)
 
     def test_verify_user_twice(self):
@@ -53,16 +53,16 @@ class UserModelTestCase(BaseTestCase):
 
     def test_verify_user(self):
         """Verify a user. We take the last one in the list since all other
-           users have already been verified."""
+        users have already been verified."""
         user = User.query.filter_by(id=4).first()
         self.assertFalse(user.is_verified)
         user.verify(admin_id=1, rank_id=1)
         db.session.commit()
         user = User.query.filter_by(id=4).first()
         self.assertTrue(user.is_verified)
-        verification = (UserVerification.query
-                        .order_by(UserVerification.id.desc())
-                        .first())
+        verification = UserVerification.query.order_by(
+            UserVerification.id.desc()
+        ).first()
         self.assertEqual(verification.user_id, user.id)
         self.assertEqual(verification.admin_id, 1)
 
@@ -70,30 +70,30 @@ class UserModelTestCase(BaseTestCase):
         """Update the user rank id"""
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.rank_id, 2)
-        self.assertEqual(user.rank.name, 'Member')
+        self.assertEqual(user.rank.name, "Member")
         user.set_rank_id(rank_id=3, admin_id=1)
         db.session.commit()
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.rank_id, 3)
-        self.assertEqual(user.rank.name, 'Alumni')
+        self.assertEqual(user.rank.name, "Alumni")
 
     def test_update_user_firstname(self):
         """Update the firstname of a user"""
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.id, 1)
-        user.firstname = 'Updated_Firstname'
+        user.firstname = "Updated_Firstname"
         db.session.commit()
         user = User.query.filter_by(id=1).first()
-        self.assertEqual(user.firstname, 'Updated_Firstname')
+        self.assertEqual(user.firstname, "Updated_Firstname")
 
     def test_update_user_lastname(self):
         """Update the lastname of a user"""
         user = User.query.filter_by(id=1).first()
         self.assertEqual(user.id, 1)
-        user.lastname = 'Updated_Lastname'
+        user.lastname = "Updated_Lastname"
         db.session.commit()
         user = User.query.filter_by(id=1).first()
-        self.assertEqual(user.lastname, 'Updated_Lastname')
+        self.assertEqual(user.lastname, "Updated_Lastname")
 
     def test_insert_purchase_as_non_verified_user(self):
         """It must be ensured that non-verified users cannot make purchases."""

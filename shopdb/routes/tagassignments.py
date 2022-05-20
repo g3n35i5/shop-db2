@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify
 from sqlalchemy.exc import IntegrityError
@@ -10,10 +10,10 @@ from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.utils import json_body
 from shopdb.helpers.validators import check_fields_and_types
-from shopdb.models import Tag, Product
+from shopdb.models import Product, Tag
 
 
-@app.route('/tagassignment/<command>', methods=['POST'])
+@app.route("/tagassignment/<command>", methods=["POST"])
 @adminRequired
 def change_product_tag_assignment(admin, command):
     """
@@ -35,26 +35,26 @@ def change_product_tag_assignment(admin, command):
     :raises NothingHasChanged: If no change occurred after the update or removal.
     """
 
-    if command not in ['add', 'remove']:
+    if command not in ["add", "remove"]:
         raise exc.UnauthorizedAccess()
 
     data = json_body()
-    required = {'product_id': int, 'tag_id': int}
+    required = {"product_id": int, "tag_id": int}
 
     # Check all required fields
     check_fields_and_types(data, required)
 
     # Check if the product exists.
-    product = Product.query.filter_by(id=data['product_id']).first()
+    product = Product.query.filter_by(id=data["product_id"]).first()
     if not product:
         raise exc.EntryNotFound()
 
     # Check if the tag exists.
-    tag = Tag.query.filter_by(id=data['tag_id']).first()
+    tag = Tag.query.filter_by(id=data["tag_id"]).first()
     if not tag:
         raise exc.EntryNotFound()
 
-    if command == 'add':
+    if command == "add":
         if tag in product.tags:
             raise exc.NothingHasChanged()
 
@@ -64,7 +64,7 @@ def change_product_tag_assignment(admin, command):
         except IntegrityError:
             raise exc.CouldNotUpdateEntry()
 
-        return jsonify({'message': 'Tag assignment has been added.'}), 201
+        return jsonify({"message": "Tag assignment has been added."}), 201
     else:
         if tag not in product.tags:
             raise exc.NothingHasChanged()
@@ -78,4 +78,4 @@ def change_product_tag_assignment(admin, command):
         except IntegrityError:
             raise exc.CouldNotUpdateEntry()
 
-        return jsonify({'message': 'Tag assignment has been removed.'}), 201
+        return jsonify({"message": "Tag assignment has been removed."}), 201

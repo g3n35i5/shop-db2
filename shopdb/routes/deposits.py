@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'g3n35i5'
+__author__ = "g3n35i5"
 
 from flask import jsonify, request
 from sqlalchemy.exc import IntegrityError
@@ -10,13 +10,13 @@ from shopdb.api import app, db
 from shopdb.helpers.decorators import adminRequired
 from shopdb.helpers.deposits import insert_deposit
 from shopdb.helpers.query import QueryFromRequestParameters
-from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.updater import generic_update
+from shopdb.helpers.utils import convert_minimal, json_body
 from shopdb.helpers.validators import check_fields_and_types
 from shopdb.models import Deposit
 
 
-@app.route('/deposits', methods=['GET'])
+@app.route("/deposits", methods=["GET"])
 @adminRequired
 def list_deposits(admin):
     """
@@ -26,15 +26,15 @@ def list_deposits(admin):
 
     :return:      A list of all deposits.
     """
-    fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked', 'admin_id']
+    fields = ["id", "timestamp", "user_id", "amount", "comment", "revoked", "admin_id"]
     query = QueryFromRequestParameters(Deposit, request.args, fields)
     result, content_range = query.result()
     response = jsonify(convert_minimal(result, fields))
-    response.headers['Content-Range'] = content_range
+    response.headers["Content-Range"] = content_range
     return response
 
 
-@app.route('/deposits', methods=['POST'])
+@app.route("/deposits", methods=["POST"])
 @adminRequired
 def create_deposit(admin):
     """
@@ -63,10 +63,10 @@ def create_deposit(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created deposit.'}), 200
+    return jsonify({"message": "Created deposit."}), 200
 
 
-@app.route('/deposits/batch', methods=['POST'])
+@app.route("/deposits/batch", methods=["POST"])
 @adminRequired
 def create_batch_deposit(admin):
     """
@@ -85,15 +85,16 @@ def create_batch_deposit(admin):
     :raises CouldNotCreateEntry: If any other error occurs.
     """
     data = json_body()
-    required = {'user_ids': list, 'amount': int, 'comment': str}
+    required = {"user_ids": list, "amount": int, "comment": str}
     check_fields_and_types(data, required)
 
     # Call the insert deposit helper function for each user.
-    for user_id in data['user_ids']:
+    for user_id in data["user_ids"]:
         data = {
-            'user_id': user_id,
-            'comment': data['comment'],
-            'amount': data['amount']}
+            "user_id": user_id,
+            "comment": data["comment"],
+            "amount": data["amount"],
+        }
         insert_deposit(data, admin)
 
     # Try to commit the changes.
@@ -102,10 +103,10 @@ def create_batch_deposit(admin):
     except IntegrityError:
         raise exc.CouldNotCreateEntry()
 
-    return jsonify({'message': 'Created batch deposit.'}), 200
+    return jsonify({"message": "Created batch deposit."}), 200
 
 
-@app.route('/deposits/<int:deposit_id>', methods=['GET'])
+@app.route("/deposits/<int:deposit_id>", methods=["GET"])
 def get_deposit(deposit_id):
     """
     Returns the deposit with the requested id.
@@ -122,12 +123,19 @@ def get_deposit(deposit_id):
     if not res:
         raise exc.EntryNotFound()
     # Convert the deposit to a JSON friendly format
-    fields = ['id', 'timestamp', 'user_id', 'amount', 'comment', 'revoked',
-              'revokehistory']
+    fields = [
+        "id",
+        "timestamp",
+        "user_id",
+        "amount",
+        "comment",
+        "revoked",
+        "revokehistory",
+    ]
     return jsonify(convert_minimal(res, fields)[0]), 200
 
 
-@app.route('/deposits/<int:deposit_id>', methods=['PUT'])
+@app.route("/deposits/<int:deposit_id>", methods=["PUT"])
 @adminRequired
 def update_deposit(admin, deposit_id):
     """
