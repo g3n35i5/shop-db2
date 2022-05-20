@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
-import getopt
+import argparse
 import getpass
 import os
 import sys
@@ -76,17 +76,17 @@ def create_database(argv):
         sys.exit("ERROR: Could not create database!")
 
     # Handle the user.
-    try:
-        opts, _ = getopt.getopt(argv, "f:l:p:")
-        for opt, arg in opts:
-            if opt == "-f":
-                firstname = arg
-            elif opt == "-l":
-                lastname = arg
-            elif opt == "-p":
-                password = arg
-    except getopt.GetoptError:
+    parser: argparse.ArgumentParser = argparse.ArgumentParser("Setup script for shop-db2")
+    parser.add_argument("-f", "-first-name", dest="firstname", help="First name of the admin user")
+    parser.add_argument("-l", "-last-name", dest="lastname", help="Last name of the admin user")
+    parser.add_argument("-p", "-password", dest="password", help="Password for the admin user")
+
+    arguments: argparse.Namespace = parser.parse_args()
+    firstname, lastname, password = arguments.firstname, arguments.lastname, arguments.password
+
+    if any([x is None for x in [firstname, lastname, password]]):
         firstname, lastname, password = input_user()
+
     user = {
         "firstname": firstname,
         "lastname": lastname,
@@ -98,10 +98,9 @@ def create_database(argv):
     except exc.PasswordTooShort:
         os.remove(config.ProductiveConfig.DATABASE_PATH)
         sys.exit(
-            (
-                "ERROR: Password to short. Needs at least {} characters."
-                + " Aborting setup."
-            ).format(config.BaseConfig.MINIMUM_PASSWORD_LENGTH)
+            ("ERROR: Password to short. Needs at least {} characters." + " Aborting setup.").format(
+                config.BaseConfig.MINIMUM_PASSWORD_LENGTH
+            )
         )
 
     # Get the User
