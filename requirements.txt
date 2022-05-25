@@ -12,4 +12,4 @@ pdfkit==0.6.1
 pillow==9.1.1
 pip-chill==1.0.1
 pyfakefs==3.6
-pyjwt==1.7.1
+pyjwt==2.4.0
