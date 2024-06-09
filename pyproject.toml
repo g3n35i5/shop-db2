@@ -1,0 +1,126 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+build-backend = "setuptools.build_meta"
+
+# Enables the usage of setuptools_scm
+[tool.setuptools_scm]
+
+
+[tool.pyright]
+exclude = ["build/**"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+extend_skip_glob = ["venv*/*", "log/*", "migrations/*"]
+
+[tool.black]
+line_length = 120
+extend-exclude = "venv.*|migrations.*"
+
+[tool.ruff]
+line-length = 120
+src = ["src"]
+lint.select = ["C901", "D"]
+extend-exclude = ["log", "migrations"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "D103", # Missing docstring in public function
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pylint.master]
+recursive = "yes"
+# The following settings modify the behavior when running pylint with pylint.extensions.docparams plugin loaded
+accept-no-param-doc = "no"
+accept-no-raise-doc = "no"
+accept-no-return-doc = "no"
+accept-no-yields-doc = "no"
+ignore = [
+    "conf.py",    # The Sphinx config file
+    "build",
+    "dist",
+    "log",
+    "migrations",
+]
+ignore-patterns = [
+    "venv.*",
+    "^\\..+",       # Ignore hidden folders or files
+    "migrations.*",
+]
+
+[tool.pylint.messages_control]
+max-line-length = 120
+# https://github.com/samuelcolvin/pydantic/issues/1961
+extension-pkg-whitelist = "pydantic"
+# ignore unrecognized-option because of https://github.com/PyCQA/pylint/issues/6799
+disable = """
+    unrecognized-option,
+    too-few-public-methods,
+    logging-fstring-interpolation,
+    too-many-instance-attributes,
+    too-many-arguments,
+    missing-function-docstring
+    """
+
+[tool.pylint.similarities]
+# Exclude the following from code duplication checks
+ignore-comments = "yes"
+ignore-docstrings = "yes"
+ignore-imports = "yes"
+ignore-signatures = "yes"
+
+[tool.mypy]
+# Functions need to be annotated
+disallow_untyped_defs = true
+warn_unused_ignores = true
+exclude = [
+    "shopdb-\\d+", # Ignore temporary folder created by setuptools when building an sdist
+    "venv.*/",
+    "log/",
+    "build/",
+    "dist/",
+    "migrations/",
+]
+
+[tool.pytest.ini_options]
+addopts = """
+    -vv
+    --doctest-modules
+    --import-mode=append
+    --ignore-glob=shopdb-[0-9]*
+    --ignore="migrations"
+    --ignore="configuration.example.py"
+    --ignore="docs/_scripts"
+    --cov=shopdb
+    --cov-config=pyproject.toml
+    --cov-report=
+    """
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.paths]
+# Maps coverage measured in site-packages to source files in src
+source = ["src/", ".tox/*/lib/python*/site-packages/"]
+
+[tool.coverage.report]
+exclude_also = ["\\.\\.\\.", "if TYPE_CHECKING:"]
+partial_branches = ["pragma: no branch", "if not TYPE_CHECKING:"]
+
+[tool.coverage.html]
+directory = "reports/coverage_html"
+
+[tool.coverage.xml]
+output = "reports/coverage.xml"
+
+[[tool.mypy.overrides]]
+module = [
+    # Ignore packages that do not provide type hints here
+    # For example, add "dash.*" to ignore all imports from Dash
+    "sphinxawesome_theme.postprocess",
+]
+ignore_missing_imports = true

@@ -18,9 +18,7 @@ class DefaultDataTest(BaseTestCase):
             self.assertEqual(users[index].firstname, data["firstname"])
             self.assertEqual(users[index].lastname, data["lastname"])
             if data["password"]:
-                self.assertTrue(
-                    bcrypt.check_password_hash(users[index].password, data["password"])
-                )
+                self.assertTrue(bcrypt.check_password_hash(users[index].password, data["password"]))
 
     def test_insert_default_ranks(self):
         """Check if all ranks have been entered correctly"""

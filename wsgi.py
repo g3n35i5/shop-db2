@@ -27,11 +27,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
 
     def load_config(self):
         _config = dict(
-            [
-                (key, value)
-                for key, value in iteritems(self.options)
-                if key in self.cfg.settings and value is not None
-            ]
+            [(key, value) for key, value in iteritems(self.options) if key in self.cfg.settings and value is not None]
         )
         for key, value in iteritems(_config):
             self.cfg.set(key.lower(), value)
@@ -44,8 +40,7 @@ if __name__ == "__main__":
     # Check whether the productive database exists.
     if not os.path.isfile(config.ProductiveConfig.DATABASE_PATH):
         sys.exit(
-            "No database found. Please read the documentation and use "
-            "the setupdb.py script to initialize shop-db."
+            "No database found. Please read the documentation and use " "the setupdb.py script to initialize shop-db."
         )
 
     parser = ArgumentParser(description="Starting shop-db2 with a gunicorn server")

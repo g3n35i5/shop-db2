@@ -13,7 +13,8 @@ from tests.base import BaseTestCase, user_data
 class BaseAPITestCase(BaseTestCase):
     def assertException(self, res, exception):
         """This helper function checks whether the correct exception has
-        been raised"""
+        been raised
+        """
         data = json.loads(res.data)
         self.assertEqual(res.status_code, exception.code)
         self.assertEqual(data["message"], exception.message)
@@ -67,9 +68,7 @@ class BaseAPITestCase(BaseTestCase):
             content_type=content_type,
         )
 
-    def get(
-        self, url, data=None, role=None, params=None, content_type="application/json"
-    ):
+    def get(self, url, data=None, role=None, params=None, content_type="application/json"):
         """Helper function to perform a GET request to the API"""
         return self._request(
             request_type="GET",
@@ -82,9 +81,7 @@ class BaseAPITestCase(BaseTestCase):
 
     def put(self, url, data=None, role=None, content_type="application/json"):
         """Helper function to perform a GET request to the API"""
-        return self._request(
-            request_type="PUT", url=url, data=data, role=role, content_type=content_type
-        )
+        return self._request(request_type="PUT", url=url, data=data, role=role, content_type=content_type)
 
     def delete(self, url, data=None, role=None, content_type="application/json"):
         """Helper function to perform a DELETE request to the API"""
