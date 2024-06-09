@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+
 import shop_db2.exceptions as exc
 from shop_db2.api import db
 from shop_db2.models import Product

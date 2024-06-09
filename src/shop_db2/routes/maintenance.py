@@ -8,11 +8,12 @@ import re
 from flask import jsonify
 
 import shop_db2.exceptions as exc
-from configuration import PATH
 from shop_db2.api import app
 from shop_db2.helpers.decorators import adminRequired
 from shop_db2.helpers.utils import json_body
 from shop_db2.helpers.validators import check_fields_and_types
+
+from configuration import PATH  # isort: skip
 
 
 @app.route("/maintenance", methods=["GET"])

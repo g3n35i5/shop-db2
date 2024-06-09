@@ -11,8 +11,9 @@ import tempfile
 
 from PIL import Image
 
-import configuration as config
 import shop_db2.exceptions as exc
+
+import configuration as config  # isort: skip
 
 
 def insert_image(file: dict) -> str:

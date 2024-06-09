@@ -95,7 +95,7 @@ addopts = """
     --ignore="migrations"
     --ignore="configuration.example.py"
     --ignore="docs/_scripts"
-    --cov=shop-db2
+    --cov=shop_db2
     --cov-config=pyproject.toml
     --cov-report=
     """
@@ -122,5 +122,8 @@ module = [
     # Ignore packages that do not provide type hints here
     # For example, add "dash.*" to ignore all imports from Dash
     "sphinxawesome_theme.postprocess",
+    "sqlalchemy.*",
+    "flask_script.*",
+    "flask_migrate.*",
 ]
 ignore_missing_imports = true

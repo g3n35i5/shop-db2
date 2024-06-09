@@ -9,11 +9,12 @@ import sys
 
 from sqlalchemy.exc import IntegrityError
 
-import configuration as config
 import shop_db2.exceptions as exc
 from shop_db2.api import app, db, set_app
 from shop_db2.helpers.users import insert_user
 from shop_db2.models import Rank, User
+
+import configuration as config  # isort: skip
 
 
 def _get_password():

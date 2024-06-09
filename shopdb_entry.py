@@ -5,7 +5,7 @@ __author__ = "g3n35i5"
 import sys
 
 try:
-    import configuration as config
+    import configuration as config  # isort: skip
 except ModuleNotFoundError:
     sys.exit(
         "No configuration file was found. Please make sure, "

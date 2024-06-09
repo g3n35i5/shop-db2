@@ -9,9 +9,10 @@ from distutils.util import strtobool
 from flask import json
 
 import shop_db2.exceptions as exc
-from configuration import PATH
 from shop_db2.api import app
 from tests.base_api import BaseAPITestCase
+
+from configuration import PATH  # isort: skip
 
 
 class ToggleMaintenanceAPITestCase(BaseAPITestCase):

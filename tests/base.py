@@ -4,7 +4,6 @@ __author__ = "g3n35i5"
 
 from flask_testing import TestCase
 
-import configuration as config
 from shop_db2.api import app, bcrypt, db, set_app
 from shop_db2.models import (
     AdminUpdate,
@@ -19,6 +18,8 @@ from shop_db2.models import (
     Tag,
     User,
 )
+
+import configuration as config  # isort: skip
 
 # Global password storage. Hashing the passwords for each unit test
 # would take too long. For this reason, the passwords are created once

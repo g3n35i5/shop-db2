@@ -5,8 +5,9 @@ __author__ = "g3n35i5"
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 
-import configuration as config
 from shop_db2.api import app, db, set_app
+
+import configuration as config  # isort: skip
 
 set_app(config.ProductiveConfig)
 migrate = Migrate(app, db)
