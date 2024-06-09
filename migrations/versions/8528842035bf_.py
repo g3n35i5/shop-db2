@@ -5,6 +5,7 @@ Revises: 97bd09d1c2b5
 Create Date: 2020-02-27 14:38:52.290160
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -33,10 +34,7 @@ def upgrade():
     with op.batch_alter_table("replenishmentcollections") as batch_op:
         batch_op.alter_column("seller_id", existing_type=sa.INTEGER(), nullable=False)
 
-    print(
-        '\n\n!!! WARNING: column "seller_id" is set to 1 per default !!!\n'
-        "Please change these default values\n"
-    )
+    print('\n\n!!! WARNING: column "seller_id" is set to 1 per default !!!\n' "Please change these default values\n")
 
     # ### end Alembic commands ###
 

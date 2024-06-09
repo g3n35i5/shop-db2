@@ -200,8 +200,6 @@ def insert_dev_data(db):
         timestamps.append(datetime.datetime.strptime(d, "%d.%m.%Y"))
 
     for i in range(4):
-        p = ProductPrice(
-            price=prices[i], product_id=1, admin_id=1, timestamp=timestamps[i]
-        )
+        p = ProductPrice(price=prices[i], product_id=1, admin_id=1, timestamp=timestamps[i])
         db.session.add(p)
     db.session.commit()

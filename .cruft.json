@@ -1,0 +1,23 @@
+{
+  "template": "git@github.com:vorausrobotik/voraus-python-template.git",
+  "commit": "9ef5161b20a68d274ecf3828467c3f44f4747bca",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "full_name": "Jan-Frederik Schmidt",
+      "email": "janfschmidt@mailbox.org",
+      "github_user": "",
+      "project_name": "shop-db2",
+      "repo_name": "shop-db2",
+      "package_name": "shopdb",
+      "import_name": "shopdb",
+      "project_short_description": "The simple way to manage purchases and user interactions in a small community.",
+      "url": "https://github.com/g3n35i5/shopdb",
+      "_debug": "False",
+      "_extensions": ["extensions.git_extension.GitExtension"],
+      "_copy_without_render": ["docs/_templates/license_compliance.rst.j2"],
+      "_template": "git@github.com:vorausrobotik/voraus-python-template.git"
+    }
+  },
+  "directory": null
+}

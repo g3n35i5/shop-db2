@@ -6,9 +6,19 @@ from flask_testing import TestCase
 
 import configuration as config
 from shopdb.api import app, bcrypt, db, set_app
-from shopdb.models import (AdminUpdate, Deposit, Product, Purchase, Rank,
-                           Replenishment, ReplenishmentCollection, Stocktaking,
-                           StocktakingCollection, Tag, User)
+from shopdb.models import (
+    AdminUpdate,
+    Deposit,
+    Product,
+    Purchase,
+    Rank,
+    Replenishment,
+    ReplenishmentCollection,
+    Stocktaking,
+    StocktakingCollection,
+    Tag,
+    User,
+)
 
 # Global password storage. Hashing the passwords for each unit test
 # would take too long. For this reason, the passwords are created once
@@ -75,7 +85,8 @@ class BaseTestCase(TestCase):
 
     def generate_passwords(self, password_list):
         """This function generates hashes of passwords and stores them in the
-        global variable so that they do not have to be created again."""
+        global variable so that they do not have to be created again.
+        """
         global passwords
         if passwords is None:
             passwords = [None] * len(password_list)
@@ -151,12 +162,8 @@ class BaseTestCase(TestCase):
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
         product3 = Product.query.filter_by(id=3).first()
-        rc1 = ReplenishmentCollection(
-            admin_id=1, revoked=False, comment="Foo", seller_id=5
-        )
-        rc2 = ReplenishmentCollection(
-            admin_id=2, revoked=False, comment="Foo", seller_id=5
-        )
+        rc1 = ReplenishmentCollection(admin_id=1, revoked=False, comment="Foo", seller_id=5)
+        rc2 = ReplenishmentCollection(admin_id=2, revoked=False, comment="Foo", seller_id=5)
         for r in [rc1, rc2]:
             db.session.add(r)
         db.session.flush()

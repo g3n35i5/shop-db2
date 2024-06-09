@@ -17,8 +17,7 @@ from shopdb.models import Rank, User
 
 
 def _get_password():
-    """
-    Ask the user for a password and repeat it until both passwords match and
+    """Ask the user for a password and repeat it until both passwords match and
     are not empty.
 
     :return: The password as plaintext.
@@ -39,8 +38,7 @@ def _get_password():
 
 
 def input_user():
-    """
-    Prompts the user to enter the name and lastname of the first user
+    """Prompts the user to enter the name and lastname of the first user
     (administrator) and then his password.
 
     :return: The firstname, the lastname and the password.
