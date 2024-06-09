@@ -11,8 +11,9 @@ from argparse import ArgumentParser
 import gunicorn.app.base
 from gunicorn.six import iteritems
 
-import configuration as config
 from shop_db2.api import app, set_app
+
+import configuration as config  # isort: skip
 
 
 def number_of_workers():

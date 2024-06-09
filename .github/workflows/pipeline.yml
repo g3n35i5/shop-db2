@@ -1,0 +1,100 @@
+name: CI pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        python-version: ["3.8", "3.9"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install wkhtmltopdf
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+               sudo apt-get install xvfb libfontconfig wkhtmltopdf
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+               brew install wkhtmltopdf
+          fi
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install tox
+        run: python -m pip install --upgrade pip tox tox-gh-actions
+
+      - name: Write example configuration file
+        run: cp configuration.example.py configuration.py
+
+      - name: Run tests
+        run: tox
+
+      - name: Upload coverage artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-${{ matrix.python-version }}
+          path: reports/*
+
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: reports
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Install tox
+        run: python -m pip install --upgrade pip tox
+
+      - name: Combine coverage results
+        run: tox run -e combine-test-reports
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: reports/coverage.xml
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - name: Install tox
+        run: python -m pip install --upgrade tox
+
+      - name: Run static checks
+        run: tox -e lint

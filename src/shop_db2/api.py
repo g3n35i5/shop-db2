@@ -5,8 +5,9 @@ __author__ = "g3n35i5"
 from flask import Flask, jsonify
 from flask_bcrypt import Bcrypt
 
-import configuration as config
 from shop_db2.shared import db
+
+import configuration as config  # isort: skip
 
 app = Flask(__name__)
 

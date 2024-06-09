@@ -6,7 +6,7 @@ import os
 import sqlite3
 import sys
 
-from configuration import ProductiveConfig
+from configuration import ProductiveConfig  # isort: skip
 
 if __name__ == "__main__":
     _currentDate = datetime.datetime.now()
