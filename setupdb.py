@@ -10,10 +10,10 @@ import sys
 from sqlalchemy.exc import IntegrityError
 
 import configuration as config
-import shopdb.exceptions as exc
-from shopdb.api import app, db, set_app
-from shopdb.helpers.users import insert_user
-from shopdb.models import Rank, User
+import shop_db2.exceptions as exc
+from shop_db2.api import app, db, set_app
+from shop_db2.helpers.users import insert_user
+from shop_db2.models import Rank, User
 
 
 def _get_password():

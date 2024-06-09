@@ -4,9 +4,9 @@ __author__ = "g3n35i5"
 
 from datetime import datetime
 
-import shopdb.helpers.stocktakings as stocktaking_helpers
-from shopdb.api import db
-from shopdb.models import Product, ProductPrice, Purchase, ReplenishmentCollection, Stocktaking, StocktakingCollection
+import shop_db2.helpers.stocktakings as stocktaking_helpers
+from shop_db2.api import db
+from shop_db2.models import Product, ProductPrice, Purchase, ReplenishmentCollection, Stocktaking, StocktakingCollection
 from tests.base_api import BaseAPITestCase
 
 

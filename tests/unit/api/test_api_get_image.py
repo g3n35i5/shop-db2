@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
-import shopdb.exceptions as exc
-from shopdb.api import app
+import shop_db2.exceptions as exc
+from shop_db2.api import app
 from tests.base_api import BaseAPITestCase
 
 

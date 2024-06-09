@@ -5,8 +5,8 @@ __author__ = "g3n35i5"
 from flask_testing import TestCase
 
 import configuration as config
-from shopdb.api import app, bcrypt, db, set_app
-from shopdb.models import (
+from shop_db2.api import app, bcrypt, db, set_app
+from shop_db2.models import (
     AdminUpdate,
     Deposit,
     Product,

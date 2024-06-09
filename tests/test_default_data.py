@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
-from shopdb.api import bcrypt
-from shopdb.models import Rank, User
+from shop_db2.api import bcrypt
+from shop_db2.models import Rank, User
 from tests.base import BaseTestCase, rank_data, user_data
 
 

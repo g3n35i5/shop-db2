@@ -6,7 +6,7 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 
 import configuration as config
-from shopdb.api import app, db, set_app
+from shop_db2.api import app, db, set_app
 
 set_app(config.ProductiveConfig)
 migrate = Migrate(app, db)

@@ -12,7 +12,7 @@ import gunicorn.app.base
 from gunicorn.six import iteritems
 
 import configuration as config
-from shopdb.api import app, set_app
+from shop_db2.api import app, set_app
 
 
 def number_of_workers():

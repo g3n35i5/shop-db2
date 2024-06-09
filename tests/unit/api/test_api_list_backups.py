@@ -7,7 +7,7 @@ import os
 from flask import json
 from pyfakefs import fake_filesystem_unittest
 
-import shopdb.exceptions as exc
+import shop_db2.exceptions as exc
 from tests.base_api import BaseAPITestCase
 
 

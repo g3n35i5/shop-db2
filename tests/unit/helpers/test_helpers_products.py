@@ -4,10 +4,10 @@ __author__ = "g3n35i5"
 
 from datetime import datetime
 
-import shopdb.exceptions as exc
-import shopdb.helpers.products as product_helpers
-from shopdb.api import db
-from shopdb.models import Product, ProductPrice, Purchase, StocktakingCollection
+import shop_db2.exceptions as exc
+import shop_db2.helpers.products as product_helpers
+from shop_db2.api import db
+from shop_db2.models import Product, ProductPrice, Purchase, StocktakingCollection
 from tests.base_api import BaseAPITestCase
 
 
