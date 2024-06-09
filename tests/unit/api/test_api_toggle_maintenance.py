@@ -8,9 +8,9 @@ from distutils.util import strtobool
 
 from flask import json
 
-import shopdb.exceptions as exc
+import shop_db2.exceptions as exc
 from configuration import PATH
-from shopdb.api import app
+from shop_db2.api import app
 from tests.base_api import BaseAPITestCase
 
 

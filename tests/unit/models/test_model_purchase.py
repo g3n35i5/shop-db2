@@ -5,8 +5,8 @@ __author__ = "g3n35i5"
 import datetime
 from copy import copy
 
-from shopdb.api import db
-from shopdb.models import Product, ProductPrice, Purchase, User
+from shop_db2.api import db
+from shop_db2.models import Product, ProductPrice, Purchase, User
 from tests.base import BaseTestCase
 
 

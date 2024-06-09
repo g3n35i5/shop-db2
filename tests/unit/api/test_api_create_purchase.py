@@ -6,9 +6,9 @@ from copy import copy
 
 from flask import json
 
-import shopdb.exceptions as exc
-from shopdb.api import db
-from shopdb.models import Product, Purchase, Rank, Tag, User
+import shop_db2.exceptions as exc
+from shop_db2.api import db
+from shop_db2.models import Product, Purchase, Rank, Tag, User
 from tests.base_api import BaseAPITestCase
 
 

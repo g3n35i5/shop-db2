@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
-import shopdb.exceptions as exc
-from shopdb.models import Rank
+import shop_db2.exceptions as exc
+from shop_db2.models import Rank
 from tests.base_api import BaseAPITestCase
 
 

@@ -7,7 +7,7 @@ import datetime
 import jwt
 from flask import json
 
-import shopdb.exceptions as exc
+import shop_db2.exceptions as exc
 from tests.base import user_data
 from tests.base_api import BaseAPITestCase
 

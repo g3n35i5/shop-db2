@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
-import shopdb.exceptions as exc
-from shopdb.api import db
-from shopdb.models import Purchase, User, UserVerification
+import shop_db2.exceptions as exc
+from shop_db2.api import db
+from shop_db2.models import Purchase, User, UserVerification
 from tests.base import BaseTestCase
 
 

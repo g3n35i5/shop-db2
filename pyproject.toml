@@ -78,7 +78,7 @@ ignore-signatures = "yes"
 disallow_untyped_defs = true
 warn_unused_ignores = true
 exclude = [
-    "shopdb-\\d+", # Ignore temporary folder created by setuptools when building an sdist
+    "shop-db2-\\d+", # Ignore temporary folder created by setuptools when building an sdist
     "venv.*/",
     "log/",
     "build/",
@@ -91,11 +91,11 @@ addopts = """
     -vv
     --doctest-modules
     --import-mode=append
-    --ignore-glob=shopdb-[0-9]*
+    --ignore-glob=shop-db2-[0-9]*
     --ignore="migrations"
     --ignore="configuration.example.py"
     --ignore="docs/_scripts"
-    --cov=shopdb
+    --cov=shop-db2
     --cov-config=pyproject.toml
     --cov-report=
     """

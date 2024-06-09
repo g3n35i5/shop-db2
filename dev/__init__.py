@@ -1,5 +1,5 @@
-from shopdb.api import bcrypt
-from shopdb.models import *
+from shop_db2.api import bcrypt
+from shop_db2.models import *
 
 PASSWORD = bcrypt.generate_password_hash("1234")
 

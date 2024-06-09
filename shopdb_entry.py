@@ -18,7 +18,7 @@ import argparse
 from flask_cors import CORS
 
 from dev import insert_dev_data
-from shopdb.api import app, db, set_app
+from shop_db2.api import app, db, set_app
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Starting script shop.db")

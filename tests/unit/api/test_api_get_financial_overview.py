@@ -6,9 +6,9 @@ from datetime import datetime
 
 from flask import json
 
-import shopdb.exceptions as exc
-from shopdb.api import db
-from shopdb.models import Deposit, ProductPrice, Purchase, ReplenishmentCollection
+import shop_db2.exceptions as exc
+from shop_db2.api import db
+from shop_db2.models import Deposit, ProductPrice, Purchase, ReplenishmentCollection
 from tests.base_api import BaseAPITestCase
 
 

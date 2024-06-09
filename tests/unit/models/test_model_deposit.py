@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
-from shopdb.api import db
-from shopdb.models import Deposit, User
+from shop_db2.api import db
+from shop_db2.models import Deposit, User
 from tests.base import BaseTestCase
 
 

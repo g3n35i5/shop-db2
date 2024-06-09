@@ -6,10 +6,10 @@ configuration.py
 coverage.xml
 .codacy-coverage
 codacy-coverage.json
-shopdb/uploads/*
-!shopdb/uploads/valid*
-!shopdb/uploads/broken*
-!shopdb/uploads/non_quadratic.png
+src/shop_db2/uploads/*
+!src/shop_db2/uploads/valid*
+!src/shop_db2/uploads/broken*
+!src/shop_db2/uploads/non_quadratic.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -128,7 +128,7 @@ reports/
 .coverage
 .coverage.*
 MANIFEST
-docs/shopdb*
+docs/shop-db2*
 docs/modules.rst
 docs/ossLicenses.json
 docs/license_compliance.rst
@@ -143,7 +143,7 @@ dist/
 *.class
 *.py[cod]
 *.jar
-shopdb-[0-9]*
+shop-db2-[0-9]*
 
 # Log files
 **/log/**/*

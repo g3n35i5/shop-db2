@@ -4,8 +4,8 @@ __author__ = "g3n35i5"
 
 from flask import json
 
-import shopdb.exceptions as exc
-from shopdb.models import Stocktaking
+import shop_db2.exceptions as exc
+from shop_db2.models import Stocktaking
 from tests.base_api import BaseAPITestCase
 
 

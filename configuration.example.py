@@ -11,7 +11,7 @@ class BaseConfig(object):
     HOST = "127.0.0.1"
     PORT = 5000
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_FOLDER = PATH + "/src/shopdb/uploads/"
+    UPLOAD_FOLDER = PATH + "/src/shop_db2/uploads/"
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
     VALID_EXTENSIONS = ["png"]
     MINIMUM_PASSWORD_LENGTH = 6
@@ -22,7 +22,7 @@ class ProductiveConfig(BaseConfig):
     DEBUG = False
     TEST = False
     ENV = "productive"
-    DATABASE_PATH = PATH + "/src/shopdb/shop.db"
+    DATABASE_PATH = PATH + "/src/shop_db2/shop.db"
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + DATABASE_PATH
 
 

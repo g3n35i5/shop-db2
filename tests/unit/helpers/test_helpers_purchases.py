@@ -4,9 +4,9 @@ __author__ = "g3n35i5"
 
 from datetime import datetime
 
-import shopdb.helpers.purchases as purchase_helpers
-from shopdb.api import db
-from shopdb.models import Purchase
+import shop_db2.helpers.purchases as purchase_helpers
+from shop_db2.api import db
+from shop_db2.models import Purchase
 from tests.base_api import BaseAPITestCase
 
 

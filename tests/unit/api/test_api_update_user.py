@@ -7,9 +7,9 @@ import os
 
 from flask import json
 
-import shopdb.exceptions as exc
-from shopdb.api import app
-from shopdb.models import User
+import shop_db2.exceptions as exc
+from shop_db2.api import app
+from shop_db2.models import User
 from tests.base import user_data
 from tests.base_api import BaseAPITestCase
 

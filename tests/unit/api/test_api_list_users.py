@@ -4,8 +4,8 @@ __author__ = "g3n35i5"
 
 from flask import json
 
-from shopdb.api import db
-from shopdb.models import Rank, User
+from shop_db2.api import db
+from shop_db2.models import Rank, User
 from tests.base_api import BaseAPITestCase
 
 

@@ -4,12 +4,12 @@ __author__ = "g3n35i5"
 
 from flask import json
 
-import shopdb.exceptions as exc
-from shopdb.api import db
+import shop_db2.exceptions as exc
+from shop_db2.api import db
 
-# from shopdb.models import Product, Tag
-from shopdb.models.product import Product
-from shopdb.models.tag import Tag
+# from shop_db2.models import Product, Tag
+from shop_db2.models.product import Product
+from shop_db2.models.tag import Tag
 from tests.base_api import BaseAPITestCase
 
 
