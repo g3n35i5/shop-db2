@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 
 from sqlalchemy import func, types
 from sqlalchemy.sql.expression import BinaryExpression
-from werkzeug import ImmutableMultiDict
+from werkzeug.datastructures import ImmutableMultiDict
 
 import shop_db2.exceptions as exc
 from shop_db2.api import db
