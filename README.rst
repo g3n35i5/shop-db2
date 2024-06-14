@@ -1,7 +1,7 @@
 shop-db2
 ========
 
-|Code style: black| |Imports: isort| |Average time to resolve an issue| |Percentage of issues still open|
+|Code style: black| |Imports: isort| |Coverage| |Average time to resolve an issue| |Percentage of issues still open| 
 
 This is the documentation for shop-db.
 
@@ -628,3 +628,5 @@ When an admin revokes or re-revokes a deposit, a DepositRevoke entry is made. It
    :target: http://isitmaintained.com/project/g3n35i5/shop-db2
 .. |Percentage of issues still open| image:: http://isitmaintained.com/badge/open/g3n35i5/shop-db2.svg
    :target: http://isitmaintained.com/project/g3n35i5/shop-db2
+.. |Coverage| image:: https://codecov.io/gh/g3n35i5/shop-db2/graph/badge.svg 
+   :target: https://codecov.io/gh/g3n35i5/shop-db2
