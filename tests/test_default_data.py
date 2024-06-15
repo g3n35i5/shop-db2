@@ -8,7 +8,7 @@ from tests.base import BaseTestCase, rank_data, user_data
 
 
 class DefaultDataTest(BaseTestCase):
-    def test_default_users(self):
+    def test_default_users(self) -> None:
         """Check if all users have been entered correctly"""
         users = User.query.all()
         # Check number of users
@@ -20,7 +20,7 @@ class DefaultDataTest(BaseTestCase):
             if data["password"]:
                 self.assertTrue(bcrypt.check_password_hash(users[index].password, data["password"]))
 
-    def test_insert_default_ranks(self):
+    def test_insert_default_ranks(self) -> None:
         """Check if all ranks have been entered correctly"""
         ranks = Rank.query.all()
         self.assertEqual(len(ranks), len(rank_data))
@@ -28,7 +28,7 @@ class DefaultDataTest(BaseTestCase):
             self.assertEqual(rank.name, rank_data[index]["name"])
             self.assertEqual(rank.id, index + 1)
 
-    def test_verify_all_users_except_last(self):
+    def test_verify_all_users_except_last(self) -> None:
         """Check if all users except the last one have been verified"""
         users = User.query.all()
         self.assertEqual(users[0].rank_id, 2)

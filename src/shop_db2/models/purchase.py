@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import validates
@@ -38,10 +40,10 @@ class Purchase(db.Model):
     # Link to the product
     product = db.relationship("Product", foreign_keys=[product_id])
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         from .product_price import ProductPrice
 
-        super(Purchase, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         productprice = (
             ProductPrice.query.filter(ProductPrice.product_id == self.product_id)
             .order_by(ProductPrice.id.desc())
@@ -50,7 +52,7 @@ class Purchase(db.Model):
         self.productprice = productprice.price
 
     @validates("user_id")
-    def validate_user(self, key, user_id):
+    def validate_user(self, _: Any, user_id: int) -> int:
         """Make sure that the user is verified"""
         from .user import User
 
@@ -61,7 +63,7 @@ class Purchase(db.Model):
         return user_id
 
     @hybrid_method
-    def set_revoked(self, revoked, admin_id=None):
+    def set_revoked(self, revoked: bool, admin_id: Optional[int] = None) -> None:
         if not self.product.revocable:
             raise EntryNotRevocable()
 
@@ -75,11 +77,11 @@ class Purchase(db.Model):
         db.session.add(pr)
 
     @hybrid_property
-    def price(self):
+    def price(self) -> int:
         return self.amount * self.productprice
 
     @hybrid_property
-    def revokehistory(self):
+    def revokehistory(self) -> List[Dict]:
         res = PurchaseRevoke.query.filter(PurchaseRevoke.purchase_id == self.id).all()
         revokehistory = []
         for revoke in res:

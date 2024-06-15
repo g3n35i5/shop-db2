@@ -15,5 +15,5 @@ class Rank(db.Model):
     debt_limit = db.Column(db.Integer, nullable=True)
     is_system_user = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Rank {self.name}>"

@@ -11,7 +11,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdatePurchaseAPITestCase(BaseAPITestCase):
-    def test_update_nothing(self):
+    def test_update_nothing(self) -> None:
         """Updating a purchase with no data should do nothing."""
         self.insert_default_purchases()
         purchase1 = Purchase.query.filter_by(id=1).first()
@@ -21,7 +21,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         purchase2 = Purchase.query.filter_by(id=1).first()
         self.assertEqual(purchase1, purchase2)
 
-    def test_update_forbidden_field(self):
+    def test_update_forbidden_field(self) -> None:
         """Updating a forbidden field should raise an error."""
         self.insert_default_purchases()
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
@@ -31,7 +31,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ForbiddenField)
         self.assertEqual(Purchase.query.filter_by(id=1).first().id, 1)
 
-    def test_update_non_existing_purchase(self):
+    def test_update_non_existing_purchase(self) -> None:
         """Updating a non existing purchase should raise an error."""
         self.insert_default_purchases()
         data = {"amount": 5}
@@ -39,7 +39,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_revoke_purchase_made_by_admin(self):
+    def test_revoke_purchase_made_by_admin(self) -> None:
         """Purchase, which have been inserted from administrators can only
         be revoked by an administrator.
         """
@@ -69,7 +69,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertTrue(purchase.revoked)
         self.assertEqual(2, purchase.amount)
 
-    def test_update_revoke_purchase_twice(self):
+    def test_update_revoke_purchase_twice(self) -> None:
         """Revoking a purchase twice should raise an error and do nothing."""
         self.insert_default_purchases()
         data = {"revoked": True}
@@ -81,7 +81,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
         self.assertTrue(Purchase.query.filter_by(id=1).first().revoked)
 
-    def test_update_wrong_type(self):
+    def test_update_wrong_type(self) -> None:
         """A wrong field type should raise an error."""
         self.insert_default_purchases()
         purchase1 = Purchase.query.filter_by(id=1).first()
@@ -92,7 +92,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         purchase2 = Purchase.query.filter_by(id=1).first()
         self.assertEqual(purchase1, purchase2)
 
-    def test_update_unknown_field(self):
+    def test_update_unknown_field(self) -> None:
         """An unknown field should raise an error."""
         self.insert_default_purchases()
         data = {"color": "red"}
@@ -100,7 +100,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_purchase_revoked(self):
+    def test_update_purchase_revoked(self) -> None:
         """Update purchase revoked field."""
         self.insert_default_purchases()
         self.assertFalse(Purchase.query.filter_by(id=1).first().revoked)
@@ -113,7 +113,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(data["updated_fields"][0], "revoked")
         self.assertTrue(Purchase.query.filter_by(id=1).first().revoked)
 
-    def test_update_non_revocable_purchase_revoke(self):
+    def test_update_non_revocable_purchase_revoke(self) -> None:
         """In case that the product is not revocable, an exception must be made."""
         # Make sure, that product 1 is not revocable.
         product = Product.query.filter_by(id=1).first()
@@ -128,7 +128,7 @@ class UpdatePurchaseAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryNotRevocable)
         self.assertFalse(Purchase.query.filter_by(id=1).first().revoked)
 
-    def test_update_purchase_amount(self):
+    def test_update_purchase_amount(self) -> None:
         """Update product price"""
         self.insert_default_purchases()
         purchase = Purchase.query.filter_by(id=1).first()

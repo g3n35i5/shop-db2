@@ -11,7 +11,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
-    def test_create_replenishment_collection_as_admin(self):
+    def test_create_replenishment_collection_as_admin(self) -> None:
         """Creating a ReplenishmentCollection as admin"""
         self.insert_default_replenishmentcollections()
         replenishments = [
@@ -44,7 +44,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
             for key in data_dict:
                 self.assertEqual(getattr(repls[i], key), data_dict[key])
 
-    def test_check_users_credit_after_inserting_replenishmentcollection(self):
+    def test_check_users_credit_after_inserting_replenishmentcollection(self) -> None:
         """The credit of the user who is referred by the 'seller_id' should change after a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         collections = ReplenishmentCollection.query.all()
@@ -64,7 +64,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         seller = User.query.filter(User.id == 5).first()
         self.assertEqual(sum_collections - price, seller.credit)
 
-    def test_create_replenishmentcollection_reactivate_product(self):
+    def test_create_replenishmentcollection_reactivate_product(self) -> None:
         """If a product was marked as inactive with a stocktaking, it can
         be set to active again with a replenishment. This functionality is
         checked with this test.
@@ -86,7 +86,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.post(url="/replenishmentcollections", data=data, role="admin")
         self.assertTrue(Product.query.filter_by(id=1).first().active)
 
-    def test_create_replenishmentcollection_as_user(self):
+    def test_create_replenishmentcollection_as_user(self) -> None:
         """Creating a ReplenishmentCollection as user"""
         replenishments = [
             {"product_id": 1, "amount": 100, "total_price": 200},
@@ -102,13 +102,13 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_create_replenishmentcollection_with_missing_data_I(self):
+    def test_create_replenishmentcollection_with_missing_data_I(self) -> None:
         """Creating a ReplenishmentCollection with missing data"""
         res = self.post(url="/replenishmentcollections", data={}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_replenishmentcollection_with_missing_data_II(self):
+    def test_create_replenishmentcollection_with_missing_data_II(self) -> None:
         """Creating a ReplenishmentCollection with missing data for repl"""
         replenishments = [
             {"product_id": 1, "total_price": 200},
@@ -124,7 +124,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_replenishmentcollection_with_missing_data_III(self):
+    def test_create_replenishmentcollection_with_missing_data_III(self) -> None:
         """Creating a ReplenishmentCollection with empty repl"""
         data = {
             "replenishments": [],
@@ -136,7 +136,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_replenishmentcollection_with_missing_data_IV(self):
+    def test_create_replenishmentcollection_with_missing_data_IV(self) -> None:
         """Creating a ReplenishmentCollection with missing timestamp"""
         data = {
             "replenishments": [{"product_id": 2, "amount": 20, "total_price": 20}],
@@ -147,7 +147,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_replenishmentcollection_with_missing_data_V(self):
+    def test_create_replenishmentcollection_with_missing_data_V(self) -> None:
         """Creating a ReplenishmentCollection with missing seller_id"""
         data = {
             "replenishments": [{"product_id": 2, "amount": 20, "total_price": 20}],
@@ -158,7 +158,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_replenishmentcollection_with_unknown_field_I(self):
+    def test_create_replenishmentcollection_with_unknown_field_I(self) -> None:
         """Creating a replenishmentcollection with unknown field in the
         collection itself should raise an exception.
         """
@@ -177,7 +177,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_create_replenishmentcollection_with_unknown_field_II(self):
+    def test_create_replenishmentcollection_with_unknown_field_II(self) -> None:
         """Creating a replenishmentcollection with unknown field in one of the
         replenishments should raise an exception.
         """
@@ -195,7 +195,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_create_replenishmentcollection_with_wrong_type_I(self):
+    def test_create_replenishmentcollection_with_wrong_type_I(self) -> None:
         """Creating a replenishmentcollection with wrong type in the
         replenishmentcollection itself should raise an exception.
         """
@@ -213,7 +213,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_create_replenishmentcollection_with_wrong_type_II(self):
+    def test_create_replenishmentcollection_with_wrong_type_II(self) -> None:
         """Creating a replenishmentcollection with wrong type in one of the
         replenishments should raise an exception.
         """
@@ -231,7 +231,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_create_replenishmentcollection_with_invalid_amount(self):
+    def test_create_replenishmentcollection_with_invalid_amount(self) -> None:
         """Creating a replenishmentcollection with negative amount"""
         replenishments = [
             {"product_id": 1, "amount": -10, "total_price": 200},
@@ -247,7 +247,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidAmount)
 
-    def test_create_replenishmentcollection_with_non_existing_product(self):
+    def test_create_replenishmentcollection_with_non_existing_product(self) -> None:
         """Creating a replenishmentcollection with a non existing product_id"""
         replenishments = [
             {"product_id": 1, "amount": 100, "total_price": 200},
@@ -263,7 +263,7 @@ class CreateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_create_replenishmentcollection_with_non_existing_seller(self):
+    def test_create_replenishmentcollection_with_non_existing_seller(self) -> None:
         """Creating a replenishmentcollection with a non existing product_id"""
         replenishments = [
             {"product_id": 1, "amount": 100, "total_price": 200},

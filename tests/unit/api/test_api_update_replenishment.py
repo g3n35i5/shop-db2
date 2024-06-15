@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdateReplenishmentAPITestCase(BaseAPITestCase):
-    def test_update_replenishment_as_admin(self):
+    def test_update_replenishment_as_admin(self) -> None:
         """Updating amount and price of a single replenishment"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 20, "total_price": 400}
@@ -24,7 +24,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(repl.amount, 20)
         self.assertEqual(repl.total_price, 400)
 
-    def test_update_replenishment_no_changes(self):
+    def test_update_replenishment_no_changes(self) -> None:
         """Updating a single replenishment with same amount and price"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 10, "total_price": 3000}
@@ -32,7 +32,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_replenishment_no_changes_II(self):
+    def test_update_replenishment_no_changes_II(self) -> None:
         """Trying to un-revoke a non revoked replenishment should raise an
         exception.
         """
@@ -42,7 +42,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_replenishment_as_user(self):
+    def test_update_replenishment_as_user(self) -> None:
         """Updating a single replenishment as user"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 0, "total_price": 0}
@@ -50,7 +50,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_update_replenishment_with_invalid_id(self):
+    def test_update_replenishment_with_invalid_id(self) -> None:
         """Updating a single replenishment that does not exist"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 0, "total_price": 0}
@@ -58,7 +58,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_update_replenishment_with_forbidden_field(self):
+    def test_update_replenishment_with_forbidden_field(self) -> None:
         """Updating a forbidden field of a single replenishment"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 0, "total_price": 0, "product_id": 1}
@@ -66,7 +66,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
 
-    def test_update_replenishment_with_unknown_field(self):
+    def test_update_replenishment_with_unknown_field(self) -> None:
         """Updating a unknown field of a single replenishment"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 0, "total_price": 0, "Nonse": "2"}
@@ -74,7 +74,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_replenishment_with_wrong_type(self):
+    def test_update_replenishment_with_wrong_type(self) -> None:
         """Updating a field of a single replenishment with a wrong type"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 0, "total_price": "1"}
@@ -82,7 +82,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_update_replenishment_with_less_data(self):
+    def test_update_replenishment_with_less_data(self) -> None:
         """Updating a single replenishment with less data"""
         self.insert_default_replenishmentcollections()
         data = {"amount": 0}
@@ -93,7 +93,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertEqual(data["message"], "Updated replenishment")
         self.assertEqual(data["updated_fields"], ["amount"])
 
-    def test_update_replenishment_revoke(self):
+    def test_update_replenishment_revoke(self) -> None:
         """Revoking a single replenishment"""
         self.insert_default_replenishmentcollections()
         data = {"revoked": True}
@@ -106,7 +106,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         repl = Replenishment.query.filter_by(id=2).first()
         self.assertTrue(repl.revoked)
 
-    def test_update_replenishment_revoke_all(self):
+    def test_update_replenishment_revoke_all(self) -> None:
         """Revoking a all replenishments of a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         data = {"revoked": True}
@@ -131,7 +131,7 @@ class UpdateReplenishmentAPITestCase(BaseAPITestCase):
         self.assertTrue(replcoll.revoked)
         self.assertEqual(replcoll.price, 0)
 
-    def test_update_replenishment_rerevoke_replcoll(self):
+    def test_update_replenishment_rerevoke_replcoll(self) -> None:
         """Re-revoking a replenishment after all replenishments have been
         revoked should re-revoke the corresponding replenishmentcollection
         """

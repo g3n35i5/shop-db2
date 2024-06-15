@@ -14,5 +14,5 @@ class Tag(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     is_for_sale = db.Column(db.Boolean, nullable=False, default=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Tag {self.name}>"

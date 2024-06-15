@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListStocktakingCollectionsAPITestCase(BaseAPITestCase):
-    def test_list_stocktaking_collections_as_admin(self):
+    def test_list_stocktaking_collections_as_admin(self) -> None:
         """Getting a list of all StocktakingCollections as admin"""
         self.insert_default_stocktakingcollections()
         res = self.get(url="/stocktakingcollections", role="admin")
@@ -19,7 +19,7 @@ class ListStocktakingCollectionsAPITestCase(BaseAPITestCase):
         for collection in collecttions:
             assert all(x in collection for x in required)
 
-    def test_list_stocktaking_collections_as_user(self):
+    def test_list_stocktaking_collections_as_user(self) -> None:
         """Trying to get a list of all StocktakingCollections as user"""
         res = self.get(url="/stocktakingcollections", role="user")
         self.assertEqual(res.status_code, 401)

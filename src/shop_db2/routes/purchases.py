@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import Optional
+
+from shop_db2.models.user import User
+
 __author__ = "g3n35i5"
 
 from flask import jsonify, request
@@ -18,7 +22,7 @@ from shop_db2.models import Purchase, PurchaseRevoke
 
 @app.route("/purchases", methods=["GET"])
 @adminOptional
-def list_purchases(admin):
+def list_purchases(admin: None):
     """Returns a list of all purchases. If this route is called by an
     administrator, all information is returned. However, if it is called
     without further rights, a minimal version is returned.
@@ -54,7 +58,7 @@ def list_purchases(admin):
 
 @app.route("/purchases", methods=["POST"])
 @adminOptional
-def create_purchase(admin):
+def create_purchase(admin: Optional[User]):
     """Insert a new purchase.
 
     :param admin:                Is the administrator user, determined by @adminOptional.
@@ -91,7 +95,7 @@ def create_purchase(admin):
 
 
 @app.route("/purchases/<int:purchase_id>", methods=["GET"])
-def get_purchase(purchase_id):
+def get_purchase(purchase_id: int):
     """Returns the purchase with the requested id.
 
     :param purchase_id:    Is the purchase id.
@@ -120,7 +124,7 @@ def get_purchase(purchase_id):
 
 @app.route("/purchases/<int:purchase_id>", methods=["PUT"])
 @adminOptional
-def update_purchase(admin, purchase_id):
+def update_purchase(admin: Optional[User], purchase_id: int):
     """Update the purchase with the given id.
 
     :param admin:       Is the administrator user, determined by @adminRequired.

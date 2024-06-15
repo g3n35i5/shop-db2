@@ -16,7 +16,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
 
     TIMESTAMP = datetime.datetime.strptime("2019-03-18 08:00:00", "%Y-%m-%d %H:%M:%S")
 
-    def test_authorization(self):
+    def test_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.post(url="/stocktakingcollections", data={})
         self.assertEqual(res.status_code, 401)
@@ -25,7 +25,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_create_stocktaking_collection_as_admin(self):
+    def test_create_stocktaking_collection_as_admin(self) -> None:
         """Creating a StocktakingCollection as admin"""
         self.insert_default_stocktakingcollections()
 
@@ -61,7 +61,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
             for key in _dict:
                 self.assertEqual(getattr(api_stocktakings[i], key), _dict[key])
 
-    def test_create_stocktakingcollection_non_countable_product(self):
+    def test_create_stocktakingcollection_non_countable_product(self) -> None:
         """Only the products which are countable can be in a stocktaking."""
         # Set product 1 to non countable
         Product.query.filter_by(id=1).first().countable = False
@@ -83,7 +83,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.InvalidData)
         self.assertFalse(StocktakingCollection.query.all())
 
-    def test_create_stocktakingcollection_non_existing_product(self):
+    def test_create_stocktakingcollection_non_existing_product(self) -> None:
         """If a product does not exist of an stocktakingcollection, an exception
         must be raised.
         """
@@ -96,7 +96,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_create_stocktakingcollection_set_product_inactive(self):
+    def test_create_stocktakingcollection_set_product_inactive(self) -> None:
         """This test ensures that a product is set to inactive if this is
         specified in the stocktaking.
         """
@@ -115,13 +115,13 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertTrue(Product.query.filter_by(id=2).first().active)
         self.assertFalse(Product.query.filter_by(id=4).first().active)
 
-    def test_create_stocktakingcollection_with_missing_data_I(self):
+    def test_create_stocktakingcollection_with_missing_data_I(self) -> None:
         """Creating a StocktakingCollection with missing data"""
         res = self.post(url="/stocktakingcollections", data={}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_stocktakingcollection_with_missing_data_II(self):
+    def test_create_stocktakingcollection_with_missing_data_II(self) -> None:
         """Creating a StocktakingCollection with missing data for stocktaking"""
         stocktakings = [{"product_id": 1, "count": 200}, {"product_id": 2}]
         data = {
@@ -132,14 +132,14 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_stocktakingcollection_with_missing_data_III(self):
+    def test_create_stocktakingcollection_with_missing_data_III(self) -> None:
         """Creating a StocktakingCollection with empty stocktakings"""
         data = {"stocktakings": [], "timestamp": int(self.TIMESTAMP.timestamp())}
         res = self.post(url="/stocktakingcollections", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_stocktakingcollection_with_unknown_field_I(self):
+    def test_create_stocktakingcollection_with_unknown_field_I(self) -> None:
         """Creating a stocktakingcollection with unknown field in the
         collection itself should raise an exception.
         """
@@ -158,7 +158,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_create_stocktakingcollection_with_unknown_field_II(self):
+    def test_create_stocktakingcollection_with_unknown_field_II(self) -> None:
         """Creating a stocktakingcollection with unknown field in one of the
         stocktakings should raise an exception.
         """
@@ -176,7 +176,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_create_stocktakingcollection_with_wrong_type_I(self):
+    def test_create_stocktakingcollection_with_wrong_type_I(self) -> None:
         """Creating a stocktakingcollection with wrong type in the
         stocktakingcollection itself should raise an exception.
         """
@@ -185,7 +185,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_create_stocktakingcollection_with_wrong_type_II(self):
+    def test_create_stocktakingcollection_with_wrong_type_II(self) -> None:
         """Creating a stocktakingcollection with wrong type in one of the
         stocktakings should raise an exception.
         """
@@ -203,7 +203,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_create_stocktakingcollection_with_invalid_amount(self):
+    def test_create_stocktakingcollection_with_invalid_amount(self) -> None:
         """Creating a stocktakingcollection with negative amount"""
         stocktakings = [
             {"product_id": 1, "count": -2},
@@ -219,7 +219,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidAmount)
 
-    def test_create_stocktakingcollection_with_missing_product(self):
+    def test_create_stocktakingcollection_with_missing_product(self) -> None:
         """Creating a stocktakingcollection with missing product"""
         stocktakings = [
             {"product_id": 1, "count": 100},
@@ -234,7 +234,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_stocktakingcollection_with_missing_timestamp(self):
+    def test_create_stocktakingcollection_with_missing_timestamp(self) -> None:
         """Creating a stocktakingcollection with missing product"""
         stocktakings = [
             {"product_id": 1, "count": 100},
@@ -247,7 +247,7 @@ class CreateStocktakingCollectionAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_stocktakingcollection_with_invalid_timestamp(self):
+    def test_create_stocktakingcollection_with_invalid_timestamp(self) -> None:
         """Creating a stocktakingcollection with invalid timestamp"""
         stocktakings = [
             {"product_id": 1, "count": 100},

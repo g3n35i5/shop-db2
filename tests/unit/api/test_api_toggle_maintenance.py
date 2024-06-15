@@ -30,7 +30,7 @@ class ToggleMaintenanceAPITestCase(BaseAPITestCase):
             groups = match[0]
             return strtobool(groups[3])
 
-    def test_toggle_maintenance_mode_authorization(self):
+    def test_toggle_maintenance_mode_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.post(url="/maintenance", data={})
         self.assertEqual(res.status_code, 401)
@@ -42,7 +42,7 @@ class ToggleMaintenanceAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_turn_on_maintenance_mode(self):
+    def test_turn_on_maintenance_mode(self) -> None:
         """This test ensures that the maintenance mode can be activated."""
         # Check the maintenance state
         self.assertFalse(app.config["MAINTENANCE"])
@@ -62,7 +62,7 @@ class ToggleMaintenanceAPITestCase(BaseAPITestCase):
         # Reset the maintenance state to "False"
         self.post(url="/maintenance", data={"state": False}, role="admin")
 
-    def test_turn_off_maintenance_mode(self):
+    def test_turn_off_maintenance_mode(self) -> None:
         """This test ensures that the maintenance mode can be deactivated."""
         # Set the maintenance state to "True"
         self.post(url="/maintenance", data={"state": True}, role="admin")
@@ -82,14 +82,14 @@ class ToggleMaintenanceAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["message"], "Turned maintenance mode off.")
 
-    def test_toggle_maintenance_mode_without_change(self):
+    def test_toggle_maintenance_mode_without_change(self) -> None:
         """This test ensures that an exception is raised if the maintenance mode
         would not be changed by the request.
         """
         res = self.post(url="/maintenance", data={"state": False}, role="admin")
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_user_interaction_in_maintenance_mode(self):
+    def test_user_interaction_in_maintenance_mode(self) -> None:
         """This test ensures that an exception is raised if a user (no administrator) does any request."""
         # Set the maintenance state to "False"
         self.post(url="/maintenance", data={"state": True}, role="admin")

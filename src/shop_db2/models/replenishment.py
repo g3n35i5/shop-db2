@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Dict, List
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import column_property
@@ -38,7 +40,7 @@ class Replenishment(db.Model):
     )
 
     @hybrid_method
-    def set_revoked(self, revoked, admin_id):
+    def set_revoked(self, revoked: bool, admin_id: int) -> None:
         # Get all not revoked replenishments corresponding to the
         # replenishmentcollection before changes are made
         non_revoked_replenishments = self.replenishmentcollection.replenishments.filter_by(revoked=False).all()
@@ -67,7 +69,7 @@ class Replenishment(db.Model):
             db.session.add(dr)
 
     @hybrid_property
-    def revokehistory(self):
+    def revokehistory(self) -> List[Dict]:
         res = ReplenishmentRevoke.query.filter(ReplenishmentRevoke.repl_id == self.id).all()
         revokehistory = []
         for revoke in res:
@@ -107,7 +109,7 @@ class ReplenishmentCollection(db.Model):
     )
 
     @hybrid_method
-    def set_revoked(self, revoked, admin_id):
+    def set_revoked(self, revoked: bool, admin_id: int) -> None:
         # Which replenishments are not revoked?
         non_revoked_replenishments = self.replenishments.filter_by(revoked=False).all()
         if not revoked and not non_revoked_replenishments:
@@ -118,12 +120,12 @@ class ReplenishmentCollection(db.Model):
         db.session.add(dr)
 
     @hybrid_method
-    def set_timestamp(self, timestamp: str):
+    def set_timestamp(self, timestamp: str) -> None:
         data = parse_timestamp({"timestamp": timestamp}, required=True)
         self.timestamp = data["timestamp"]
 
     @hybrid_property
-    def revokehistory(self):
+    def revokehistory(self) -> List[Dict]:
         res = ReplenishmentCollectionRevoke.query.filter(ReplenishmentCollectionRevoke.replcoll_id == self.id).all()
         revokehistory = []
         for revoke in res:

@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetRankAPITestCase(BaseAPITestCase):
-    def test_get_single_rank(self):
+    def test_get_single_rank(self) -> None:
         """Test for getting a single rank"""
         res = self.get(url="/ranks/1")
         self.assertEqual(res.status_code, 200)
@@ -19,7 +19,7 @@ class GetRankAPITestCase(BaseAPITestCase):
         self.assertEqual(rank["debt_limit"], 0)
         self.assertFalse(rank["is_system_user"])
 
-    def test_get_non_existing_rank(self):
+    def test_get_non_existing_rank(self) -> None:
         """Getting a non existing rank should raise an error."""
         res = self.get(url="/ranks/6")
         self.assertEqual(res.status_code, 401)

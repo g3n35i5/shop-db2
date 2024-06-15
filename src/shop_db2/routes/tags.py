@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from shop_db2.models.user import User
+
 __author__ = "g3n35i5"
 
 from flask import jsonify, request
@@ -30,7 +32,7 @@ def list_tags():
 
 
 @app.route("/tags/<int:tag_id>", methods=["GET"])
-def get_tag(tag_id):
+def get_tag(tag_id: int):
     """Returns the tag with the requested id.
 
     :param tag_id:         Is the tag id.
@@ -49,7 +51,7 @@ def get_tag(tag_id):
 
 @app.route("/tags/<int:tag_id>", methods=["DELETE"])
 @adminRequired
-def delete_tag(admin, tag_id):
+def delete_tag(admin: User, tag_id: int):
     """Delete a tag.
 
     :param admin:                 Is the administrator user, determined by
@@ -87,7 +89,7 @@ def delete_tag(admin, tag_id):
 
 @app.route("/tags", methods=["POST"])
 @adminRequired
-def create_tag(admin):
+def create_tag(admin: User):
     """Route to create a new tag.
 
     :param admin:                 Is the administrator user, determined by
@@ -130,7 +132,7 @@ def create_tag(admin):
 
 @app.route("/tags/<int:tag_id>", methods=["PUT"])
 @adminRequired
-def update_tag(admin, tag_id):
+def update_tag(admin: User, tag_id: int):
     """Update the tag with the given id.
 
     :param admin:  Is the administrator user, determined by @adminRequired.

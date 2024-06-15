@@ -15,7 +15,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdateUserAPITestCase(BaseAPITestCase):
-    def test_update_authorization(self):
+    def test_update_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.put(url="/users/2", data={})
         self.assertEqual(res.status_code, 401)
@@ -27,7 +27,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_user_non_verified(self):
+    def test_update_user_non_verified(self) -> None:
         """This test ensures that a non verified user can only be updated if the required data is given"""
         user = User.query.filter_by(id=4).first()
         self.assertEqual(user.firstname, user_data[3]["firstname"])
@@ -40,7 +40,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertTrue(User.query.filter_by(id=4).first().is_verified)
         self.assertEqual(2, User.query.filter_by(id=4).first().rank_id)
 
-    def test_promote_user_to_admin(self):
+    def test_promote_user_to_admin(self) -> None:
         """Update the admin state of a user."""
         self.assertFalse(User.query.filter_by(id=2).first().is_admin)
         data = {"is_admin": True}
@@ -51,7 +51,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(data["updated_fields"], ["is_admin"])
         self.assertTrue(User.query.filter_by(id=2).first().is_admin)
 
-    def test_promote_user_to_admin_twice(self):
+    def test_promote_user_to_admin_twice(self) -> None:
         """When a user gets promoted to an admin twice, nothing
         should change.
         """
@@ -62,7 +62,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
         self.assertTrue(User.query.filter_by(id=1).first().is_admin)
 
-    def test_promote_user_to_admin_without_password(self):
+    def test_promote_user_to_admin_without_password(self) -> None:
         """Try to promote a user without password"""
         self.assertFalse(User.query.filter_by(id=3).first().is_admin)
         data = {"is_admin": True}
@@ -70,7 +70,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserNeedsPassword)
         self.assertFalse(User.query.filter_by(id=3).first().is_admin)
 
-    def test_make_contender_member(self):
+    def test_make_contender_member(self) -> None:
         """Update a contender to a member"""
         self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
         data = {"rank_id": 2}
@@ -81,7 +81,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(data["updated_fields"], ["rank_id"])
         self.assertEqual(User.query.filter_by(id=3).first().rank_id, 2)
 
-    def test_make_contender_member_twice(self):
+    def test_make_contender_member_twice(self) -> None:
         """Update a contender to a member twice should raise
         NothingHasChanged
         """
@@ -92,7 +92,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
         self.assertEqual(User.query.filter_by(id=3).first().rank_id, 1)
 
-    def test_update_user_image(self):
+    def test_update_user_image(self) -> None:
         """Set a user image"""
         # Assert that the user does not have an image
         user = User.query.filter_by(id=1).first()
@@ -116,7 +116,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         filepath = app.config["UPLOAD_FOLDER"] + user.imagename
         os.remove(filepath)
 
-    def test_update_forbidden_field(self):
+    def test_update_forbidden_field(self) -> None:
         """Updating a forbidden field should raise an error."""
         self.assertEqual(User.query.filter_by(id=1).first().credit, 0)
         data = {"credit": 10000}
@@ -125,14 +125,14 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ForbiddenField)
         self.assertEqual(User.query.filter_by(id=1).first().credit, 0)
 
-    def test_update_non_existing_user(self):
+    def test_update_non_existing_user(self) -> None:
         """Updating a non existing user should raise an error."""
         data = {"firstname": "Peter"}
         res = self.put(url="/users/6", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_update_user_password_too_short(self):
+    def test_update_user_password_too_short(self) -> None:
         """This test ensures that an exception is made if the user's password is
         too short.
         """
@@ -140,7 +140,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         res = self.put(url="/users/1", data=data, role="admin")
         self.assertException(res, exc.PasswordTooShort)
 
-    def test_update_user_password(self):
+    def test_update_user_password(self) -> None:
         """Update user password"""
         # Login should fail
         data = {"id": 1, "password": "SuperSecret"}
@@ -161,7 +161,7 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         assert all(item in data for item in ["token", "result"])
         self.assertTrue(data["result"])
 
-    def test_update_wrong_type(self):
+    def test_update_wrong_type(self) -> None:
         """A wrong field type should raise an error"""
         user1 = User.query.filter_by(id=1).first()
         data = {"firstname": True}
@@ -171,21 +171,21 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         user2 = User.query.filter_by(id=1).first()
         self.assertEqual(user1, user2)
 
-    def test_update_password_no_repeat(self):
+    def test_update_password_no_repeat(self) -> None:
         """Updating a password without repeat should raise an error"""
         data = {"password": "SuperSecret"}
         res = self.put(url="/users/1", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_update_password_wrong_repeat(self):
+    def test_update_password_wrong_repeat(self) -> None:
         """Updating a password with a wrong repeat should raise an error"""
         data = {"password": "SuperSecret", "password_repeat": "Super...Ooops"}
         res = self.put(url="/users/1", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.PasswordsDoNotMatch)
 
-    def test_update_firstname(self):
+    def test_update_firstname(self) -> None:
         """Update the firstname of a user."""
         user = User.query.filter(User.id == 2).first()
         self.assertEqual(user.firstname, "Mary")
@@ -198,14 +198,14 @@ class UpdateUserAPITestCase(BaseAPITestCase):
         user = User.query.filter(User.id == 2).first()
         self.assertEqual(user.firstname, "New-Mary")
 
-    def test_remove_last_admin_privileges(self):
+    def test_remove_last_admin_privileges(self) -> None:
         """Removing admin privileges from the only admin raises an error."""
         data = {"is_admin": False}
         res = self.put(url="/users/1", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.NoRemainingAdmin)
 
-    def test_remove_admin_privileges(self):
+    def test_remove_admin_privileges(self) -> None:
         """Removing admin privileges from the only admin raises an error."""
         data = {"is_admin": True}
         res = self.put(url="/users/2", data=data, role="admin")

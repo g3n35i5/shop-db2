@@ -21,11 +21,11 @@ class Revoke:
     revoked = db.Column(db.Boolean, nullable=False)
 
     @declared_attr
-    def admin_id(cls):
+    def admin_id(cls) -> db.Column:
         return db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     @validates("admin_id")
-    def validate_admin(self, key, admin_id):
+    def validate_admin(self, _: str, admin_id: int) -> int:
         from .user import User
 
         user = User.query.filter(User.id == admin_id).first()

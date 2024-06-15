@@ -13,7 +13,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class CreateBatchDepositAPITestCase(BaseAPITestCase):
-    def test_create_batch_deposit_positive_amount(self):
+    def test_create_batch_deposit_positive_amount(self) -> None:
         """Create a batch deposit with a positive amount."""
         data = {"user_ids": [1, 2, 3], "amount": 10, "comment": "Batch"}
         res = self.post(url="/deposits/batch", data=data, role="admin")
@@ -29,7 +29,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
             self.assertEqual(deposits[i - 1].comment, "Batch")
             self.assertFalse(deposits[i - 1].revoked)
 
-    def test_create_batch_deposit_negative_amount(self):
+    def test_create_batch_deposit_negative_amount(self) -> None:
         """Create a batch deposit with a negative amount."""
         data = {"user_ids": [1, 2, 3], "amount": -10, "comment": "Batch"}
         res = self.post(url="/deposits/batch", data=data, role="admin")
@@ -45,7 +45,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
             self.assertEqual(deposits[i - 1].comment, "Batch")
             self.assertFalse(deposits[i - 1].revoked)
 
-    def test_create_batch_deposit_wrong_type(self):
+    def test_create_batch_deposit_wrong_type(self) -> None:
         """Create a deposit with wrong type(s)."""
         data = {"user_ids": [1, 2], "amount": 1000, "comment": "Batch deposit"}
 
@@ -58,7 +58,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
 
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_batch_deposit_unknown_field(self):
+    def test_create_batch_deposit_unknown_field(self) -> None:
         """Create a batch deposit with an unknown field."""
         data = {
             "user_ids": [1, 2],
@@ -71,7 +71,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_batch_deposit_not_all_required_fields(self):
+    def test_create_batch_deposit_not_all_required_fields(self) -> None:
         """Create a batch deposit with a missing field should raise an error"""
         data = {"user_ids": [1, 2], "amount": 1000}
         res = self.post(url="/deposits/batch", role="admin", data=data)
@@ -79,7 +79,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_batch_deposit_non_verified_user(self):
+    def test_create_batch_deposit_non_verified_user(self) -> None:
         """Create a batch deposit as non verified user."""
         data = {"user_ids": [3, 4], "amount": 1000, "comment": "Batch deposit"}
         res = self.post(url="/deposits/batch", role="admin", data=data)
@@ -87,7 +87,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserIsNotVerified)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_batch_deposit_inactive_user(self):
+    def test_create_batch_deposit_inactive_user(self) -> None:
         """Create a deposit for an inactive user."""
         User.query.filter_by(id=3).first().set_rank_id(4, 1)
         db.session.commit()
@@ -97,7 +97,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserIsInactive)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_batch_deposit_non_existing_user(self):
+    def test_create_batch_deposit_non_existing_user(self) -> None:
         """Create a batch deposit as non existing user."""
         data = {"user_ids": [3, 6], "amount": 1000, "comment": "Batch deposit"}
         res = self.post(url="/deposits/batch", role="admin", data=data)
@@ -105,7 +105,7 @@ class CreateBatchDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryNotFound)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_batch_deposit_invalid_amount(self):
+    def test_create_batch_deposit_invalid_amount(self) -> None:
         """Create a batch deposit with an invalid amount."""
         data = {"user_ids": [1, 2], "amount": 0, "comment": "Batch deposit"}
         res = self.post(url="/deposits/batch", role="admin", data=data)

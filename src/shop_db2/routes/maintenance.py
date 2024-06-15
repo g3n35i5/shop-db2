@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from shop_db2.models.user import User
+
 __author__ = "g3n35i5"
 
 import os
@@ -27,7 +29,7 @@ def get_maintenance_mode():
 
 @app.route("/maintenance", methods=["POST"], endpoint="maintenance")
 @adminRequired
-def set_maintenance_mode(admin):
+def set_maintenance_mode(admin: User):
     """This route can be used by an administrator to switch the maintenance mode
     on or off.
 

@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListProductsAPITestCase(BaseAPITestCase):
-    def test_list_products(self):
+    def test_list_products(self) -> None:
         """Get a list of all products"""
         inactive_product = Product.query.filter(Product.id == 4).first()
         inactive_product.active = False
@@ -39,7 +39,7 @@ class ListProductsAPITestCase(BaseAPITestCase):
             self.assertTrue(products[i]["active"])
         self.assertFalse(products[3]["active"])
 
-    def test_list_products_with_products_which_are_not_for_sale(self):
+    def test_list_products_with_products_which_are_not_for_sale(self) -> None:
         """This test ensures that the product listing differs between administrators and "normal" users.
         Only if an administrator makes the request, all products should be returned, otherwise only those that
         are for sale.

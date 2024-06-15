@@ -14,7 +14,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ChangeTagassignmentAPITestCase(BaseAPITestCase):
-    def test_change_tag_assignment_authorization(self):
+    def test_change_tag_assignment_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.post(url="/tagassignment/add", data={})
         self.assertEqual(res.status_code, 401)
@@ -26,7 +26,7 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_assign_tag(self):
+    def test_assign_tag(self) -> None:
         """Assign a tag as admin."""
         self.assertEqual(0, len(Product.query.filter_by(id=1).first().tags))
         data = {"product_id": 1, "tag_id": 1}
@@ -36,7 +36,7 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         self.assertEqual(data["message"], "Tag assignment has been added.")
         self.assertEqual(1, len(Product.query.filter_by(id=1).first().tags))
 
-    def test_remove_tag_assignment(self):
+    def test_remove_tag_assignment(self) -> None:
         """Remove a tag assignment as admin."""
         product = Product.query.filter_by(id=1).first()
         tag1 = Tag.query.filter_by(id=1).first()
@@ -51,35 +51,35 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         self.assertEqual(data["message"], "Tag assignment has been removed.")
         self.assertEqual(1, len(Product.query.filter_by(id=1).first().tags))
 
-    def test_assign_tag_wrong_type(self):
+    def test_assign_tag_wrong_type(self) -> None:
         """Assign a tag with a wrong type."""
         data = {"product_id": "1", "tag_id": 1}
         res = self.post(url="/tagassignment/add", role="admin", data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_assign_tag_missing_data(self):
+    def test_assign_tag_missing_data(self) -> None:
         """Assign a tag with missing data."""
         data = {"product_id": "1"}
         res = self.post(url="/tagassignment/add", role="admin", data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_assign_tag_invalid_product(self):
+    def test_assign_tag_invalid_product(self) -> None:
         """Assign a tag with an invalid product id."""
         data = {"product_id": 5, "tag_id": 1}
         res = self.post(url="/tagassignment/add", role="admin", data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_assign_tag_invalid_tag(self):
+    def test_assign_tag_invalid_tag(self) -> None:
         """Assign a tag with an invalid tag id."""
         data = {"product_id": 1, "tag_id": 6}
         res = self.post(url="/tagassignment/add", role="admin", data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_assign_tag_twice(self):
+    def test_assign_tag_twice(self) -> None:
         """Assign a tag which has already been assigned"""
         product = Product.query.filter_by(id=1).first()
         tag = Tag.query.filter_by(id=1).first()
@@ -90,14 +90,14 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_remove_tag_twice(self):
+    def test_remove_tag_twice(self) -> None:
         """Remove a tag which has already been removed"""
         data = {"product_id": 1, "tag_id": 1}
         res = self.post(url="/tagassignment/remove", role="admin", data=data)
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_remove_last_tag(self):
+    def test_remove_last_tag(self) -> None:
         """Removing the last tag of a product must raise an error"""
         # Assign tag
         product = Product.query.filter_by(id=1).first()
@@ -110,7 +110,7 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.NoRemainingTag)
 
-    def test_assign_tag_unknown_field(self):
+    def test_assign_tag_unknown_field(self) -> None:
         """Unknown fields should raise an exception."""
         data = {"product_id": 1, "tag_id": 1, "foo": 42}
         res = self.post(url="/tagassignment/add", role="admin", data=data)
@@ -118,7 +118,7 @@ class ChangeTagassignmentAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
         self.assertEqual(0, len(Product.query.filter_by(id=1).first().tags))
 
-    def test_assign_tag_invalid_command(self):
+    def test_assign_tag_invalid_command(self) -> None:
         """Invalid command should raise an exception."""
         data = {"product_id": 1, "tag_id": 1, "foo": 42}
         res = self.post(url="/tagassignment/foo", role="admin", data=data)

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import shop_db2.models.user
+
 __author__ = "g3n35i5"
 
 from flask import jsonify, request
@@ -51,7 +53,7 @@ def list_replenishments(admin):
 
 @app.route("/replenishmentcollections/<int:collection_id>", methods=["GET"])
 @adminRequired
-def get_replenishmentcollection(admin, collection_id):
+def get_replenishmentcollection(admin: shop_db2.models.user.User, collection_id: int):
     """Returns the replenishmentcollection with the requested id. In addition,
     all replenishments that belong to this collection are returned.
 
@@ -98,7 +100,7 @@ def get_replenishmentcollection(admin, collection_id):
 
 @app.route("/replenishmentcollections", methods=["POST"])
 @adminRequired
-def create_replenishmentcollection(admin):
+def create_replenishmentcollection(admin: shop_db2.models.user.User):
     """Insert a new replenishmentcollection.
 
     :param admin:                Is the administrator user, determined by
@@ -189,7 +191,7 @@ def create_replenishmentcollection(admin):
 
 @app.route("/replenishmentcollections/<int:collection_id>", methods=["PUT"])
 @adminRequired
-def update_replenishmentcollection(admin, collection_id):
+def update_replenishmentcollection(admin: shop_db2.models.user.User, collection_id: int):
     """Update the replenishmentcollection with the given id.
 
     :param admin:         Is the administrator user, determined by @adminRequired.
@@ -202,7 +204,7 @@ def update_replenishmentcollection(admin, collection_id):
 
 @app.route("/replenishments/<int:replenishment_id>", methods=["PUT"])
 @adminRequired
-def update_replenishment(admin, replenishment_id):
+def update_replenishment(admin: shop_db2.models.user.User, replenishment_id: int):
     """Update the replenishment with the given id.
 
     :param admin:            Is the administrator user, determined by @adminRequired.

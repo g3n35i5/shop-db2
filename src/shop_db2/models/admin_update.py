@@ -19,7 +19,7 @@ class AdminUpdate(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     @validates("admin_id")
-    def validate_admin(self, key, admin_id):
+    def validate_admin(self, _: str, admin_id: int) -> int:
         from .user import User
 
         # If there are no admins in the database, the first user can promote

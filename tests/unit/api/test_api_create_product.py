@@ -13,7 +13,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class CreateProductsAPITestCase(BaseAPITestCase):
-    def test_create_product_authorization(self):
+    def test_create_product_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.post(url="/products", data={})
         self.assertEqual(res.status_code, 401)
@@ -25,7 +25,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_product(self):
+    def test_create_product(self) -> None:
         """Create a Product as admin."""
         p_data = {
             "name": "Bread",
@@ -51,7 +51,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertEqual(len(product.tags), 1)
         self.assertEqual(product.tags[0].id, 1)
 
-    def test_create_product_wrong_type(self):
+    def test_create_product_wrong_type(self) -> None:
         """Create a Product as admin with wrong type(s)."""
         p_data = {
             "name": "Bread",
@@ -72,7 +72,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
 
         self.assertEqual(len(Product.query.all()), 4)
 
-    def test_create_product_wrong_type_tags(self):
+    def test_create_product_wrong_type_tags(self) -> None:
         """If the tags of a product are of the wrong type, an exception must
         be raised.
         """
@@ -82,7 +82,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.WrongType)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_non_existing_tag(self):
+    def test_create_product_non_existing_tag(self) -> None:
         """If the tags of a product do not exist, an exception must be raised."""
         data = {"name": "Bread", "price": 100, "tags": [42]}
         res = self.post(url="/products", role="admin", data=data)
@@ -90,7 +90,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryNotFound)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_missing_name(self):
+    def test_create_product_missing_name(self) -> None:
         """Create a Product as admin with missing name."""
         data = {"price": 100, "tags": [1]}
         res = self.post(url="/products", role="admin", data=data)
@@ -98,7 +98,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_missing_price(self):
+    def test_create_product_missing_price(self) -> None:
         """Create a Product as admin with missing price."""
         data = {"name": "Bread", "tags": [1]}
         res = self.post(url="/products", role="admin", data=data)
@@ -106,7 +106,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_missing_tags(self):
+    def test_create_product_missing_tags(self) -> None:
         """Create a Product as admin with missing tags."""
         data = {"name": "Bread", "price": 100}
         res = self.post(url="/products", role="admin", data=data)
@@ -114,7 +114,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_with_existing_name(self):
+    def test_create_product_with_existing_name(self) -> None:
         """Creating a product which already exists should not be possible."""
         data = {"name": "Pizza", "price": 300, "tags": [1]}
         res = self.post(url="/products", role="admin", data=data)
@@ -122,7 +122,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryAlreadyExists)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_already_existing(self):
+    def test_create_product_already_existing(self) -> None:
         """Creating a product with an existing barcode should not be possible."""
         Product.query.filter_by(id=1).first().barcode = "123456"
         db.session.commit()
@@ -132,7 +132,7 @@ class CreateProductsAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryAlreadyExists)
         self.assertFalse(Product.query.filter_by(id=5).first())
 
-    def test_create_product_unknown_field(self):
+    def test_create_product_unknown_field(self) -> None:
         """Unknown fields should raise an exception."""
         data = {"name": "Bread", "price": 100, "tags": [1], "color": "blue"}
         res = self.post(url="/products", role="admin", data=data)

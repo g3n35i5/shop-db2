@@ -12,7 +12,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
-    def test_revoke_replenishmentcollection(self):
+    def test_revoke_replenishmentcollection(self) -> None:
         """Revoke a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/1", data={"revoked": True}, role="admin")
@@ -26,7 +26,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         for item in required:
             assert item in replcoll.revokehistory[0]
 
-    def test_revoke_replenishmentcollection_multiple_times(self):
+    def test_revoke_replenishmentcollection_multiple_times(self) -> None:
         """Revoke a replenishmentcollection multiple times"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/1", data={"revoked": True}, role="admin")
@@ -43,7 +43,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
             for item in required:
                 assert item in i
 
-    def test_update_replenishmentcollection_comment(self):
+    def test_update_replenishmentcollection_comment(self) -> None:
         """Update the comment of a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/1", data={"comment": "FooBar"}, role="admin")
@@ -54,7 +54,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.comment, "FooBar")
 
-    def test_update_replenishmentcollection_timestamp(self):
+    def test_update_replenishmentcollection_timestamp(self) -> None:
         """Update the timestamp of a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         timestamp = "2015-01-01 01:01:01Z"
@@ -70,7 +70,7 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(str(replcoll.timestamp), "2015-01-01 01:01:01")
 
-    def test_update_replenishmentcollection_invalid_timestamp(self):
+    def test_update_replenishmentcollection_invalid_timestamp(self) -> None:
         """Update the timestamp of a replenishmentcollection with a timestamp in the future must fail"""
         self.insert_default_replenishmentcollections()
         old_timestamp = ReplenishmentCollection.query.filter_by(id=1).first().timestamp
@@ -85,27 +85,27 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         replcoll = ReplenishmentCollection.query.filter_by(id=1).first()
         self.assertEqual(replcoll.timestamp, old_timestamp)
 
-    def test_revoke_replenishmentcollection_as_user(self):
+    def test_revoke_replenishmentcollection_as_user(self) -> None:
         """Revoking a replenishmentcollection as user should be forbidden"""
         res = self.put(url="/replenishmentcollections/1", data={"revoked": True}, role="user")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_update_replenishmentcollection_no_changes(self):
+    def test_update_replenishmentcollection_no_changes(self) -> None:
         """Revoking a replenishmentcollection with no changes"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/1", data={"revoked": False}, role="admin")
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_non_existing_replenishmentcollection(self):
+    def test_update_non_existing_replenishmentcollection(self) -> None:
         """Revoking a replenishmentcollection that doesnt exist"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/4", data={"revoked": True}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_update_replenishmentcollection_forbidden_field(self):
+    def test_update_replenishmentcollection_forbidden_field(self) -> None:
         """Updating forbidden fields of a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         res = self.put(
@@ -116,28 +116,28 @@ class UpdateReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
 
-    def test_update_replenishmentcollection_unknown_field(self):
+    def test_update_replenishmentcollection_unknown_field(self) -> None:
         """Update non existing fields of a replenishmentcollection"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/1", data={"Nonsense": ""}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_replenishmentcollection_wrong_type(self):
+    def test_update_replenishmentcollection_wrong_type(self) -> None:
         """Update fields of a replenishmentcollection with wrong types"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/1", data={"revoked": "yes"}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_update_replenishmentcollection_with_no_data(self):
+    def test_update_replenishmentcollection_with_no_data(self) -> None:
         """Update a replenishmentcollection with no data"""
         self.insert_default_replenishmentcollections()
         res = self.put(url="/replenishmentcollections/1", data={}, role="admin")
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_replenishmentcollection_revoke_error(self):
+    def test_update_replenishmentcollection_revoke_error(self) -> None:
         """Trying to rerevoke a replenishmentcollection which only has revoked
         replenishments should raise an error
         """

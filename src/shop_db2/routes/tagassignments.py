@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from shop_db2.models.user import User
+
 __author__ = "g3n35i5"
 
 from flask import jsonify
@@ -15,7 +17,7 @@ from shop_db2.models import Product, Tag
 
 @app.route("/tagassignment/<command>", methods=["POST"])
 @adminRequired
-def change_product_tag_assignment(admin, command):
+def change_product_tag_assignment(admin: User, command: str):
     """Under this route, a tag can be added to a product or removed.
 
     :param admin:              Is the administrator user, determined by

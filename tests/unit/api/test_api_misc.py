@@ -11,18 +11,18 @@ from tests.base_api import BaseAPITestCase
 
 
 class MiscAPITestCase(BaseAPITestCase):
-    def test_empty_json(self):
+    def test_empty_json(self) -> None:
         """An empty json body should raise an error."""
         res = self.client.post("/login", data=None)
         self.assertException(res, exc.InvalidJSON)
 
-    def test_get_api_root(self):
+    def test_get_api_root(self) -> None:
         """An empty json body should raise an error."""
         res = self.client.get("/")
         message = json.loads(res.data)["message"]
         self.assertEqual(message, "Backend is online.")
 
-    def test_404_exception(self):
+    def test_404_exception(self) -> None:
         """Check the 404 exception message."""
         res = self.get("does_not_exist")
         data = json.loads(res.data)
@@ -30,7 +30,7 @@ class MiscAPITestCase(BaseAPITestCase):
         self.assertEqual(data["message"], "Page does not exist.")
         self.assertEqual(data["result"], "error")
 
-    def test_method_not_allowed_exception(self):
+    def test_method_not_allowed_exception(self) -> None:
         """Check the MethodNotAllowed exception message."""
         res = self.client.get("/login")
         data = json.loads(res.data)
@@ -38,7 +38,7 @@ class MiscAPITestCase(BaseAPITestCase):
         self.assertEqual(data["message"], "Method not allowed.")
         self.assertEqual(data["result"], "error")
 
-    def test_maintenance_mode(self):
+    def test_maintenance_mode(self) -> None:
         """This test checks the maintenance mode.
 
         If the application is in maintenance mode, all requests must be aborted

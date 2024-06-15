@@ -14,7 +14,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdateProductAPITestCase(BaseAPITestCase):
-    def test_update_authorization(self):
+    def test_update_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.put(url="/products/2", data={})
         self.assertEqual(res.status_code, 401)
@@ -26,7 +26,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_forbidden_field(self):
+    def test_update_forbidden_field(self) -> None:
         """Updating a forbidden field should raise an error."""
         self.assertTrue(Product.query.filter_by(id=1).first().creation_date)
         data = {"creation_date": "01.01.1970"}
@@ -35,14 +35,14 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ForbiddenField)
         self.assertTrue(Product.query.filter_by(id=1).first().creation_date)
 
-    def test_update_non_existing_product(self):
+    def test_update_non_existing_product(self) -> None:
         """Updating a non existing product should raise an error."""
         data = {"name": "Bread"}
         res = self.put(url="/products/5", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_update_wrong_type(self):
+    def test_update_wrong_type(self) -> None:
         """A wrong field type should raise an error"""
         product1 = Product.query.filter_by(id=1).first()
         data = {"name": True}
@@ -52,14 +52,14 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         product2 = Product.query.filter_by(id=1).first()
         self.assertEqual(product1, product2)
 
-    def test_update_unknown_field(self):
+    def test_update_unknown_field(self) -> None:
         """An unknown field should raise an error"""
         data = {"color": "red"}
         res = self.put(url="/products/1", data=data, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_product_name(self):
+    def test_update_product_name(self) -> None:
         """Update product name"""
         self.assertEqual(Product.query.filter_by(id=1).first().name, "Pizza")
         data = {"name": "Bread"}
@@ -71,7 +71,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(data["updated_fields"][0], "name")
         self.assertEqual(Product.query.filter_by(id=1).first().name, "Bread")
 
-    def test_update_product_tags(self):
+    def test_update_product_tags(self) -> None:
         """Update product tags"""
         self.insert_default_tag_assignments()
         self.assertEqual([1], Product.query.filter_by(id=1).first().tag_ids)
@@ -80,21 +80,21 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.put(url="/products/1", data=data, role="admin")
         self.assertEqual([2, 3, 4], Product.query.filter_by(id=1).first().tag_ids)
 
-    def test_update_product_tags_no_remaining_tag(self):
+    def test_update_product_tags_no_remaining_tag(self) -> None:
         """Update product tags with an empty array"""
         self.insert_default_tag_assignments()
         data = {"tags": []}
         res = self.put(url="/products/1", data=data, role="admin")
         self.assertException(res, exc.NoRemainingTag)
 
-    def test_update_product_tags_no_changes(self):
+    def test_update_product_tags_no_changes(self) -> None:
         """Update product tags with no changes"""
         self.insert_default_tag_assignments()
         data = {"tags": [1]}
         res = self.put(url="/products/1", data=data, role="admin")
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_product_price(self):
+    def test_update_product_price(self) -> None:
         """Update product price"""
         self.assertEqual(Product.query.filter_by(id=1).first().price, 300)
         pricehist = ProductPrice.query.filter(ProductPrice.product_id == 1).all()
@@ -113,7 +113,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         self.assertEqual(pricehist[0].price, 300)
         self.assertEqual(pricehist[1].price, 200)
 
-    def test_update_product_image(self):
+    def test_update_product_image(self) -> None:
         """Update the product image"""
         # Upload a product image
         filepath = app.config["UPLOAD_FOLDER"] + "valid_image.png"
@@ -134,7 +134,7 @@ class UpdateProductAPITestCase(BaseAPITestCase):
         filepath = app.config["UPLOAD_FOLDER"] + product.imagename
         os.remove(filepath)
 
-    def test_update_barcode_with_existing_barcode(self):
+    def test_update_barcode_with_existing_barcode(self) -> None:
         """It should not be possible to assign a barcode to a product which has
         been assigned to another product.
         """

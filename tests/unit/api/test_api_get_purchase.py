@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetPurchaseAPITestCase(BaseAPITestCase):
-    def test_get_single_purchase(self):
+    def test_get_single_purchase(self) -> None:
         """Test for getting a single purchase"""
         # Insert test purchases
         self.insert_default_purchases()
@@ -24,7 +24,7 @@ class GetPurchaseAPITestCase(BaseAPITestCase):
         self.assertEqual(purchase["price"], 200)
         self.assertFalse(purchase["revoked"])
 
-    def test_get_non_existing_purchase(self):
+    def test_get_non_existing_purchase(self) -> None:
         """Getting a non existing purchase should raise an error."""
         res = self.get(url="/purchases/5")
         self.assertEqual(res.status_code, 401)

@@ -12,7 +12,7 @@ from tests.base_api import BaseAPITestCase
 
 class GetUserFavoritesAPITestCase(BaseAPITestCase):
     @staticmethod
-    def _insert_purchases():
+    def _insert_purchases() -> None:
         """Helper function to insert some test purchases."""
         # Insert user 1 purchases.
         p1 = Purchase(user_id=1, product_id=1, amount=4)
@@ -31,7 +31,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
             db.session.add(p)
         db.session.commit()
 
-    def test_get_user_favorites(self):
+    def test_get_user_favorites(self) -> None:
         """This test ensures that the user's favorites are generated reliably."""
         self._insert_purchases()
         res = self.get(url="/users/1/favorites")
@@ -39,7 +39,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(favorites, [3, 2, 1, 4])
 
-    def test_get_user_favorites_inactive_product(self):
+    def test_get_user_favorites_inactive_product(self) -> None:
         """This test ensures that inactive products are not included in the
         favorites.
         """
@@ -54,7 +54,7 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(favorites, [3, 2, 4])
 
-    def test_get_user_favorites_no_purchase(self):
+    def test_get_user_favorites_no_purchase(self) -> None:
         """This test ensures that an empty list is displayed for the user's
         favorites if no purchases have yet been made.
         """
@@ -63,19 +63,19 @@ class GetUserFavoritesAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(favorites, [])
 
-    def test_get_user_favorites_non_existing_user(self):
+    def test_get_user_favorites_non_existing_user(self) -> None:
         """Getting the favorites from a non existing user should raise an error."""
         res = self.get(url="/users/6/favorites")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_get_user_favorites_non_verified_user(self):
+    def test_get_user_favorites_non_verified_user(self) -> None:
         """Getting the favorites from a non verified user should raise an error."""
         res = self.get(url="/users/4/favorites")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)
 
-    def test_get_user_favorites_inactive_user(self):
+    def test_get_user_favorites_inactive_user(self) -> None:
         """Getting the favorites from an inactive user should raise an error."""
         User.query.filter_by(id=3).first().set_rank_id(4, 1)
         db.session.commit()

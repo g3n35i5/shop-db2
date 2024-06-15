@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListReplenishmentCollectionsAPITestCase(BaseAPITestCase):
-    def test_list_replenishment_collections_as_admin(self):
+    def test_list_replenishment_collections_as_admin(self) -> None:
         """Getting a list of all ReplenishmentCollections as admin"""
         self.insert_default_replenishmentcollections()
         res = self.get(url="/replenishmentcollections", role="admin")
@@ -19,7 +19,7 @@ class ListReplenishmentCollectionsAPITestCase(BaseAPITestCase):
         for replcoll in replcolls:
             assert all(x in replcoll for x in required)
 
-    def test_list_replenishment_collections_as_user(self):
+    def test_list_replenishment_collections_as_user(self) -> None:
         """Trying to get a list of all ReplenishmentCollections as user"""
         res = self.get(url="/replenishmentcollections", role="user")
         self.assertEqual(res.status_code, 401)

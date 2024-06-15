@@ -8,7 +8,7 @@ from tests.base import BaseTestCase
 
 
 class DepositModelTestCase(BaseTestCase):
-    def test_deposit_link_to_its_user(self):
+    def test_deposit_link_to_its_user(self) -> None:
         """This test checks whether the reference to the user of a deposit is
         working correctly.
         """

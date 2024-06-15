@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Any
+
 import werkzeug.exceptions as werkzeug_exceptions
 from flask import jsonify
 
@@ -10,7 +12,7 @@ from shop_db2.api import app, db
 
 
 @app.errorhandler(Exception)
-def handle_error(error):
+def handle_error(error: Exception) -> Any:
     """This wrapper catches all exceptions and, if possible, returns a user
     friendly response. Otherwise, it will raise the error
 
@@ -44,5 +46,4 @@ def handle_error(error):
     # Create, if possible, a user friendly response.
     if isinstance(error, exc.ShopdbException):
         return jsonify(result=error.type, message=error.message), error.code
-    else:  # pragma: no cover
-        raise error
+    raise error

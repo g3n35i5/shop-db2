@@ -7,8 +7,10 @@ import multiprocessing
 import os
 import sys
 from argparse import ArgumentParser
+from typing import Dict
 
 import gunicorn.app.base
+from flask import Flask
 from gunicorn.six import iteritems
 
 from shop_db2.api import app, set_app
@@ -16,24 +18,24 @@ from shop_db2.api import app, set_app
 import configuration as config  # isort: skip
 
 
-def number_of_workers():
+def number_of_workers() -> int:
     return (multiprocessing.cpu_count() * 2) + 1
 
 
 class StandaloneApplication(gunicorn.app.base.BaseApplication):
-    def __init__(self, _app, _options=None):
+    def __init__(self, _app: Flask, _options: Dict = None) -> None:
         self.options = _options or {}
         self.application = _app
         super(StandaloneApplication, self).__init__()
 
-    def load_config(self):
+    def load_config(self) -> None:
         _config = dict(
             [(key, value) for key, value in iteritems(self.options) if key in self.cfg.settings and value is not None]
         )
         for key, value in iteritems(_config):
             self.cfg.set(key.lower(), value)
 
-    def load(self):
+    def load(self) -> Flask:
         return self.application
 
 

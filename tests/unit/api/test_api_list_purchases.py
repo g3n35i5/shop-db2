@@ -11,7 +11,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListPurchasesAPITestCase(BaseAPITestCase):
-    def test_list_purchases_as_admin(self):
+    def test_list_purchases_as_admin(self) -> None:
         """Test for listing all purchases as admin"""
         # Do 5 purchases
         self.insert_default_purchases()
@@ -37,7 +37,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         for purchase in purchases:
             assert all(x in purchase for x in required)
 
-    def test_list_purchases_as_user(self):
+    def test_list_purchases_as_user(self) -> None:
         """Test for listing all purchases without token. Revoked purchases
         should not be listed.
         """
@@ -62,7 +62,7 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
             assert all(x in purchase for x in required)
             assert all(x not in purchase for x in forbidden)
 
-    def test_list_purchases_with_limit(self):
+    def test_list_purchases_with_limit(self) -> None:
         """Listing the purchases with a limit."""
         # Do 5 purchases
         self.insert_default_purchases()
@@ -85,12 +85,12 @@ class ListPurchasesAPITestCase(BaseAPITestCase):
         self.assertEqual(purchases[1]["id"], 4)  # <- Third purchase is revoked!
         self.assertEqual(purchases[2]["id"], 2)
 
-    def test_invalid_parameter(self):
+    def test_invalid_parameter(self) -> None:
         res = self.get(url="/purchases", params={"unknown": 2})
         self.assertEqual(res.status_code, 400)
         self.assertException(res, exc.InvalidQueryParameters)
 
-    def test_wrong_parameter_type(self):
+    def test_wrong_parameter_type(self) -> None:
         res = self.get(url="/purchases", params={"limit": "two"})
         self.assertEqual(res.status_code, 400)
         self.assertException(res, exc.InvalidQueryParameters)

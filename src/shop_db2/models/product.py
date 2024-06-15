@@ -3,6 +3,7 @@
 __author__ = "g3n35i5"
 
 import datetime
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -83,7 +84,7 @@ class Product(db.Model):
     )
 
     @validates("created_by")
-    def validate_admin(self, key, created_by):
+    def validate_admin(self, _: Any, created_by: int) -> int:
         from .user import User
 
         user = User.query.filter(User.id == created_by).first()
@@ -93,12 +94,12 @@ class Product(db.Model):
         return created_by
 
     @property
-    def is_for_sale(self):
+    def is_for_sale(self) -> bool:
         """Returns whether this product is for sale for unprivileged users"""
         return all(map(lambda tag: tag.is_for_sale, self.tags))
 
     @hybrid_property
-    def imagename(self):
+    def imagename(self) -> Optional[str]:
         from .upload import Upload
 
         upload = Upload.query.filter_by(id=self.image_upload_id).first()
@@ -107,7 +108,7 @@ class Product(db.Model):
         return None
 
     @hybrid_method
-    def get_pricehistory(self, start_date=None, end_date=None):
+    def get_pricehistory(self, start_date: Optional[float] = None, end_date: Optional[float] = None) -> List:
 
         # If the time range parameters are not set, we use the creation date
         # and the current date as range.
@@ -122,8 +123,8 @@ class Product(db.Model):
                 end = datetime.datetime.fromtimestamp(end_date)
             else:
                 end = datetime.datetime.now()
-        except ValueError:
-            raise InvalidData()
+        except ValueError as error:
+            raise InvalidData() from error
 
         # Make sure that we select the whole day by shifting the selected
         # range to the very beginning of the start day and to the end of the
@@ -145,20 +146,20 @@ class Product(db.Model):
         return list(map(lambda p: {"id": p.id, "timestamp": p.timestamp, "price": p.price}, res))
 
     @hybrid_method
-    def set_price(self, price, admin_id):
+    def set_price(self, price: int, admin_id: int) -> None:
         from .product_price import ProductPrice
 
         productprice = ProductPrice(price=price, product_id=self.id, admin_id=admin_id)
         db.session.add(productprice)
 
     @hybrid_method
-    def set_barcode(self, barcode):
+    def set_barcode(self, barcode: str) -> None:
         if Product.query.filter_by(barcode=barcode).first():
             raise EntryAlreadyExists()
         self.barcode = barcode
 
     @hybrid_method
-    def set_imagename(self, image, admin_id):
+    def set_imagename(self, image: Dict, admin_id: int) -> None:
         filename = insert_image(image)
         # Create an upload
         try:
@@ -168,15 +169,15 @@ class Product(db.Model):
             db.session.add(u)
             db.session.flush()
             self.image_upload_id = u.id
-        except IntegrityError:
-            raise CouldNotCreateEntry()
+        except IntegrityError as error:
+            raise CouldNotCreateEntry() from error
 
     @hybrid_method
-    def set_tags(self, tags):
+    def set_tags(self, tags: List[int]) -> None:
         from .tag import Tag
 
         # All tag ids must be int
-        if not all([isinstance(tag_id, int) for tag_id in tags]):
+        if not all(isinstance(tag_id, int) for tag_id in tags):
             raise InvalidData()
 
         # No changes?
@@ -206,8 +207,8 @@ class Product(db.Model):
             self.tags.remove(tag)
 
     @property
-    def tag_ids(self):
+    def tag_ids(self) -> List[int]:
         return [tag.id for tag in self.tags]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Product {self.name}>"

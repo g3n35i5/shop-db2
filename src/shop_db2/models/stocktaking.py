@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Dict, List
+
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
@@ -21,7 +23,7 @@ class Stocktaking(db.Model):
     collection_id = db.Column(db.Integer, db.ForeignKey("stocktakingcollections.id"), nullable=False)
 
     @hybrid_method
-    def set_count(self, count):
+    def set_count(self, count: int) -> None:
         if count < 0:
             raise InvalidAmount()
         self.count = count
@@ -45,13 +47,13 @@ class StocktakingCollection(db.Model):
     stocktakings = db.relationship("Stocktaking", lazy="dynamic", foreign_keys="Stocktaking.collection_id")
 
     @hybrid_method
-    def set_revoked(self, revoked, admin_id):
+    def set_revoked(self, revoked: bool, admin_id: int) -> None:
         sr = StocktakingCollectionRevoke(revoked=revoked, admin_id=admin_id, collection_id=self.id)
         self.revoked = revoked
         db.session.add(sr)
 
     @hybrid_property
-    def revokehistory(self):
+    def revokehistory(self) -> List[Dict]:
         res = StocktakingCollectionRevoke.query.filter(StocktakingCollectionRevoke.collection_id == self.id).all()
         revokehistory = []
         for revoke in res:

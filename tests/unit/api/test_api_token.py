@@ -13,7 +13,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class TokenAPITestCase(BaseAPITestCase):
-    def test_manipulate_token(self):
+    def test_manipulate_token(self) -> None:
         """A manipulated/invalid token should raise an error."""
         data = {"id": 1, "password": user_data[0]["password"]}
         res = self.post(url="/login", data=data)
@@ -32,7 +32,7 @@ class TokenAPITestCase(BaseAPITestCase):
         res = self.client.get("/users", data=json.dumps({}), headers=headers)
         self.assertEqual(res.status_code, 200)
 
-    def test_token_expired(self):
+    def test_token_expired(self) -> None:
         """An expired token should raise an error."""
         data = {"id": 1, "password": user_data[0]["password"]}
         res = self.post(url="/login", data=data)
@@ -43,20 +43,20 @@ class TokenAPITestCase(BaseAPITestCase):
         new_exp = datetime.datetime.now() - datetime.timedelta(minutes=5)
         decode["exp"] = int(round(new_exp.timestamp()))
         new_token = jwt.encode(decode, self.app.config["SECRET_KEY"])
-        new_token = new_token.decode("UTF-8")
+        new_token_decoded = new_token.decode("UTF-8")
 
         # Do request on a route which requires an admin
-        headers = {"content-type": "application/json", "token": new_token}
+        headers = {"content-type": "application/json", "token": new_token_decoded}
         res = self.client.put("/users/2", data=json.dumps({}), headers=headers)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.TokenHasExpired)
 
         # Do request on a route which optionally requires an admin
-        headers = {"content-type": "application/json", "token": new_token}
+        headers = {"content-type": "application/json", "token": new_token_decoded}
         res = self.client.get("/users", data=json.dumps({}), headers=headers)
         self.assertEqual(res.status_code, 200)
 
-    def test_token_missing_user(self):
+    def test_token_missing_user(self) -> None:
         """Each token contains a user dictionary. If it is missing, an error
         should be raised.
         """

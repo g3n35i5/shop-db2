@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Dict, List
+
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
@@ -32,13 +34,13 @@ class Deposit(db.Model):
     user = db.relationship("User", back_populates="deposits", foreign_keys=[user_id])
 
     @hybrid_method
-    def set_revoked(self, revoked, admin_id):
+    def set_revoked(self, revoked: bool, admin_id: int) -> None:
         dr = DepositRevoke(revoked=revoked, admin_id=admin_id, deposit_id=self.id)
         self.revoked = revoked
         db.session.add(dr)
 
     @hybrid_property
-    def revokehistory(self):
+    def revokehistory(self) -> List[Dict]:
         res = DepositRevoke.query.filter(DepositRevoke.deposit_id == self.id).all()
         revokehistory = []
         for revoke in res:

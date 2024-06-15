@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class QueryParametersAPITestCase(BaseAPITestCase):
-    def test_query_parameters_ordering(self):
+    def test_query_parameters_ordering(self) -> None:
         """Test query ordering"""
         # List all users ordered by their id in descending order
         users = json.loads(
@@ -36,7 +36,7 @@ class QueryParametersAPITestCase(BaseAPITestCase):
             list(map(lambda x: x["firstname"], users)),
         )
 
-    def test_query_parameters_filter(self):
+    def test_query_parameters_filter(self) -> None:
         """Test query filter with a single and multiple values"""
         # List all users filtered by the lastname 'Smith'
         users = json.loads(self.get("/users", role="admin", params={"filter": {"lastname": "Smith"}}).data)
@@ -100,7 +100,7 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         # There shouldn't be any results
         self.assertEqual(0, len(users))
 
-    def test_query_parameters_sorting(self):
+    def test_query_parameters_sorting(self) -> None:
         """Test query sorting"""
         # List all users and sort them by their firstname
         params = {"sort": {"field": "firstname", "order": "ASC"}}
@@ -117,7 +117,7 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         users = json.loads(self.get("/users", role="admin", params=params).data)
         self.assertEqual([-1800, -1100, -400, 0, 0], list(map(lambda x: x["credit"], users)))
 
-    def test_query_parameters_pagination(self):
+    def test_query_parameters_pagination(self) -> None:
         """Test query pagination"""
         # List all users with the pagination {'page': 1, 'perPage': 1}
         users = json.loads(self.get("/users", role="admin", params={"pagination": {"page": 1, "perPage": 1}}).data)
@@ -136,7 +136,7 @@ class QueryParametersAPITestCase(BaseAPITestCase):
         self.assertEqual(2, len(users))
         self.assertEqual([3, 4], list(map(lambda x: x["id"], users)))
 
-    def test_invalid_query_parameters(self):
+    def test_invalid_query_parameters(self) -> None:
         """This test ensures that only valid query parameters are accepted by the API"""
         param_list = [
             # Invalid sort column foo

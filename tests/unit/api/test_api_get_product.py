@@ -11,7 +11,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetProductAPITestCase(BaseAPITestCase):
-    def test_list_active_product_without_token(self):
+    def test_list_active_product_without_token(self) -> None:
         """Get a single active product as None"""
         res = self.get(url="/products/1")
         self.assertEqual(res.status_code, 200)
@@ -32,7 +32,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         ]
         assert all(x in product for x in required)
 
-    def test_list_nonactive_product_without_token(self):
+    def test_list_nonactive_product_without_token(self) -> None:
         """As None, getting a nonactive product should fail"""
         Product.query.filter(Product.id == 4).first().active = False
         db.session.commit()
@@ -42,7 +42,7 @@ class GetProductAPITestCase(BaseAPITestCase):
         not_included = ["price", "countable", "revocable"]
         assert all(x not in product for x in not_included)
 
-    def test_list_nonactive_product_with_token(self):
+    def test_list_nonactive_product_with_token(self) -> None:
         """Get a nonactive product as admin"""
         inactive_product = Product.query.filter(Product.id == 4).first()
         inactive_product.active = False
@@ -66,13 +66,13 @@ class GetProductAPITestCase(BaseAPITestCase):
         ]
         assert all(x in product for x in required)
 
-    def test_list_non_existing_product(self):
+    def test_list_non_existing_product(self) -> None:
         """Getting a non existing product should fail"""
         res = self.get(url="/products/6")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_get_product_with_single_tag(self):
+    def test_get_product_with_single_tag(self) -> None:
         product = Product.query.filter_by(id=1).first()
         tag = Tag.query.filter_by(id=1).first()
         tag.products.append(product)

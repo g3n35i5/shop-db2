@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Optional
+from typing import Dict, Optional
 
 from sqlalchemy import and_, func
 
@@ -16,7 +16,7 @@ from shop_db2.models import (
 )
 
 
-def _get_balance_between_stocktakings(start, end):
+def _get_balance_between_stocktakings(start: StocktakingCollection, end: StocktakingCollection) -> Optional[Dict]:
     # Check the stocktaking collections
     if not all([start, end]):
         return None

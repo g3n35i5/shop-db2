@@ -3,6 +3,7 @@
 __author__ = "g3n35i5"
 
 from functools import wraps
+from typing import Any, Callable
 
 import jwt
 from flask import Response, request
@@ -12,11 +13,11 @@ from shop_db2.api import app
 from shop_db2.models import User
 
 
-def checkIfUserIsValid(f):
+def checkIfUserIsValid(func: Callable) -> Callable:
     """This function checks whether the requested user exists, has been verified and is active.
     If this is not the case the request will be blocked.
 
-    :param f:                  Is the wrapped function.
+    :param func:               Is the wrapped function.
 
     :return:                   The wrapped function f with the additional parameter user.
 
@@ -25,8 +26,8 @@ def checkIfUserIsValid(f):
     :raises UserIsInactive:    If the user with this ID is inactive.
     """
 
-    @wraps(f)
-    def decorator(*args, **kwargs):
+    @wraps(func)
+    def decorator(*args: Any, **kwargs: Any) -> Any:
         user = User.query.filter_by(id=kwargs["user_id"]).first()
         if not user:
             raise exc.EntryNotFound()
@@ -40,17 +41,17 @@ def checkIfUserIsValid(f):
             raise exc.UserIsInactive()
 
         # If all criteria are met, the requested function can be executed.
-        return f(user, *args, **kwargs)
+        return func(user, *args, **kwargs)
 
     return decorator
 
 
-def adminRequired(f):
+def adminRequired(func: Callable) -> Callable:
     """This function checks whether a valid token is contained in the request.
     If this is not the case, or the user has no admin rights, the request
     will be blocked.
 
-    :param f:                   Is the wrapped function.
+    :param func:                Is the wrapped function.
 
     :return:                    The wrapped function f with the additional
                                 parameter admin.
@@ -64,21 +65,21 @@ def adminRequired(f):
     :raises UnauthorizedAccess: The user has no administrator privileges.
     """
 
-    @wraps(f)
-    def decorated(*args, **kwargs):
+    @wraps(func)
+    def decorated(*args: Any, **kwargs: Any) -> Any:
         # Does the request header contain a token?
         try:
             token = request.headers["token"]
-        except KeyError:
-            raise exc.UnauthorizedAccess()
+        except KeyError as error:
+            raise exc.UnauthorizedAccess() from error
 
         # Is the token valid?
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"])
-        except jwt.exceptions.DecodeError:
-            raise exc.TokenIsInvalid()
-        except jwt.ExpiredSignatureError:
-            raise exc.TokenHasExpired()
+        except jwt.exceptions.DecodeError as error:
+            raise exc.TokenIsInvalid() from error
+        except jwt.ExpiredSignatureError as error:
+            raise exc.TokenHasExpired() from error
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
@@ -86,26 +87,26 @@ def adminRequired(f):
             admin_id = data["user"]["id"]
             admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
-        except KeyError:
-            raise exc.TokenIsInvalid()
-        except AssertionError:
-            raise exc.UnauthorizedAccess()
+        except KeyError as error:
+            raise exc.TokenIsInvalid() from error
+        except AssertionError as error:
+            raise exc.UnauthorizedAccess() from error
 
         # At this point it was verified that the request comes from an
         # admin and the request is executed. In addition, the user is
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
-        return f(admin=admin, *args, **kwargs)
+        return func(admin=admin, *args, **kwargs)
 
     return decorated
 
 
-def adminOptional(f):
+def adminOptional(func: Callable) -> Callable:
     """This function checks whether a valid token is contained in the request.
     If this is not the case, or the user has no admin rights, the following
     function returns only a part of the available data.
 
-    :param f:                Is the wrapped function.
+    :param func:             Is the wrapped function.
 
     :return:                 Returns the wrapped function f with the
                              additional parameter admin, if present.
@@ -117,19 +118,19 @@ def adminOptional(f):
                              token.
     """
 
-    @wraps(f)
-    def decorated(*args, **kwargs):
+    @wraps(func)
+    def decorated(*args: Any, **kwargs: Any) -> Any:
         # Does the request header contain a token?
         try:
             token = request.headers["token"]
         except KeyError:
-            return f(admin=None, *args, **kwargs)
+            return func(admin=None, *args, **kwargs)
 
         # Is the token valid?
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"])
         except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError):
-            return f(admin=None, *args, **kwargs)
+            return func(admin=None, *args, **kwargs)
 
         # If there is no admin object in the token and does the user does have
         # admin rights?
@@ -137,36 +138,36 @@ def adminOptional(f):
             admin_id = data["user"]["id"]
             admin = User.query.filter(User.id == admin_id).first()
             assert admin.is_admin is True
-        except KeyError:
-            raise exc.TokenIsInvalid()
+        except KeyError as error:
+            raise exc.TokenIsInvalid() from error
         except AssertionError:
-            return f(admin=None, *args, **kwargs)
+            return func(admin=None, *args, **kwargs)
 
         # At this point it was verified that the request comes from an
         # admin and the request is executed. In addition, the user is
         # forwarded to the following function so that the administrator
         # responsible for any changes in the database can be traced.
-        return f(admin=admin, *args, **kwargs)
+        return func(admin=admin, *args, **kwargs)
 
     return decorated
 
 
-def deprecate_route(message=""):
+def deprecate_route(message: str = "") -> Callable:
     """This decorator adds a warning message to the response header when the route is marked as deprecated.
 
     :param message: The message to be added to the response header.
     """
 
-    def _decorator(func):
+    def _decorator(func: Callable) -> Callable:
         @wraps(func)
-        def _wrapper(*args, **kwargs):
+        def _wrapper(*args: Any, **kwargs: Any) -> Any:
             data = func(*args, **kwargs)
             # Case 1: Tuple with (Response object, Status code)
             if isinstance(data, tuple):
-                response: Response = data[0]
+                response = data[0]
             # Case 2: Plain response object
             elif isinstance(data, Response):
-                response: Response = data
+                response = data
             else:
                 return data
             response.headers["Warning"] = message

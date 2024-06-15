@@ -12,7 +12,7 @@ from shop_db2.api import app
 
 @app.route("/images", methods=["GET"], defaults={"imagename": None})
 @app.route("/images/<imagename>", methods=["GET"])
-def get_image(imagename):
+def get_image(imagename: str):
     """A picture can be requested via this route. If the image is not found or if
     the image name is empty, a default image will be returned.
 

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import Any, Dict, Optional, Type
+
+# from sqlalchemy.ext.declarative.api import Model
+
 __author__ = "g3n35i5"
 
 from flask import request
@@ -7,7 +11,7 @@ from flask import request
 import shop_db2.exceptions as exc
 
 
-def check_forbidden(data, allowed_fields, row):
+def check_forbidden(data: Dict[str, Any], allowed_fields: Dict[str, Any], row: Any) -> None:
     """This function checks whether any illegal fields exist in the data sent to
     the API with the request. If so, an exception is raised and the request
     is canceled.
@@ -26,7 +30,7 @@ def check_forbidden(data, allowed_fields, row):
             raise exc.ForbiddenField()
 
 
-def check_fields_and_types(data, required, optional=None):
+def check_fields_and_types(data: Dict[str, Any], required: Any, optional: Optional[Any] = None) -> None:
     """This function checks the given data for its types and existence.
     Required fields must exist, optional fields must not.
 
@@ -42,7 +46,7 @@ def check_fields_and_types(data, required, optional=None):
     :raises WrongType:      If a field is of the wrong type.
     """
     if required and optional:
-        allowed = dict(**required, **optional)
+        allowed = {**required, **optional}
     elif required:
         allowed = required
     else:
@@ -58,11 +62,11 @@ def check_fields_and_types(data, required, optional=None):
 
     # Check all data (including optional data) for their types
     for key, value in data.items():
-        if not isinstance(value, allowed.get(key)):
+        if not isinstance(value, allowed[key]):
             raise exc.WrongType()
 
 
-def check_allowed_parameters(allowed):
+def check_allowed_parameters(allowed: Dict[str, Type[int]]) -> Dict[str, int]:
     """This method checks all GET parameters for their type.
 
     :param allowed:               A dictionary containing all allowed parameters
@@ -75,13 +79,13 @@ def check_allowed_parameters(allowed):
     :raises WrongType:            If an argument is of the wrong type.
     """
     result = {}
-    if any([argument not in allowed for argument in request.args]):
+    if any(argument not in allowed for argument in request.args):
         raise exc.UnauthorizedAccess()
 
     for key in request.args:
         try:
-            result[key] = allowed[key](request.args.get(key))
-        except ValueError:
-            raise exc.WrongType()
+            result[key] = allowed[key](request.args[key])
+        except ValueError as error:
+            raise exc.WrongType() from error
 
     return result
