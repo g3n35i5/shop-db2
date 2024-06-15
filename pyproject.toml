@@ -126,5 +126,6 @@ module = [
     "flask_script.*",
     "flask_migrate.*",
     "flask_sqlalchemy.*",
+    "gunicorn.*",
 ]
 ignore_missing_imports = true
