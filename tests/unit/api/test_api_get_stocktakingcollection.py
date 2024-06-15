@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetStocktakingCollectionAPITestCase(BaseAPITestCase):
-    def test_get_stocktakingcollection_as_admin(self):
+    def test_get_stocktakingcollection_as_admin(self) -> None:
         """Getting a single stocktakingcollection as admin"""
         self.insert_default_stocktakingcollections()
         res = self.get(url="/stocktakingcollections/1", role="admin")
@@ -29,13 +29,13 @@ class GetStocktakingCollectionAPITestCase(BaseAPITestCase):
         for stocktaking in stocktakings:
             assert all(x in stocktaking for x in required_stocktaking)
 
-    def test_get_stocktakingcollection_as_user(self):
+    def test_get_stocktakingcollection_as_user(self) -> None:
         """Trying to get a single stocktakingcollection as user"""
         res = self.get(url="/stocktakingcollections/2", role="user")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_get_non_existing_stocktakingcollection(self):
+    def test_get_non_existing_stocktakingcollection(self) -> None:
         """This test ensures that an exception is raised if the requested
         stocktakingcollection does not exist.
         """

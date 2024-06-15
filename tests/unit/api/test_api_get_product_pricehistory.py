@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import List, Optional
+
 __author__ = "g3n35i5"
 
 from datetime import datetime
@@ -14,7 +16,7 @@ from tests.base_api import BaseAPITestCase
 
 class GetProductPricehistoryAPITestCase(BaseAPITestCase):
     @staticmethod
-    def insert_pricehistory(dates=None):
+    def insert_pricehistory(dates: Optional[List[str]] = None) -> None:
         prices = [42, 43, 44, 45]
         timestamps = []
         if dates:
@@ -28,7 +30,7 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
             db.session.add(p)
         db.session.commit()
 
-    def test_authorization(self):
+    def test_authorization(self) -> None:
         """This route should only be available for administrators."""
         res = self.get(url="/products/1/pricehistory")
         self.assertEqual(res.status_code, 401)
@@ -37,12 +39,12 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_get_pricehistory_non_existing_product(self):
+    def test_get_pricehistory_non_existing_product(self) -> None:
         """There should be an exception when the requested product does not exist."""
         res = self.get(url="/products/10/pricehistory", role="admin")
         self.assertException(res, exc.EntryNotFound)
 
-    def test_get_pricehistory_invalid_start_or_end_date(self):
+    def test_get_pricehistory_invalid_start_or_end_date(self) -> None:
         """There should be an exception when the start or end date are invalid."""
         # Testing start date
         url = "/products/1/pricehistory?start_date=trololol"
@@ -59,13 +61,13 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         res = self.get(url=url, role="admin")
         self.assertException(res, exc.WrongType)
 
-    def test_get_pricehistory_end_before_start(self):
+    def test_get_pricehistory_end_before_start(self) -> None:
         """There should be an exception when end date lies before the start date."""
         url = "/products/1/pricehistory?start_date=1000&end_date=900"
         res = self.get(url=url, role="admin")
         self.assertException(res, exc.InvalidData)
 
-    def test_get_pricehistory_defining_only_start_date(self):
+    def test_get_pricehistory_defining_only_start_date(self) -> None:
         """Querying the pricehistory with only the start date given."""
         # Change the creation date of the product to 01.01.2019
         dt = datetime.strptime("01.01.2019", "%d.%m.%Y")
@@ -84,7 +86,7 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         pricehistory = json.loads(res.data)
         self.assertEqual(len(pricehistory), 3)
 
-    def test_get_pricehistory_defining_only_end_date(self):
+    def test_get_pricehistory_defining_only_end_date(self) -> None:
         """Querying the pricehistory with only the end date given."""
         # Change the creation date of the product to 01.01.2019
         dt = datetime.strptime("01.01.2019", "%d.%m.%Y")
@@ -104,7 +106,7 @@ class GetProductPricehistoryAPITestCase(BaseAPITestCase):
         # There should be only the entries [01.01.19 and 02.01.19]
         self.assertEqual(len(pricehistory), 2)
 
-    def test_get_pricehistory_defining_start_and_end_date(self):
+    def test_get_pricehistory_defining_start_and_end_date(self) -> None:
         """Querying the pricehistory with start and end date given."""
         # Change the creation date of the product to 01.01.2019
         dt = datetime.strptime("01.01.2019", "%d.%m.%Y")

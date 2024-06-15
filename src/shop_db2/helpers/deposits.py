@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Any, Dict
+
 from sqlalchemy.exc import IntegrityError
 
 import shop_db2.exceptions as exc
@@ -10,7 +12,7 @@ from shop_db2.helpers.validators import check_fields_and_types
 from shop_db2.models import Deposit, User
 
 
-def insert_deposit(data, admin):
+def insert_deposit(data: Dict[str, Any], admin: User) -> None:
     """This help function creates a new deposit with the given data.
 
     :raises DataIsMissing:       If not all required data is available.
@@ -45,5 +47,5 @@ def insert_deposit(data, admin):
         deposit = Deposit(**data)
         deposit.admin_id = admin.id
         db.session.add(deposit)
-    except IntegrityError:
-        raise exc.CouldNotCreateEntry()
+    except IntegrityError as error:
+        raise exc.CouldNotCreateEntry() from error

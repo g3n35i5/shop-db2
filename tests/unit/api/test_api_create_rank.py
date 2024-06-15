@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Dict
+
 from flask import json
 
 import shop_db2.exceptions as exc
@@ -11,7 +13,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class CreateRankAPITestCase(BaseAPITestCase):
-    def test_create_rank_authorization(self):
+    def test_create_rank_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.post(url="/ranks", data={})
         self.assertEqual(res.status_code, 401)
@@ -23,7 +25,7 @@ class CreateRankAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_rank(self):
+    def test_create_rank(self) -> None:
         """Create a rank as admin."""
         rank_data_list = [
             {"name": "Rank1"},
@@ -41,7 +43,7 @@ class CreateRankAPITestCase(BaseAPITestCase):
         self.assertTrue(db.session.query(Rank).filter(Rank.name == rank_data_list[1]["name"]).first().is_system_user)
         self.assertFalse(db.session.query(Rank).filter(Rank.name == rank_data_list[2]["name"]).first().is_system_user)
 
-    def test_create_rank_wrong_type(self):
+    def test_create_rank_wrong_type(self) -> None:
         """Create a rank as admin with wrong type(s)."""
         data = {"name": 1234.0}
         res = self.post(url="/ranks", role="admin", data=data)
@@ -49,15 +51,15 @@ class CreateRankAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.WrongType)
         self.assertEqual(len(Rank.query.all()), 4)
 
-    def test_create_rank_missing_name(self):
+    def test_create_rank_missing_name(self) -> None:
         """Create a rank as admin with missing name."""
-        data = {}
+        data: Dict = {}
         res = self.post(url="/ranks", role="admin", data=data)
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
         self.assertEqual(len(Rank.query.all()), 4)
 
-    def test_create_rank_already_existing(self):
+    def test_create_rank_already_existing(self) -> None:
         """Creating a rank which already exists should not be possible."""
         data = {"name": "Contender"}
         res = self.post(url="/ranks", role="admin", data=data)
@@ -65,7 +67,7 @@ class CreateRankAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryAlreadyExists)
         self.assertEqual(len(Rank.query.all()), 4)
 
-    def test_create_rank_unknown_field(self):
+    def test_create_rank_unknown_field(self) -> None:
         """Unknown fields should raise an exception."""
         data = {"name": "Bread", "price": 100}
         res = self.post(url="/ranks", role="admin", data=data)

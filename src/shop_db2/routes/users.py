@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import shop_db2.models.user
+
 __author__ = "g3n35i5"
 
 from flask import jsonify, request
@@ -17,7 +19,7 @@ from shop_db2.models import User
 
 @app.route("/users", methods=["GET"])
 @adminOptional
-def list_users(admin):
+def list_users(admin: None):
     """Returns a list of all users. If this route is called by an
     administrator, all information is returned. However, if it is called
     without further rights, a minimal version is returned.
@@ -151,7 +153,7 @@ def get_user_purchases(user, user_id):
 
 @app.route("/users/<int:user_id>", methods=["GET"])
 @adminOptional
-def get_user(admin, user_id):
+def get_user(admin: None, user_id: int):
     """Returns the user with the requested id.
 
     :param admin: Is the administrator user, determined by @adminOptional.
@@ -192,7 +194,7 @@ def get_user(admin, user_id):
 
 @app.route("/users/<int:user_id>", methods=["PUT"])
 @adminRequired
-def update_user(admin, user_id):
+def update_user(admin: shop_db2.models.user.User, user_id: int):
     """Update the user with the given id.
 
     :param admin:   Is the administrator user, determined by @adminRequired.
@@ -243,7 +245,7 @@ def update_user(admin, user_id):
 
 @app.route("/users/<int:user_id>", methods=["DELETE"])
 @adminRequired
-def delete_user(admin, user_id):
+def delete_user(admin: shop_db2.models.user.User, user_id: int):
     """Delete a user. This is only possible if the user has not yet been verified.
 
     :param admin:                 Is the administrator user, determined by

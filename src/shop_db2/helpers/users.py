@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Any, Dict
+
 from sqlalchemy.exc import IntegrityError
 
 import shop_db2.exceptions as exc
@@ -10,7 +12,7 @@ from shop_db2.helpers.validators import check_fields_and_types
 from shop_db2.models import User
 
 
-def insert_user(data):
+def insert_user(data: Dict[str, Any]) -> None:
     """This help function creates a new user with the given data.
 
     :param data:                 Is the dictionary containing the data for the
@@ -55,5 +57,5 @@ def insert_user(data):
     try:
         user = User(firstname=firstname, lastname=data["lastname"], password=password)
         db.session.add(user)
-    except IntegrityError:
-        raise exc.CouldNotCreateEntry()
+    except IntegrityError as error:
+        raise exc.CouldNotCreateEntry() from error

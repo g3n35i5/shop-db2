@@ -13,7 +13,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class LoginAPITestCase(BaseAPITestCase):
-    def test_login_user(self):
+    def test_login_user(self) -> None:
         """This test is designed to test the login of an existing user with
         an id and password
         """
@@ -29,7 +29,7 @@ class LoginAPITestCase(BaseAPITestCase):
         self.assertEqual(decode["user"]["firstname"], user_data[0]["firstname"])
         self.assertEqual(decode["user"]["lastname"], user_data[0]["lastname"])
 
-    def test_login_non_verified_user(self):
+    def test_login_non_verified_user(self) -> None:
         """If an authentication attempt is made by a non verified user,
         the correct error message must be returned.
         """
@@ -48,7 +48,7 @@ class LoginAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)
 
-    def test_login_as_inactive_user(self):
+    def test_login_as_inactive_user(self) -> None:
         """If an authentication attempt is made by an inactive user,
         the correct error message must be returned.
         """
@@ -58,7 +58,7 @@ class LoginAPITestCase(BaseAPITestCase):
         res = self.post(url="/login", data=data)
         self.assertException(res, exc.UserIsInactive)
 
-    def test_login_missing_password(self):
+    def test_login_missing_password(self) -> None:
         """If an authentication attempt is made without a password,
         the correct error message must be returned.
         """
@@ -69,7 +69,7 @@ class LoginAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert "token" not in data
 
-    def test_login_missing_id(self):
+    def test_login_missing_id(self) -> None:
         """If an authentication attempt is made without an id,
         the correct error message must be returned.
         """
@@ -80,7 +80,7 @@ class LoginAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert "token" not in data
 
-    def test_login_wrong_id(self):
+    def test_login_wrong_id(self) -> None:
         """If an authentication attempt is made with a wrong id,
         the correct error message must be returned.
         """
@@ -91,7 +91,7 @@ class LoginAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert "token" not in data
 
-    def test_login_user_without_password(self):
+    def test_login_user_without_password(self) -> None:
         """If an authentication attempt is made by a user who has not set
         a password yet, the correct error message must be returned.
         """
@@ -102,7 +102,7 @@ class LoginAPITestCase(BaseAPITestCase):
         data = json.loads(res.data)
         assert "token" not in data
 
-    def test_login_wrong_password(self):
+    def test_login_wrong_password(self) -> None:
         """If an authentication attempt is made with a password,
         the correct error message must be returned.
         """

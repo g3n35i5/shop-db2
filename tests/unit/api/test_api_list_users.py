@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListUsersAPITestCase(BaseAPITestCase):
-    def test_list_users_as_user_and_external(self):
+    def test_list_users_as_user_and_external(self) -> None:
         """Get a list of all users as user and as external."""
         # Set user 3 inactive
         rank = Rank.query.filter(Rank.active.is_(False)).first()
@@ -43,7 +43,7 @@ class ListUsersAPITestCase(BaseAPITestCase):
             ]:
                 assert item in user
 
-    def test_list_users_with_token(self):
+    def test_list_users_with_token(self) -> None:
         """Get a list of all users as admin. It should contain more information
         than the list which gets returned without a token in the request
         header.

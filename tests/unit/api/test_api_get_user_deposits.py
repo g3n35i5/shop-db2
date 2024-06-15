@@ -12,7 +12,7 @@ from tests.base_api import BaseAPITestCase
 
 class GetUserDepositsAPITestCase(BaseAPITestCase):
     @staticmethod
-    def _insert_deposits():
+    def _insert_deposits() -> None:
         """Helper function to insert some test deposits."""
         d1 = Deposit(user_id=1, amount=100, admin_id=1, comment="Test deposit")
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment="Test deposit")
@@ -23,7 +23,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
             db.session.add(d)
         db.session.commit()
 
-    def test_get_user_deposit(self):
+    def test_get_user_deposit(self) -> None:
         """This test ensures that all deposits made for a user are listed."""
         self._insert_deposits()
         res = self.get(url="/users/2/deposits")
@@ -34,7 +34,7 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
             for x in fields:
                 assert x in i
 
-    def test_get_user_deposits_no_insert(self):
+    def test_get_user_deposits_no_insert(self) -> None:
         """This test ensures that an empty list will be returned for a user's
         deposits if none have yet been entered for him.
         """
@@ -43,19 +43,19 @@ class GetUserDepositsAPITestCase(BaseAPITestCase):
         deposits = json.loads(res.data)
         self.assertEqual(deposits, [])
 
-    def test_get_deposit_non_existing_user(self):
+    def test_get_deposit_non_existing_user(self) -> None:
         """Getting the deposits from a non existing user should raise an error."""
         res = self.get(url="/users/6/deposits")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_get_deposit_non_verified_user(self):
+    def test_get_deposit_non_verified_user(self) -> None:
         """Getting the deposits from a non verified user should raise an error."""
         res = self.get(url="/users/4/deposits")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UserIsNotVerified)
 
-    def test_get_user_deposits_inactive_user(self):
+    def test_get_user_deposits_inactive_user(self) -> None:
         """Getting the deposits from an inactive user should raise an error."""
         User.query.filter_by(id=3).first().set_rank_id(4, 1)
         db.session.commit()

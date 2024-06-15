@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdateStocktakingAPITestCase(BaseAPITestCase):
-    def test_update_stocktaking_as_admin(self):
+    def test_update_stocktaking_as_admin(self) -> None:
         """Updating count of a single stocktaking"""
         self.insert_default_stocktakingcollections()
         data = {"count": 20}
@@ -23,7 +23,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         stocktaking = Stocktaking.query.filter_by(id=1).first()
         self.assertEqual(stocktaking.count, 20)
 
-    def test_update_stocktaking_no_changes(self):
+    def test_update_stocktaking_no_changes(self) -> None:
         """Updating a single stocktaking with same count"""
         self.insert_default_stocktakingcollections()
         data = {"count": 100}
@@ -31,7 +31,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_stocktaking_as_user(self):
+    def test_update_stocktaking_as_user(self) -> None:
         """Updating a single stocktaking as user"""
         self.insert_default_stocktakingcollections()
         data = {"count": 0}
@@ -39,7 +39,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_update_stocktaking_with_invalid_id(self):
+    def test_update_stocktaking_with_invalid_id(self) -> None:
         """Updating a single stocktaking that does not exist"""
         self.insert_default_stocktakingcollections()
         data = {"count": 10}
@@ -47,7 +47,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_update_stocktaking_with_invalid_amount(self):
+    def test_update_stocktaking_with_invalid_amount(self) -> None:
         """Updating a single stocktaking with an invalid amount"""
         self.insert_default_stocktakingcollections()
         data = {"count": -2}
@@ -55,7 +55,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.InvalidAmount)
 
-    def test_update_stocktaking_with_forbidden_field(self):
+    def test_update_stocktaking_with_forbidden_field(self) -> None:
         """Updating a forbidden field of a single stocktaking"""
         self.insert_default_stocktakingcollections()
         data = {"product_id": 4}
@@ -63,7 +63,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
 
-    def test_update_stocktaking_with_unknown_field(self):
+    def test_update_stocktaking_with_unknown_field(self) -> None:
         """Updating a unknown field of a single stocktaking"""
         self.insert_default_stocktakingcollections()
         data = {"amount": 0}
@@ -71,7 +71,7 @@ class UpdateStocktakingAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_stocktaking_with_wrong_type(self):
+    def test_update_stocktaking_with_wrong_type(self) -> None:
         """Updating a field of a single stocktaking with a wrong type"""
         self.insert_default_stocktakingcollections()
         data = {"count": "2"}

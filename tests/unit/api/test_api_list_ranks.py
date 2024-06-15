@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListRanksAPITestCase(BaseAPITestCase):
-    def test_list_ranks(self):
+    def test_list_ranks(self) -> None:
         """Test listing all ranks."""
         res = self.get(url="/ranks")
         self.assertEqual(res.status_code, 200)

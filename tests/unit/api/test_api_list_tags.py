@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListTagsAPITestCase(BaseAPITestCase):
-    def test_list_tags(self):
+    def test_list_tags(self) -> None:
         """Test for listing all tags"""
         res = self.get(url="/tags")
         self.assertEqual(res.status_code, 200)

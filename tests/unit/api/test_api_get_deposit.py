@@ -11,7 +11,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetDepositAPITestCase(BaseAPITestCase):
-    def test_get_single_deposit(self):
+    def test_get_single_deposit(self) -> None:
         """Test for getting a single deposit"""
         # Insert test deposits
         self.insert_default_deposits()
@@ -23,13 +23,13 @@ class GetDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(deposit["amount"], 500)
         self.assertFalse(deposit["revoked"])
 
-    def test_get_non_existing_deposit(self):
+    def test_get_non_existing_deposit(self) -> None:
         """Getting a non existing deposit should raise an error."""
         res = self.get(url="/deposits/6")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_get_deposit_revokehistory(self):
+    def test_get_deposit_revokehistory(self) -> None:
         """Getting the revokehistory of a single deposit"""
         self.insert_default_deposits()
         deprevoke = DepositRevoke(deposit_id=1, admin_id=1, revoked=True)

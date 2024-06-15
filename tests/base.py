@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import List, Optional
+
+from flask.app import Flask
+
 __author__ = "g3n35i5"
 
 from flask_testing import TestCase
@@ -62,10 +66,10 @@ tag_data = [
 
 
 class BaseTestCase(TestCase):
-    def create_app(self):
+    def create_app(self) -> Flask:
         return set_app(config.UnittestConfig)
 
-    def setUp(self):
+    def setUp(self) -> None:
         # Create tables
         db.create_all()
         db.session.commit()
@@ -80,11 +84,11 @@ class BaseTestCase(TestCase):
         self.insert_default_tags()
         self.insert_default_products()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         db.session.remove()
         db.drop_all()
 
-    def generate_passwords(self, password_list):
+    def generate_passwords(self, password_list: List[Optional[str]]) -> List[Optional[bytes]]:
         """This function generates hashes of passwords and stores them in the
         global variable so that they do not have to be created again.
         """
@@ -98,7 +102,7 @@ class BaseTestCase(TestCase):
                     passwords[index] = None
         return passwords
 
-    def insert_default_users(self):
+    def insert_default_users(self) -> None:
         hashes = self.generate_passwords(list(map(lambda u: u["password"], user_data)))
         for index, data in enumerate(user_data):
             user = User(
@@ -111,13 +115,13 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     @staticmethod
-    def insert_first_admin():
+    def insert_first_admin() -> None:
         au = AdminUpdate(user_id=1, admin_id=1, is_admin=True)
         db.session.add(au)
         db.session.commit()
 
     @staticmethod
-    def insert_default_tag_assignments():
+    def insert_default_tag_assignments() -> None:
         for p_data in product_data:
             product = Product.query.filter(Product.name == p_data["name"]).first()
             tag = Tag.query.filter(Tag.id == p_data["tags"][0]).first()
@@ -126,7 +130,7 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     @staticmethod
-    def insert_default_products():
+    def insert_default_products() -> None:
         for data in product_data:
             product = Product(name=data["name"], created_by=1)
             db.session.add(product)
@@ -136,13 +140,13 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     @staticmethod
-    def insert_default_ranks():
+    def insert_default_ranks() -> None:
         for rank in rank_data:
             db.session.add(Rank(**rank))
         db.session.commit()
 
     @staticmethod
-    def verify_all_users_except_last():
+    def verify_all_users_except_last() -> None:
         users = User.query.all()
         users[0].verify(admin_id=1, rank_id=2)
         users[1].verify(admin_id=1, rank_id=3)
@@ -152,14 +156,14 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     @staticmethod
-    def insert_default_tags():
+    def insert_default_tags() -> None:
         for data in tag_data:
             tag = Tag(**data, created_by=1)
             db.session.add(tag)
         db.session.commit()
 
     @staticmethod
-    def insert_default_replenishmentcollections():
+    def insert_default_replenishmentcollections() -> None:
         product1 = Product.query.filter_by(id=1).first()
         product2 = Product.query.filter_by(id=2).first()
         product3 = Product.query.filter_by(id=3).first()
@@ -197,7 +201,7 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     @staticmethod
-    def insert_default_stocktakingcollections():
+    def insert_default_stocktakingcollections() -> None:
         db.session.add(StocktakingCollection(admin_id=1))
         db.session.add(StocktakingCollection(admin_id=1))
         db.session.flush()
@@ -222,7 +226,7 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     @staticmethod
-    def insert_default_purchases():
+    def insert_default_purchases() -> None:
         p1 = Purchase(user_id=1, product_id=1, amount=1)
         p2 = Purchase(user_id=2, product_id=3, amount=2)
         p3 = Purchase(user_id=2, product_id=2, amount=4)
@@ -233,7 +237,7 @@ class BaseTestCase(TestCase):
         db.session.commit()
 
     @staticmethod
-    def insert_default_deposits():
+    def insert_default_deposits() -> None:
         d1 = Deposit(user_id=1, amount=100, admin_id=1, comment="Test deposit")
         d2 = Deposit(user_id=2, amount=200, admin_id=1, comment="Test deposit")
         d3 = Deposit(user_id=2, amount=500, admin_id=1, comment="Test deposit")

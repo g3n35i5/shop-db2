@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Dict, Optional
+
 from sqlalchemy import and_, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
@@ -122,11 +124,11 @@ class User(db.Model):
         foreign_keys="ReplenishmentCollection.seller_id",
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<User {self.id}: {self.lastname}, {self.firstname}>"
 
     @hybrid_property
-    def imagename(self):
+    def imagename(self) -> Optional[str]:
         from .upload import Upload
 
         upload = Upload.query.filter_by(id=self.image_upload_id).first()
@@ -135,7 +137,7 @@ class User(db.Model):
         return None
 
     @hybrid_method
-    def set_imagename(self, image, admin_id):
+    def set_imagename(self, image: Dict, admin_id: int) -> None:
         filename = insert_image(image)
         # Create an upload
         try:
@@ -145,11 +147,11 @@ class User(db.Model):
             db.session.add(u)
             db.session.flush()
             self.image_upload_id = u.id
-        except IntegrityError:
-            raise CouldNotCreateEntry()
+        except IntegrityError as error:
+            raise CouldNotCreateEntry() from error
 
     @hybrid_property
-    def is_admin(self):
+    def is_admin(self) -> bool:
         from .admin_update import AdminUpdate
 
         au = AdminUpdate.query.filter_by(user_id=self.id).order_by(AdminUpdate.id.desc()).first()
@@ -158,7 +160,7 @@ class User(db.Model):
         return au.is_admin
 
     @hybrid_method
-    def set_admin(self, is_admin, admin_id):
+    def set_admin(self, is_admin: bool, admin_id: int) -> None:
         from .admin_update import AdminUpdate
 
         if is_admin and self.password is None:
@@ -169,7 +171,7 @@ class User(db.Model):
         db.session.add(au)
 
     @hybrid_method
-    def verify(self, admin_id, rank_id):
+    def verify(self, admin_id: int, rank_id: int) -> None:
         from .user_verification import UserVerification
 
         if self.is_verified:
@@ -180,7 +182,7 @@ class User(db.Model):
         db.session.add(uv)
 
     @hybrid_method
-    def set_rank_id(self, rank_id, admin_id):
+    def set_rank_id(self, rank_id: int, admin_id: int) -> None:
         from .rank_update import RankUpdate
 
         if self.is_verified:

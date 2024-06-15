@@ -12,7 +12,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class TestListBackups(BaseAPITestCase, fake_filesystem_unittest.TestCase):
-    def test_authorization(self):
+    def test_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.get(url="/backups")
         self.assertEqual(res.status_code, 401)
@@ -21,7 +21,7 @@ class TestListBackups(BaseAPITestCase, fake_filesystem_unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_list_backups_no_backups_existing(self):
+    def test_list_backups_no_backups_existing(self) -> None:
         """This test checks whether the return value of the backup route is
         correct when there are no backups.
         """
@@ -30,7 +30,7 @@ class TestListBackups(BaseAPITestCase, fake_filesystem_unittest.TestCase):
         self.assertEqual(len(data["backups"]), 0)
         self.assertFalse(data["latest"])
 
-    def test_list_backups(self):
+    def test_list_backups(self) -> None:
         """This test checks whether all backups get listed properly."""
         # We are using a fake filesystem to not actually create the files.
         self.setUpPyfakefs()

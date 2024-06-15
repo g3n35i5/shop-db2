@@ -7,15 +7,17 @@ import logging
 import time
 
 from flask import g, request
+from flask.wrappers import Response
 
 import shop_db2.exceptions as exc
 from shop_db2.api import app
 from shop_db2.helpers.decorators import adminOptional
+from shop_db2.models.user import User
 
 
 @app.before_request
 @adminOptional
-def before_request_hook(admin):
+def before_request_hook(admin: User) -> None:
     """This function is executed before each request is processed. Its purpose is
     to check whether the application is currently in maintenance mode. If this
     is the case, the current request is aborted and a corresponding exception
@@ -51,15 +53,17 @@ def before_request_hook(admin):
 
 
 @app.after_request
-def after_request_hook(response):
+def after_request_hook(response: Response) -> Response:
     """This functions gets executed each time a request is finished.
 
     :param response: is the response to be returned.
     :return:         The request response.
     """
     # If the app is in DEBUG mode, log the request execution time
-    if app.logger.level == logging.DEBUG:
+    if app.logger.level == logging.DEBUG:  # pylint: disable
         execution_time = datetime.timedelta(seconds=(time.time() - g.start))
-        app.logger.debug("Request execution time for '{}': {}".format(request.endpoint, execution_time))
+        app.logger.debug(  # pylint: disable
+            "Request execution time for '{}': {}".format(request.endpoint, execution_time)
+        )
 
     return response

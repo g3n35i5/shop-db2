@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Any
+
 from sqlalchemy import func
 from sqlalchemy.orm import validates
 
@@ -18,7 +20,7 @@ class RankUpdate(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     @validates("admin_id")
-    def validate_admin(self, key, admin_id):
+    def validate_admin(self, _: Any, admin_id: int) -> int:
         from .user import User
 
         user = User.query.filter(User.id == admin_id).first()

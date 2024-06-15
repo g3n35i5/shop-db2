@@ -10,7 +10,7 @@ from tests.unit.helpers.test_helpers_stocktakings import TestHelpersStocktakings
 
 
 class GetBalanceBetweenStocktakingsAPITestCase(BaseAPITestCase):
-    def test_get_balance_between_stocktakings(self):
+    def test_get_balance_between_stocktakings(self) -> None:
         """This test ensures that the data returned by the API route for the
         balance between two stocktakingcollections is correct.
         """
@@ -69,7 +69,7 @@ class GetBalanceBetweenStocktakingsAPITestCase(BaseAPITestCase):
         self.assertEqual(balance["loss"], 25100)
         self.assertEqual(balance["profit"], 0)
 
-    def test_get_balance_between_stocktakings_missing_params(self):
+    def test_get_balance_between_stocktakings_missing_params(self) -> None:
         """This test ensures that the correct exceptions get raised when the
         request params are missing.
         """
@@ -88,7 +88,7 @@ class GetBalanceBetweenStocktakingsAPITestCase(BaseAPITestCase):
         res = self.get(url, role="admin", params=params)
         self.assertException(res, exc.InvalidData)
 
-    def test_get_balance_between_stocktakings_invalid_params(self):
+    def test_get_balance_between_stocktakings_invalid_params(self) -> None:
         """This test ensures that the correct exceptions get raised when the
         request params are invalid.
         """

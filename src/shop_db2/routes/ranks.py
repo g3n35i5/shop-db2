@@ -1,5 +1,7 @@
 ##!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from shop_db2.models.user import User
+
 __author__ = "g3n35i5"
 
 from flask import jsonify, request
@@ -31,7 +33,7 @@ def list_ranks():
 
 @app.route("/ranks", methods=["POST"])
 @adminRequired
-def create_rank(admin):
+def create_rank(admin: User):
     """Route to create a new rank.
 
     :param admin:                 Is the administrator user, determined by
@@ -68,7 +70,7 @@ def create_rank(admin):
 
 
 @app.route("/ranks/<int:rank_id>", methods=["GET"])
-def get_rank(rank_id):
+def get_rank(rank_id: int):
     """Returns the rank with the requested id.
 
     :param rank_id:        Is the rank id.
@@ -87,7 +89,7 @@ def get_rank(rank_id):
 
 @app.route("/ranks/<int:rank_id>", methods=["PUT"])
 @adminRequired
-def update_rank(admin, rank_id):
+def update_rank(admin: User, rank_id: int):
     """Update the rank with the given id.
 
     :param admin:   Is the administrator user, determined by @adminRequired.

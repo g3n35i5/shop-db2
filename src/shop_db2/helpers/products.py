@@ -12,7 +12,7 @@ import shop_db2.helpers.stocktakings as stocktaking_helpers
 from shop_db2.models import Product, ProductPrice
 
 
-def _shift_date_to_begin_of_day(date):
+def _shift_date_to_begin_of_day(date: datetime.datetime) -> datetime.datetime:
     """This function moves a timestamp to the beginning of the day.
 
     :param date: Is the date to be moved.
@@ -21,7 +21,7 @@ def _shift_date_to_begin_of_day(date):
     return date.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def _shift_date_to_end_of_day(date):
+def _shift_date_to_end_of_day(date: datetime.datetime) -> datetime.datetime:
     """This function moves a timestamp to the end of the day.
 
     :param date: Is the date to be moved.
@@ -30,7 +30,7 @@ def _shift_date_to_end_of_day(date):
     return date.replace(hour=23, minute=59, second=59, microsecond=999999)
 
 
-def _get_product_mean_price_in_time_range(product_id, start, end):
+def _get_product_mean_price_in_time_range(product_id: int, start: datetime.datetime, end: datetime.datetime) -> int:
     """This function calculates the mean price in a given range of time.
 
     :param product_id: Is the product id.

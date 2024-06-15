@@ -55,8 +55,8 @@ def insert_image(file: dict) -> str:
         image = Image.open(temporary_file.name)
 
     # An invalid file will lead to an exception.
-    except (IOError, binascii.Error):
-        raise exc.BrokenImage()
+    except (IOError, binascii.Error) as error:
+        raise exc.BrokenImage() from error
 
     # Check the real extension again
     if image.format not in [x.upper() for x in config.BaseConfig.VALID_EXTENSIONS]:

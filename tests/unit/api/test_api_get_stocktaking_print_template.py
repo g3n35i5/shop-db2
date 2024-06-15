@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetStocktakingPrintTemplateAPITestCase(BaseAPITestCase):
-    def test_get_stocktaking_template_file_type(self):
+    def test_get_stocktaking_template_file_type(self) -> None:
         """This test verifies that the file format returned by the API is correct."""
         # Skip this test if pdfkit is not available
         try:
@@ -23,7 +23,7 @@ class GetStocktakingPrintTemplateAPITestCase(BaseAPITestCase):
         self.assertTrue(res.data is not None)
         self.assertTrue(str(res.data).startswith("b'%PDF-"))
 
-    def test_get_stocktaking_template_file_no_products(self):
+    def test_get_stocktaking_template_file_no_products(self) -> None:
         """This test verifies that the correct exception is made when there are no
         products available for stocktaking.
         """

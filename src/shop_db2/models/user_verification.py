@@ -18,7 +18,7 @@ class UserVerification(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, unique=True)
 
     @validates("admin_id")
-    def validate_admin(self, key, admin_id):
+    def validate_admin(self, _: str, admin_id: int) -> int:
         from .user import User
 
         user = User.query.filter(User.id == admin_id).first()

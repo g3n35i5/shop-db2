@@ -13,7 +13,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class CreateDepositAPITestCase(BaseAPITestCase):
-    def test_create_deposit_positive_amount(self):
+    def test_create_deposit_positive_amount(self) -> None:
         """Create a deposit with a positive amount."""
         data = {"user_id": 2, "amount": 1000, "comment": "Test deposit"}
         res = self.post(url="/deposits", data=data, role="admin")
@@ -28,7 +28,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(deposits[0].comment, "Test deposit")
         self.assertFalse(deposits[0].revoked)
 
-    def test_create_deposit_negative_amount(self):
+    def test_create_deposit_negative_amount(self) -> None:
         """Create a deposit with a negative amount."""
         data = {"user_id": 2, "amount": -1000, "comment": "Test deposit"}
         res = self.post(url="/deposits", data=data, role="admin")
@@ -43,7 +43,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(deposits[0].comment, "Test deposit")
         self.assertFalse(deposits[0].revoked)
 
-    def test_create_deposit_wrong_type(self):
+    def test_create_deposit_wrong_type(self) -> None:
         """Create a deposit with wrong type(s)."""
         data = {"user_id": 2, "amount": 1000, "comment": "Test deposit"}
 
@@ -56,7 +56,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
 
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_deposit_unknown_field(self):
+    def test_create_deposit_unknown_field(self) -> None:
         """Create a deposit with an unknown field."""
         data = {"user_id": 2, "amount": 1000, "comment": "Test deposit", "foo": "bar"}
         res = self.post(url="/deposits", role="admin", data=data)
@@ -64,7 +64,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UnknownField)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_deposit_not_all_required_fields(self):
+    def test_create_deposit_not_all_required_fields(self) -> None:
         """Create a deposit with a missing field should raise an error"""
         data = {"user_id": 2, "amount": 1000}
         res = self.post(url="/deposits", role="admin", data=data)
@@ -72,7 +72,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_deposit_non_verified_user(self):
+    def test_create_deposit_non_verified_user(self) -> None:
         """Create a deposit as non verified user."""
         data = {"user_id": 4, "amount": 1000, "comment": "Test deposit"}
         res = self.post(url="/deposits", role="admin", data=data)
@@ -80,7 +80,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserIsNotVerified)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_deposit_inactive_user(self):
+    def test_create_deposit_inactive_user(self) -> None:
         """Create a deposit for an inactive user."""
         User.query.filter_by(id=3).first().set_rank_id(4, 1)
         db.session.commit()
@@ -90,7 +90,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.UserIsInactive)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_deposit_non_existing_user(self):
+    def test_create_deposit_non_existing_user(self) -> None:
         """Create a deposit as non existing user."""
         data = {"user_id": 6, "amount": 1000, "comment": "Test deposit"}
         res = self.post(url="/deposits", role="admin", data=data)
@@ -98,7 +98,7 @@ class CreateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryNotFound)
         self.assertEqual(len(Deposit.query.all()), 0)
 
-    def test_create_deposit_invalid_amount(self):
+    def test_create_deposit_invalid_amount(self) -> None:
         """Create a purchase with an invalid amount."""
         data = {"user_id": 2, "amount": 0, "comment": "Test deposit"}
         res = self.post(url="/deposits", role="admin", data=data)

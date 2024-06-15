@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetTagAPITestCase(BaseAPITestCase):
-    def test_get_single_tag(self):
+    def test_get_single_tag(self) -> None:
         """Test for getting a single tag"""
         res = self.get(url="/tags/1")
         self.assertEqual(res.status_code, 200)
@@ -18,7 +18,7 @@ class GetTagAPITestCase(BaseAPITestCase):
         self.assertEqual(tag["name"], "Food")
         self.assertEqual(tag["created_by"], 1)
 
-    def test_get_non_existing_tag(self):
+    def test_get_non_existing_tag(self) -> None:
         """Getting a non existing tag should raise an error."""
         res = self.get(url="/tags/6")
         self.assertEqual(res.status_code, 401)

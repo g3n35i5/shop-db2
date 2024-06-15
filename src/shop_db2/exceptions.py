@@ -2,15 +2,17 @@
 # -*- coding: utf-8 -*-
 __author__ = "g3n35i5"
 
+from typing import Optional
+
 from sqlalchemy.exc import DontWrapMixin
 
 # Base exception for all exceptions (needed for instance check)
 
 
 class ShopdbException(Exception, DontWrapMixin):
-    type: str = None
-    message: str = None
-    code: int = None
+    type: Optional[str] = None
+    message: Optional[str] = None
+    code: Optional[int] = None
 
 
 # App related exceptions.

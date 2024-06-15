@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class CreateUserAPITestCase(BaseAPITestCase):
-    def test_create_user(self):
+    def test_create_user(self) -> None:
         """This test is designed to test the creation of a new user"""
         data = {
             "firstname": "John",
@@ -28,7 +28,7 @@ class CreateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(user.lastname, "Doe")
         self.assertFalse(user.is_verified)
 
-    def test_create_user_only_lastname(self):
+    def test_create_user_only_lastname(self) -> None:
         """It should be possible to create a user without a firstname."""
         data = {"lastname": "Doe"}
         res = self.post(url="/users", data=data)
@@ -39,7 +39,7 @@ class CreateUserAPITestCase(BaseAPITestCase):
         self.assertEqual(user.lastname, "Doe")
         self.assertFalse(user.is_verified)
 
-    def test_create_user_password_too_short(self):
+    def test_create_user_password_too_short(self) -> None:
         """This test should ensure that the correct exception gets returned
         on creating a user with a short password.
         """
@@ -55,7 +55,7 @@ class CreateUserAPITestCase(BaseAPITestCase):
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_create_user_missing_data(self):
+    def test_create_user_missing_data(self) -> None:
         """This test should ensure that the correct exception gets returned
         on creating a user with missing data.
         """
@@ -66,7 +66,7 @@ class CreateUserAPITestCase(BaseAPITestCase):
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_create_user_wrong_type(self):
+    def test_create_user_wrong_type(self) -> None:
         """This test should ensure that the correct exception gets returned
         on creating a user with a wrong data type.
         """
@@ -86,7 +86,7 @@ class CreateUserAPITestCase(BaseAPITestCase):
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_create_user_passwords_do_not_match(self):
+    def test_create_user_passwords_do_not_match(self) -> None:
         """This test should ensure that the correct exception gets returned
         on creating a user when the passwords do not match.
         """
@@ -102,7 +102,7 @@ class CreateUserAPITestCase(BaseAPITestCase):
         users = User.query.all()
         self.assertEqual(len(users), 5)
 
-    def test_create_user_passwords_repeat_is_missing(self):
+    def test_create_user_passwords_repeat_is_missing(self) -> None:
         """This test should ensure that the correct exception gets returned
         on creating a user when the password_repeat field is missing.
         """

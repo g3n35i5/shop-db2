@@ -4,7 +4,7 @@ __author__ = "g3n35i5"
 
 import json
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import func, types
 from sqlalchemy.sql.expression import BinaryExpression
@@ -17,13 +17,21 @@ from shop_db2.api import db
 class QueryFromRequestParameters:
     __valid_fields_and_types__ = {"filter": dict, "pagination": dict, "sort": dict}
 
-    def __init__(self, model: db.Model, arguments: ImmutableMultiDict, fields=List[str]) -> None:
+    def __init__(self, model: db.Model, arguments: ImmutableMultiDict, fields: Optional[List[str]] = None) -> None:
+        """
+        Queries the database model with the given arguments
+
+        Args:
+            model: The database model to query.
+            arguments: The query arguments.
+            fields: The fields to query. Defaults to None.
+        """
         # Database table
         self._model: db.Model = model
         # Column mapper for validation and column access
         self._column_mapper = self._model.__mapper__.columns
         # List of all valid columns for filtering and sorting
-        self._valid_columns = fields
+        self._valid_columns = fields or []
         # Request query arguments
         self._arguments: dict = arguments.to_dict()
         # Parse request arguments
@@ -46,14 +54,12 @@ class QueryFromRequestParameters:
         :return:                        None
         """
         # Output dictionary
-        parsed_arguments = dict()
+        parsed_arguments: Dict = {}
 
         # Iterate all items in the request query arguments
         for argument_key, argument_value in self._arguments.items():
             # The argument key must be in the list of valid fields and types
-            try:
-                assert argument_key in self.__valid_fields_and_types__.keys()
-            except AssertionError:
+            if not argument_key in self.__valid_fields_and_types__:
                 raise exc.InvalidQueryParameters()
 
             # Clean possible non-JSON conforming quoting
@@ -64,18 +70,18 @@ class QueryFromRequestParameters:
             except AttributeError:
                 # Maybe there is a chance to parse it anyway
                 pass
-            except Exception:
+            except Exception as error:
                 # All other exceptions need to raise "InvalidQueryParameters"
-                raise exc.InvalidQueryParameters()
+                raise exc.InvalidQueryParameters() from error
 
             # Parse the value from string and process it
             try:
                 parsed_value = json.loads(argument_value)
                 # The type must be correct
-                assert isinstance(parsed_value, self.__valid_fields_and_types__.get(argument_key))
+                assert isinstance(parsed_value, self.__valid_fields_and_types__[argument_key])
                 parsed_arguments[argument_key] = parsed_value
-            except (AssertionError, json.decoder.JSONDecodeError):
-                raise exc.InvalidQueryParameters()
+            except (AssertionError, json.decoder.JSONDecodeError) as error:
+                raise exc.InvalidQueryParameters() from error
 
         # Save the parsed (but yet not fully validated) parameters
         self._arguments = parsed_arguments
@@ -122,7 +128,7 @@ class QueryFromRequestParameters:
                                 assert re.fullmatch(regex_sanitize_pattern, item)
                     else:
                         # Raise an exception here, just to be sure
-                        assert True is False
+                        raise AssertionError("Fallback")
 
             # Validate pagination
             if self.pagination is not None:
@@ -148,11 +154,11 @@ class QueryFromRequestParameters:
                 # The sorting direction must be in the list ['asc', 'ASC', 'desc', 'DESC']
                 assert self.sorting.get("order") in ["asc", "ASC", "desc", "DESC"]
                 # Both, sorting key and direction, must match the regex_sanitize_pattern to avoid injections
-                assert re.fullmatch(regex_sanitize_pattern, self.sorting.get("field"))
-                assert re.fullmatch(regex_sanitize_pattern, self.sorting.get("order"))
+                assert re.fullmatch(regex_sanitize_pattern, self.sorting.get("field", ""))
+                assert re.fullmatch(regex_sanitize_pattern, self.sorting.get("order", ""))
 
-        except AssertionError:
-            raise exc.InvalidQueryParameters()
+        except AssertionError as error:
+            raise exc.InvalidQueryParameters() from error
 
     def filter(self, expression: BinaryExpression) -> "QueryFromRequestParameters":
         """This method applies a sqlalchemy binary expression to the base query
@@ -207,15 +213,15 @@ class QueryFromRequestParameters:
             if not isinstance(column.type, types.Integer):
                 column = func.lower(column)
 
-            if self.sorting.get("order").lower() == "asc":
+            if self.sorting.get("order", "").lower() == "asc":
                 self._query = self._query.order_by(column.asc())
             else:
                 self._query = self._query.order_by(column.desc())
 
         # Apply the pagination if it exists
         if self.pagination is not None:
-            page = self.pagination.get("page")
-            per_page = self.pagination.get("perPage")
+            page = self.pagination["page"]
+            per_page = self.pagination["perPage"]
             self._query = self._query.paginate(page=page, per_page=per_page, error_out=False)
             data = self._query.items
             range_start = (page - 1) * per_page

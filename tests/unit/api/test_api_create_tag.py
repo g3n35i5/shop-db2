@@ -11,7 +11,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class CreateTagAPITestCase(BaseAPITestCase):
-    def test_create_tag_authorization(self):
+    def test_create_tag_authorization(self) -> None:
         """This route should only be available for administrators"""
         res = self.post(url="/tags", data={})
         self.assertEqual(res.status_code, 401)
@@ -23,7 +23,7 @@ class CreateTagAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.DataIsMissing)
 
-    def test_create_tag(self):
+    def test_create_tag(self) -> None:
         """Create a tag as admin."""
         tag_data_list = [
             {"name": "CoolTag"},
@@ -41,7 +41,7 @@ class CreateTagAPITestCase(BaseAPITestCase):
         self.assertTrue(db.session.query(Tag).filter(Tag.name == tag_data_list[0]["name"]).first().is_for_sale)
         self.assertFalse(db.session.query(Tag).filter(Tag.name == tag_data_list[1]["name"]).first().is_for_sale)
 
-    def test_create_tag_wrong_type(self):
+    def test_create_tag_wrong_type(self) -> None:
         """Create a tag as admin with wrong type(s)."""
         data = {"name": 1234.0}
         res = self.post(url="/tags", role="admin", data=data)
@@ -49,7 +49,7 @@ class CreateTagAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.WrongType)
         self.assertEqual(len(Tag.query.all()), 5)
 
-    def test_create_product_missing_name(self):
+    def test_create_product_missing_name(self) -> None:
         """Create a tag as admin with missing name."""
         data = {}
         res = self.post(url="/tags", role="admin", data=data)
@@ -57,7 +57,7 @@ class CreateTagAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.DataIsMissing)
         self.assertFalse(Tag.query.filter_by(id=6).first())
 
-    def test_create_tag_already_existing(self):
+    def test_create_tag_already_existing(self) -> None:
         """Creating a tag which already exists should not be possible."""
         data = {"name": "Coffee"}
         res = self.post(url="/tags", role="admin", data=data)
@@ -65,7 +65,7 @@ class CreateTagAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.EntryAlreadyExists)
         self.assertFalse(Tag.query.filter_by(id=6).first())
 
-    def test_create_tag_unknown_field(self):
+    def test_create_tag_unknown_field(self) -> None:
         """Unknown fields should raise an exception."""
         data = {"name": "Bread", "price": 100}
         res = self.post(url="/tags", role="admin", data=data)

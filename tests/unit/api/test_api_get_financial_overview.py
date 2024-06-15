@@ -13,7 +13,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetFinancialOverviewAPITestCase(BaseAPITestCase):
-    def test_authorization_get_financial_overview(self):
+    def test_authorization_get_financial_overview(self) -> None:
         """This route may only be accessible to administrators. An exception must
         be made for all other requests.
         """
@@ -24,7 +24,7 @@ class GetFinancialOverviewAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_get_financial_overview(self):
+    def test_get_financial_overview(self) -> None:
         """This test ensures that the entire financial overview is calculated
         correctly. To do this, some test entries are entered into the
         database, some of which are revoked. Then the amount is manually

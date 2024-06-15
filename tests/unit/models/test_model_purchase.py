@@ -11,7 +11,7 @@ from tests.base import BaseTestCase
 
 
 class PurchaseModelTestCase(BaseTestCase):
-    def test_insert_simple_purchase(self):
+    def test_insert_simple_purchase(self) -> None:
         """Testing a simple purchase"""
         user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 0)
@@ -24,7 +24,7 @@ class PurchaseModelTestCase(BaseTestCase):
         self.assertEqual(len(user.purchases.all()), 1)
         self.assertEqual(user.credit, -product.price)
 
-    def test_purchase_link_to_its_user(self):
+    def test_purchase_link_to_its_user(self) -> None:
         """This test checks whether the reference to the user of a purchase is
         working correctly.
         """
@@ -33,7 +33,7 @@ class PurchaseModelTestCase(BaseTestCase):
         purchase = Purchase.query.filter_by(id=1).first()
         self.assertEqual(purchase.user, User.query.filter_by(id=1).first())
 
-    def test_insert_multiple_purchases(self):
+    def test_insert_multiple_purchases(self) -> None:
         """Testing multiple purchases"""
         user = User.query.filter_by(id=1).first()
         self.assertEqual(len(user.purchases.all()), 0)
@@ -62,7 +62,7 @@ class PurchaseModelTestCase(BaseTestCase):
 
         self.assertEqual(user.credit, c)
 
-    def test_multi_user_purchases(self):
+    def test_multi_user_purchases(self) -> None:
         """Testing purchases done by multiple users"""
         users = User.query.all()
         for user in users:
@@ -106,7 +106,7 @@ class PurchaseModelTestCase(BaseTestCase):
         self.assertEqual(users[3].credit, 0)
         self.assertEqual(len(users[3].purchases.all()), 0)
 
-    def test_multiple_purchases_update_product_price(self):
+    def test_multiple_purchases_update_product_price(self) -> None:
         """This test is designed to ensure that purchases still show
         the correct price even after price changes of products.
         """
@@ -166,7 +166,7 @@ class PurchaseModelTestCase(BaseTestCase):
         self.assertEqual(purchases[1].price, 100)
         self.assertEqual(purchases[2].price, 600)
 
-    def test_purchase_revokes(self):
+    def test_purchase_revokes(self) -> None:
         """This unittest is designed to ensure, that purchase revokes will be
         applied to the user credit
         """

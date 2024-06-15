@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class ListDepositsAPITestCase(BaseAPITestCase):
-    def test_list_deposits_as_admin(self):
+    def test_list_deposits_as_admin(self) -> None:
         """Test for listing all deposits as admin"""
         # Do 5 deposits
         self.insert_default_deposits()
@@ -27,7 +27,7 @@ class ListDepositsAPITestCase(BaseAPITestCase):
         for deposit in deposits:
             assert all(x in deposit for x in required)
 
-    def test_list_deposits_as_user(self):
+    def test_list_deposits_as_user(self) -> None:
         """Test for listing all deposits without token. This should not be
         possible.
         """

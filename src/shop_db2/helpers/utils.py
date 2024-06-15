@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import Any, List
+
 __author__ = "g3n35i5"
 
 import datetime
@@ -10,7 +12,7 @@ from flask import request
 import shop_db2.exceptions as exc
 
 
-def json_body():
+def json_body() -> Any:
     """Returns the json data from the current request.
 
     :return:             The json body from the current request.
@@ -23,7 +25,7 @@ def json_body():
     return jb
 
 
-def convert_minimal(data, fields):
+def convert_minimal(data: Any, fields: List[str]) -> List[Any]:
     """This function returns only the required attributes of all objects in
     given list.
 
@@ -62,8 +64,7 @@ def parse_timestamp(data: dict, required: bool) -> dict:
     if "timestamp" not in data:
         if required:
             raise exc.DataIsMissing()
-        else:
-            return data
+        return data
 
     # Get the timestamp
     timestamp = data.get("timestamp")
@@ -77,16 +78,15 @@ def parse_timestamp(data: dict, required: bool) -> dict:
     if timestamp == "":
         if required:
             raise exc.DataIsMissing()
-        else:
-            del data["timestamp"]
-            return data
-    else:
-        try:
-            timestamp = dateutil.parser.parse(data["timestamp"])
-            assert isinstance(timestamp, datetime.datetime)
-            assert timestamp < datetime.datetime.now(datetime.timezone.utc)
-            data["timestamp"] = timestamp.replace(microsecond=0)
-        except (TypeError, ValueError, AssertionError):
-            raise exc.InvalidData()
+        del data["timestamp"]
+        return data
+
+    try:
+        timestamp = dateutil.parser.parse(data["timestamp"])
+        assert isinstance(timestamp, datetime.datetime)
+        assert timestamp < datetime.datetime.now(datetime.timezone.utc)
+        data["timestamp"] = timestamp.replace(microsecond=0)
+    except (TypeError, ValueError, AssertionError) as error:
+        raise exc.InvalidData() from error
 
     return data

@@ -8,14 +8,14 @@ from tests.base import BaseTestCase
 
 
 class TagModelTestCase(BaseTestCase):
-    def test_insert_tag(self):
+    def test_insert_tag(self) -> None:
         """Insert a tag should work."""
         self.assertEqual(len(Tag.query.all()), 5)
         db.session.add(Tag(name="Foo", created_by=1))
         db.session.commit()
         self.assertEqual(len(Tag.query.all()), 6)
 
-    def test_assign_single_tag_to_product(self):
+    def test_assign_single_tag_to_product(self) -> None:
         """Adding a single tag to a product."""
         product = Product.query.filter_by(id=1).first()
         self.assertEqual(len(product.tags), 0)
@@ -28,7 +28,7 @@ class TagModelTestCase(BaseTestCase):
         self.assertEqual(product.tags[0], tag)
         self.assertEqual(len(tag.products.all()), 1)
 
-    def test_assign_multiple_tags_to_product(self):
+    def test_assign_multiple_tags_to_product(self) -> None:
         """Adding a multiple tags to a product."""
         product = Product.query.filter_by(id=2).first()
         self.assertEqual(len(product.tags), 0)
@@ -42,7 +42,7 @@ class TagModelTestCase(BaseTestCase):
         product = Product.query.filter_by(id=2).first()
         self.assertEqual(len(product.tags), 2)
 
-    def test_remove_tag_from_product(self):
+    def test_remove_tag_from_product(self) -> None:
         """Remove a tag from a product."""
         product = Product.query.filter_by(id=1).first()
         self.assertEqual(len(product.tags), 0)

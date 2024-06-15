@@ -9,7 +9,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
-    def test_get_replenishmentcollection_as_admin(self):
+    def test_get_replenishmentcollection_as_admin(self) -> None:
         """Getting a single replenishmentcollection as admin"""
         self.insert_default_replenishmentcollections()
         res = self.get(url="/replenishmentcollections/1", role="admin")
@@ -38,13 +38,13 @@ class GetReplenishmentCollectionAPITestCase(BaseAPITestCase):
         for repl in repls:
             assert all(x in repl for x in required_repl)
 
-    def test_get_replenishmentcollection_as_user(self):
+    def test_get_replenishmentcollection_as_user(self) -> None:
         """Trying to get a single replenishmentcollection as user"""
         res = self.get(url="/replenishmentcollections/2", role="user")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_get_non_existing_replenishmentcollection(self):
+    def test_get_non_existing_replenishmentcollection(self) -> None:
         """This test ensures that an exception is raised if the requested
         replenishmentcollection does not exist.
         """

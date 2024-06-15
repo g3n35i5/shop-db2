@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from shop_db2.models.user import User
+
 __author__ = "g3n35i5"
 
 from flask import jsonify, request
@@ -35,7 +37,7 @@ def list_deposits(admin):
 
 @app.route("/deposits", methods=["POST"])
 @adminRequired
-def create_deposit(admin):
+def create_deposit(admin: User):
     """Insert a new deposit.
 
     :param admin:                Is the administrator user, determined by
@@ -66,7 +68,7 @@ def create_deposit(admin):
 
 @app.route("/deposits/batch", methods=["POST"])
 @adminRequired
-def create_batch_deposit(admin):
+def create_batch_deposit(admin: User):
     """Insert a new batch deposit.
 
     :param admin:                Is the administrator user, determined by
@@ -104,7 +106,7 @@ def create_batch_deposit(admin):
 
 
 @app.route("/deposits/<int:deposit_id>", methods=["GET"])
-def get_deposit(deposit_id):
+def get_deposit(deposit_id: int):
     """Returns the deposit with the requested id.
 
     :param deposit_id:     Is the deposit id.
@@ -133,7 +135,7 @@ def get_deposit(deposit_id):
 
 @app.route("/deposits/<int:deposit_id>", methods=["PUT"])
 @adminRequired
-def update_deposit(admin, deposit_id):
+def update_deposit(admin: User, deposit_id: int):
     """Update the deposit with the given id.
 
     :param admin:         Is the administrator user, determined by @adminRequired.

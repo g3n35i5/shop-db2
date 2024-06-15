@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdateDepositAPITestCase(BaseAPITestCase):
-    def test_update_nothing(self):
+    def test_update_nothing(self) -> None:
         """Updating a deposit with no data should do nothing."""
         self.insert_default_deposits()
         deposit1 = Deposit.query.filter_by(id=1).first()
@@ -20,7 +20,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         deposit2 = Deposit.query.filter_by(id=1).first()
         self.assertEqual(deposit1, deposit2)
 
-    def test_update_forbidden_field(self):
+    def test_update_forbidden_field(self) -> None:
         """Updating a forbidden field should raise an error."""
         self.insert_default_deposits()
         self.assertEqual(Deposit.query.filter_by(id=1).first().id, 1)
@@ -30,7 +30,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.ForbiddenField)
         self.assertEqual(Deposit.query.filter_by(id=1).first().id, 1)
 
-    def test_update_non_existing_deposit(self):
+    def test_update_non_existing_deposit(self) -> None:
         """Updating a non existing deposit should raise an error."""
         self.insert_default_deposits()
         data = {"revoked": True}
@@ -38,7 +38,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_update_revoke_deposit_twice(self):
+    def test_update_revoke_deposit_twice(self) -> None:
         """Revoking a deposit twice should raise an error and do nothing."""
         self.insert_default_deposits()
         data = {"revoked": True}
@@ -50,7 +50,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         self.assertException(res, exc.NothingHasChanged)
         self.assertTrue(Deposit.query.filter_by(id=1).first().revoked)
 
-    def test_update_wrong_type(self):
+    def test_update_wrong_type(self) -> None:
         """A wrong field type should raise an error."""
         self.insert_default_deposits()
         deposit1 = Deposit.query.filter_by(id=1).first()
@@ -61,7 +61,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         deposit2 = Deposit.query.filter_by(id=1).first()
         self.assertEqual(deposit1, deposit2)
 
-    def test_update_unknown_field(self):
+    def test_update_unknown_field(self) -> None:
         """An unknown field should raise an error."""
         self.insert_default_deposits()
         data = {"color": "red"}
@@ -69,7 +69,7 @@ class UpdateDepositAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_deposit_revoked(self):
+    def test_update_deposit_revoked(self) -> None:
         """Update deposit revoked field."""
         self.insert_default_deposits()
         self.assertFalse(Deposit.query.filter_by(id=1).first().revoked)

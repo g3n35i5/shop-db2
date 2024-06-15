@@ -10,7 +10,7 @@ from tests.base_api import BaseAPITestCase
 
 
 class UpdateStocktakingCollectionsAPITestCase(BaseAPITestCase):
-    def test_revoke_stocktakingcollection(self):
+    def test_revoke_stocktakingcollection(self) -> None:
         """Revoke a stocktakingcollection"""
         self.insert_default_stocktakingcollections()
         res = self.put(url="/stocktakingcollections/1", data={"revoked": True}, role="admin")
@@ -24,7 +24,7 @@ class UpdateStocktakingCollectionsAPITestCase(BaseAPITestCase):
         for item in required:
             assert item in collection.revokehistory[0]
 
-    def test_revoke_stocktakingcollection_multiple_times(self):
+    def test_revoke_stocktakingcollection_multiple_times(self) -> None:
         """Revoke a stocktakingcollection multiple times"""
         self.insert_default_stocktakingcollections()
         res = self.put(url="/stocktakingcollections/1", data={"revoked": True}, role="admin")
@@ -41,27 +41,27 @@ class UpdateStocktakingCollectionsAPITestCase(BaseAPITestCase):
             for item in required:
                 assert item in i
 
-    def test_revoke_stocktakingcollection_as_user(self):
+    def test_revoke_stocktakingcollection_as_user(self) -> None:
         """Revoking a stocktakingcollection as user should be forbidden"""
         res = self.put(url="/stocktakingcollections/1", data={"revoked": True}, role="user")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnauthorizedAccess)
 
-    def test_update_stocktakingcollection_no_changes(self):
+    def test_update_stocktakingcollection_no_changes(self) -> None:
         """Revoking a stocktakingcollection with no changes"""
         self.insert_default_stocktakingcollections()
         res = self.put(url="/stocktakingcollections/1", data={"revoked": False}, role="admin")
         self.assertEqual(res.status_code, 200)
         self.assertException(res, exc.NothingHasChanged)
 
-    def test_update_non_existing_stocktakingcollection(self):
+    def test_update_non_existing_stocktakingcollection(self) -> None:
         """Revoking a stocktakingcollection that doesnt exist"""
         self.insert_default_stocktakingcollections()
         res = self.put(url="/stocktakingcollections/4", data={"revoked": True}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.EntryNotFound)
 
-    def test_update_stocktakingcollection_forbidden_field(self):
+    def test_update_stocktakingcollection_forbidden_field(self) -> None:
         """Updating forbidden fields of a stocktakingcollection"""
         self.insert_default_stocktakingcollections()
         res = self.put(
@@ -72,21 +72,21 @@ class UpdateStocktakingCollectionsAPITestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.ForbiddenField)
 
-    def test_update_stocktakingcollection_unknown_field(self):
+    def test_update_stocktakingcollection_unknown_field(self) -> None:
         """Update non existing fields of a stocktakingcollection"""
         self.insert_default_stocktakingcollections()
         res = self.put(url="/stocktakingcollections/1", data={"Nonsense": ""}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.UnknownField)
 
-    def test_update_stocktakingcollection_wrong_type(self):
+    def test_update_stocktakingcollection_wrong_type(self) -> None:
         """Update fields of a stocktakingcollection with wrong types"""
         self.insert_default_stocktakingcollections()
         res = self.put(url="/stocktakingcollections/1", data={"revoked": "yes"}, role="admin")
         self.assertEqual(res.status_code, 401)
         self.assertException(res, exc.WrongType)
 
-    def test_update_stocktakingcollection_with_no_data(self):
+    def test_update_stocktakingcollection_with_no_data(self) -> None:
         """Update a stocktakingcollection with no data"""
         self.insert_default_stocktakingcollections()
         res = self.put(url="/stocktakingcollections/1", data={}, role="admin")

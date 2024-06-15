@@ -3,7 +3,7 @@
 __author__ = "g3n35i5"
 
 from inspect import Signature, signature
-from typing import Optional
+from typing import Any, Optional
 
 from flask import jsonify
 from sqlalchemy.exc import IntegrityError
@@ -14,7 +14,7 @@ from shop_db2.helpers.validators import check_fields_and_types, check_forbidden
 from shop_db2.models import User
 
 
-def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[User]):
+def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[User]) -> Any:
     """This is a generic function which handles all entry updates. "Normal" updates (like name, ...), which do not
     require any special treatment (like inserting other entries, ...) are handled with a simple "setattr(...)"
     operation. All other fields are updated by calling the set_FIELDNAME method, which must be implemented in the
@@ -44,7 +44,7 @@ def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[U
 
     # Get the updateable fields. This only works with supported models.
     if not hasattr(item, "__updateable_fields__"):
-        raise Exception("The generic_update() function can only used with supported models")
+        raise ValueError("The generic_update() function can only used with supported models")
 
     # Get a dictionary containing all allowed fields and types
     updateable_fields: dict = item.__updateable_fields__
@@ -93,8 +93,8 @@ def generic_update(model: db.Model, entry_id: int, data: dict, admin: Optional[U
     # Apply changes
     try:
         db.session.commit()
-    except IntegrityError:
-        raise exc.CouldNotUpdateEntry()
+    except IntegrityError as error:
+        raise exc.CouldNotUpdateEntry() from error
 
     return (
         jsonify(
