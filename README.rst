@@ -1,7 +1,7 @@
 shop-db2
 ========
 
-|Code style: black| |Imports: isort| |Coverage| |Average time to resolve an issue| |Percentage of issues still open| 
+|CI pipeline| |Coverage| |Code style: black| |Imports: isort| |IssueResolveTime| |PercentOpenIssues| 
 
 This is the documentation for shop-db.
 
@@ -624,9 +624,11 @@ When an admin revokes or re-revokes a deposit, a DepositRevoke entry is made. It
    :target: https://github.com/psf/black
 .. |Imports: isort| image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
    :target: https://pycqa.github.io/isort/
-.. |Average time to resolve an issue| image:: http://isitmaintained.com/badge/resolution/g3n35i5/shop-db2.svg
+.. |IssueResolveTime| image:: http://isitmaintained.com/badge/resolution/g3n35i5/shop-db2.svg
    :target: http://isitmaintained.com/project/g3n35i5/shop-db2
-.. |Percentage of issues still open| image:: http://isitmaintained.com/badge/open/g3n35i5/shop-db2.svg
+.. |PercentOpenIssues| image:: http://isitmaintained.com/badge/open/g3n35i5/shop-db2.svg
    :target: http://isitmaintained.com/project/g3n35i5/shop-db2
 .. |Coverage| image:: https://codecov.io/gh/g3n35i5/shop-db2/graph/badge.svg 
    :target: https://codecov.io/gh/g3n35i5/shop-db2
+.. |CI pipeline| image:: https://github.com/g3n35i5/shop-db2/actions/workflows/pipeline.yml/badge.svg
+   :target: https://github.com/g3n35i5/shop-db2/actions/workflows/pipeline.yml
