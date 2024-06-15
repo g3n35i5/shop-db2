@@ -125,5 +125,6 @@ module = [
     "sqlalchemy.*",
     "flask_script.*",
     "flask_migrate.*",
+    "flask_sqlalchemy.*",
 ]
 ignore_missing_imports = true
